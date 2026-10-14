@@ -4,10 +4,10 @@ dev-dist/
 qa-output/
 .vercel/
 .DS_Store
+._*
 *.local
 .env
 .env.*
 !.env.example
 *.log
-.vercel
-.env*
+*.tsbuildinfo

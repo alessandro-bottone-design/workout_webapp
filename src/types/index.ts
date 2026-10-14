@@ -24,6 +24,8 @@ export interface Program {
   createdAt: number;
   startDate?: string; // ISO date string YYYY-MM-DD
   durationWeeks: number;
+  /** Built-in sheet version. Missing means the original seed. */
+  sheetRevision?: number;
   sessions: SessionTemplate[];
 }
 
@@ -84,6 +86,9 @@ export interface WorkoutExerciseLog {
   /** Planned sets/reps snapshot */
   plannedSetsSnapshot: number;
   targetRepsSnapshot?: number;
+  plannedWeightSnapshot?: number;
+  plannedDurationSeconds?: number;
+  notesSnapshot?: string;
 
   order: number;
   status: ExerciseLogStatus;

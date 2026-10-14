@@ -91,22 +91,27 @@ export const useWorkoutStore = create<WorkoutStore>((set, get) => ({
   },
 
   updateExerciseLog: async (log) => {
-    const { activeWorkout } = get();
-    if (!activeWorkout) return;
+    const prev = get().activeWorkout;
+    if (!prev) return;
 
     const updated: Workout = {
-      ...activeWorkout,
-      exerciseLogs: activeWorkout.exerciseLogs.map((e) =>
+      ...prev,
+      exerciseLogs: prev.exerciseLogs.map((e) =>
         e.id === log.id ? log : e
       ),
     };
     set({ activeWorkout: updated });
-    await workoutRepo.update(updated);
+    try {
+      await workoutRepo.update(updated);
+    } catch (e) {
+      set({ activeWorkout: prev });
+      console.error('Failed to persist exercise log update:', e);
+    }
   },
 
   completeSet: async (exerciseLogId, setLogData) => {
-    const { activeWorkout } = get();
-    if (!activeWorkout) return;
+    const prev = get().activeWorkout;
+    if (!prev) return;
 
     const setLog: SetLog = {
       id: generateId(),
@@ -114,8 +119,8 @@ export const useWorkoutStore = create<WorkoutStore>((set, get) => ({
     };
 
     const updated: Workout = {
-      ...activeWorkout,
-      exerciseLogs: activeWorkout.exerciseLogs.map((e) => {
+      ...prev,
+      exerciseLogs: prev.exerciseLogs.map((e) => {
         if (e.id !== exerciseLogId) return e;
         return {
           ...e,
@@ -127,82 +132,112 @@ export const useWorkoutStore = create<WorkoutStore>((set, get) => ({
 
     // Optimistic update
     set({ activeWorkout: updated });
-    // Persist
-    await workoutRepo.update(updated);
+    try {
+      // Persist
+      await workoutRepo.update(updated);
+    } catch (e) {
+      set({ activeWorkout: prev });
+      console.error('Failed to persist completed set:', e);
+    }
   },
 
   startExercise: async (exerciseLogId) => {
-    const { activeWorkout } = get();
-    if (!activeWorkout) return;
+    const prev = get().activeWorkout;
+    if (!prev) return;
 
     const updated: Workout = {
-      ...activeWorkout,
-      exerciseLogs: activeWorkout.exerciseLogs.map((e) => {
+      ...prev,
+      exerciseLogs: prev.exerciseLogs.map((e) => {
         if (e.id !== exerciseLogId) return e;
         return { ...e, status: 'active', startedAt: Date.now() };
       }),
     };
     set({ activeWorkout: updated });
-    await workoutRepo.update(updated);
+    try {
+      await workoutRepo.update(updated);
+    } catch (e) {
+      set({ activeWorkout: prev });
+      console.error('Failed to persist start exercise:', e);
+    }
   },
 
   completeExercise: async (exerciseLogId) => {
-    const { activeWorkout } = get();
-    if (!activeWorkout) return;
+    const prev = get().activeWorkout;
+    if (!prev) return;
 
     const updated: Workout = {
-      ...activeWorkout,
-      exerciseLogs: activeWorkout.exerciseLogs.map((e) => {
+      ...prev,
+      exerciseLogs: prev.exerciseLogs.map((e) => {
         if (e.id !== exerciseLogId) return e;
         return { ...e, status: 'completed', completedAt: Date.now() };
       }),
     };
     set({ activeWorkout: updated });
-    await workoutRepo.update(updated);
+    try {
+      await workoutRepo.update(updated);
+    } catch (e) {
+      set({ activeWorkout: prev });
+      console.error('Failed to persist complete exercise:', e);
+    }
   },
 
   reorderExercises: async (orderedIds) => {
-    const { activeWorkout } = get();
-    if (!activeWorkout) return;
+    const prev = get().activeWorkout;
+    if (!prev) return;
 
     const reordered = orderedIds
       .map((id, idx) => {
-        const ex = activeWorkout.exerciseLogs.find((e) => e.id === id);
+        const ex = prev.exerciseLogs.find((e) => e.id === id);
         return ex ? { ...ex, order: idx } : null;
       })
       .filter((e): e is WorkoutExerciseLog => e !== null);
 
-    const updated: Workout = { ...activeWorkout, exerciseLogs: reordered };
+    const updated: Workout = { ...prev, exerciseLogs: reordered };
     set({ activeWorkout: updated });
-    await workoutRepo.update(updated);
+    try {
+      await workoutRepo.update(updated);
+    } catch (e) {
+      set({ activeWorkout: prev });
+      console.error('Failed to persist exercise reorder:', e);
+    }
   },
 
   completeWorkout: async () => {
-    const { activeWorkout } = get();
-    if (!activeWorkout) return;
+    const prev = get().activeWorkout;
+    if (!prev) return;
 
     const completed: Workout = {
-      ...activeWorkout,
+      ...prev,
       status: 'completed',
       completedAt: Date.now(),
     };
     set({ activeWorkout: completed });
-    await workoutRepo.update(completed);
-    await appStateRepo.setActiveWorkout(undefined);
+    try {
+      await workoutRepo.update(completed);
+      await appStateRepo.setActiveWorkout(undefined);
+    } catch (e) {
+      set({ activeWorkout: prev });
+      console.error('Failed to persist complete workout:', e);
+    }
   },
 
   cancelWorkout: async () => {
-    const { activeWorkout } = get();
-    if (!activeWorkout) return;
+    const prev = get().activeWorkout;
+    if (!prev) return;
 
     const cancelled: Workout = {
-      ...activeWorkout,
+      ...prev,
       status: 'cancelled',
       completedAt: Date.now(),
     };
-    await workoutRepo.update(cancelled);
-    await appStateRepo.setActiveWorkout(undefined);
     set({ activeWorkout: null });
+    try {
+      await workoutRepo.update(cancelled);
+      await appStateRepo.setActiveWorkout(undefined);
+    } catch (e) {
+      set({ activeWorkout: prev });
+      console.error('Failed to persist cancel workout:', e);
+    }
   },
 
   clearActiveWorkout: () => {

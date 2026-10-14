@@ -3,7 +3,7 @@
    ============================================ */
 
 import React, { Suspense, lazy } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 
@@ -51,9 +51,9 @@ const NotFoundScreen = () => (
   <div className="flex-1 flex flex-col items-center justify-center min-h-[100dvh] bg-bg-app px-5 text-center">
     <p className="text-heading text-text-primary mb-2">404</p>
     <p className="text-meta text-text-secondary mb-6">Pagina non trovata</p>
-    <a href="/" className="text-accent-primary text-meta font-semibold">
+    <Link to="/" className="text-accent-primary text-meta font-semibold">
       Torna alla home
-    </a>
+    </Link>
   </div>
 );
 

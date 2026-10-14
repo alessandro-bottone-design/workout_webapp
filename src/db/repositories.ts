@@ -40,26 +40,32 @@ export const programRepo = {
   },
 
   async updateSession(programId: UUID, session: SessionTemplate): Promise<void> {
-    const program = await db.programs.get(programId);
-    if (!program) throw new Error(`Program ${programId} not found`);
-    const idx = program.sessions.findIndex((s) => s.id === session.id);
-    if (idx === -1) throw new Error(`Session ${session.id} not found in program`);
-    program.sessions[idx] = session;
-    await db.programs.put(program);
+    await db.transaction('rw', db.programs, async () => {
+      const program = await db.programs.get(programId);
+      if (!program) throw new Error(`Program ${programId} not found`);
+      const idx = program.sessions.findIndex((s) => s.id === session.id);
+      if (idx === -1) throw new Error(`Session ${session.id} not found in program`);
+      program.sessions[idx] = session;
+      await db.programs.put(program);
+    });
   },
 
   async addSession(programId: UUID, session: SessionTemplate): Promise<void> {
-    const program = await db.programs.get(programId);
-    if (!program) throw new Error(`Program ${programId} not found`);
-    program.sessions.push(session);
-    await db.programs.put(program);
+    await db.transaction('rw', db.programs, async () => {
+      const program = await db.programs.get(programId);
+      if (!program) throw new Error(`Program ${programId} not found`);
+      program.sessions.push(session);
+      await db.programs.put(program);
+    });
   },
 
   async deleteSession(programId: UUID, sessionId: UUID): Promise<void> {
-    const program = await db.programs.get(programId);
-    if (!program) throw new Error(`Program ${programId} not found`);
-    program.sessions = program.sessions.filter((s) => s.id !== sessionId);
-    await db.programs.put(program);
+    await db.transaction('rw', db.programs, async () => {
+      const program = await db.programs.get(programId);
+      if (!program) throw new Error(`Program ${programId} not found`);
+      program.sessions = program.sessions.filter((s) => s.id !== sessionId);
+      await db.programs.put(program);
+    });
   },
 
   async updateExercise(
@@ -67,19 +73,21 @@ export const programRepo = {
     sessionId: UUID,
     exercise: ExerciseTemplate
   ): Promise<void> {
-    const program = await db.programs.get(programId);
-    if (!program) throw new Error(`Program ${programId} not found`);
-    const session = program.sessions.find((s) => s.id === sessionId);
-    if (!session) throw new Error(`Session ${sessionId} not found`);
-    const idx = session.exercises.findIndex((e) => e.id === exercise.id);
-    if (idx === -1) {
-      // New exercise: append at the end of the session
-      session.exercises.push({ ...exercise, order: session.exercises.length });
-    } else {
-      // Existing exercise: preserve its position in the session
-      session.exercises[idx] = { ...exercise, order: session.exercises[idx].order };
-    }
-    await db.programs.put(program);
+    await db.transaction('rw', db.programs, async () => {
+      const program = await db.programs.get(programId);
+      if (!program) throw new Error(`Program ${programId} not found`);
+      const session = program.sessions.find((s) => s.id === sessionId);
+      if (!session) throw new Error(`Session ${sessionId} not found`);
+      const idx = session.exercises.findIndex((e) => e.id === exercise.id);
+      if (idx === -1) {
+        // New exercise: append at the end of the session
+        session.exercises.push({ ...exercise, order: session.exercises.length });
+      } else {
+        // Existing exercise: preserve its position in the session
+        session.exercises[idx] = { ...exercise, order: session.exercises[idx].order };
+      }
+      await db.programs.put(program);
+    });
   },
 
   async deleteExercise(
@@ -87,12 +95,14 @@ export const programRepo = {
     sessionId: UUID,
     exerciseId: UUID
   ): Promise<void> {
-    const program = await db.programs.get(programId);
-    if (!program) throw new Error(`Program ${programId} not found`);
-    const session = program.sessions.find((s) => s.id === sessionId);
-    if (!session) throw new Error(`Session ${sessionId} not found`);
-    session.exercises = session.exercises.filter((e) => e.id !== exerciseId);
-    await db.programs.put(program);
+    await db.transaction('rw', db.programs, async () => {
+      const program = await db.programs.get(programId);
+      if (!program) throw new Error(`Program ${programId} not found`);
+      const session = program.sessions.find((s) => s.id === sessionId);
+      if (!session) throw new Error(`Session ${sessionId} not found`);
+      session.exercises = session.exercises.filter((e) => e.id !== exerciseId);
+      await db.programs.put(program);
+    });
   },
 
   async create(name: string, durationWeeks: number): Promise<Program> {
@@ -155,12 +165,14 @@ export const workoutRepo = {
     workoutId: UUID,
     exerciseLog: WorkoutExerciseLog
   ): Promise<void> {
-    const workout = await db.workouts.get(workoutId);
-    if (!workout) throw new Error(`Workout ${workoutId} not found`);
-    const idx = workout.exerciseLogs.findIndex((e) => e.id === exerciseLog.id);
-    if (idx === -1) throw new Error(`Exercise log ${exerciseLog.id} not found`);
-    workout.exerciseLogs[idx] = exerciseLog;
-    await db.workouts.put(workout);
+    await db.transaction('rw', db.workouts, async () => {
+      const workout = await db.workouts.get(workoutId);
+      if (!workout) throw new Error(`Workout ${workoutId} not found`);
+      const idx = workout.exerciseLogs.findIndex((e) => e.id === exerciseLog.id);
+      if (idx === -1) throw new Error(`Exercise log ${exerciseLog.id} not found`);
+      workout.exerciseLogs[idx] = exerciseLog;
+      await db.workouts.put(workout);
+    });
   },
 
   async addSetLog(
@@ -168,12 +180,14 @@ export const workoutRepo = {
     exerciseLogId: UUID,
     setLog: SetLog
   ): Promise<void> {
-    const workout = await db.workouts.get(workoutId);
-    if (!workout) throw new Error(`Workout ${workoutId} not found`);
-    const exLog = workout.exerciseLogs.find((e) => e.id === exerciseLogId);
-    if (!exLog) throw new Error(`Exercise log ${exerciseLogId} not found`);
-    exLog.setLogs.push(setLog);
-    await db.workouts.put(workout);
+    await db.transaction('rw', db.workouts, async () => {
+      const workout = await db.workouts.get(workoutId);
+      if (!workout) throw new Error(`Workout ${workoutId} not found`);
+      const exLog = workout.exerciseLogs.find((e) => e.id === exerciseLogId);
+      if (!exLog) throw new Error(`Exercise log ${exerciseLogId} not found`);
+      exLog.setLogs.push(setLog);
+      await db.workouts.put(workout);
+    });
   },
 
   async complete(workoutId: UUID): Promise<void> {

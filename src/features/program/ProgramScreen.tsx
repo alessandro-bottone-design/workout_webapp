@@ -10,6 +10,7 @@ import { ChevronRight, Pencil } from 'lucide-react';
 import { AppShell, ScreenHeader } from '@/components/layout';
 import { Button, EmptyState, IconButton } from '@/components/ui';
 import { programRepo, workoutRepo } from '@/db/repositories';
+import { useWorkoutStore } from '@/stores/workoutStore';
 import { getNextSessionId, getCurrentProgramWeek } from '@/lib/selectors';
 import { strings } from '@/lib/strings';
 import type { Program, Workout } from '@/types';
@@ -229,6 +230,16 @@ export const SessionDetailScreen: React.FC = () => {
 
   const sortedExercises = [...session.exercises].sort((a, b) => a.order - b.order);
 
+  const handleStartWorkout = async () => {
+    if (!programId || !session) return;
+    const workout = await useWorkoutStore.getState().startWorkout(programId, {
+      id: session.id,
+      name: session.name,
+      exercises: session.exercises,
+    });
+    navigate(`/workout/${workout.id}`);
+  };
+
   return (
     <AppShell showNav={false}>
       <ScreenHeader
@@ -245,7 +256,7 @@ export const SessionDetailScreen: React.FC = () => {
         }
       />
 
-      <div className="flex-1 overflow-y-auto pb-[calc(40px+env(safe-area-inset-bottom))]">
+      <div className="flex-1 overflow-y-auto pb-[calc(100px+env(safe-area-inset-bottom))]">
         <div className="px-5 pt-4 space-y-2">
           {sortedExercises.map((ex, i) => (
             <motion.button
@@ -277,6 +288,13 @@ export const SessionDetailScreen: React.FC = () => {
             </motion.button>
           ))}
         </div>
+      </div>
+
+      {/* Start Workout Action Bar */}
+      <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto p-5 bg-gradient-to-t from-bg-app via-bg-app/95 to-transparent pb-[calc(20px+env(safe-area-inset-bottom))] z-20">
+        <Button variant="primary" fullWidth onClick={handleStartWorkout}>
+          INIZIA QUESTA SEDUTA
+        </Button>
       </div>
     </AppShell>
   );

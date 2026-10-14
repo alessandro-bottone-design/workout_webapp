@@ -14,7 +14,7 @@ export default {
         },
         text: {
           primary: '#F5F5F7',
-          secondary: '#8E8E93',
+          secondary: '#AEAEB2',
         },
         border: {
           default: '#2C2C2E',
@@ -24,7 +24,7 @@ export default {
         },
         icon: {
           primary: '#F5F5F7',
-          secondary: '#8E8E93',
+          secondary: '#AEAEB2',
           accent: '#C8FF3D',
           'on-accent': '#09090A',
         },

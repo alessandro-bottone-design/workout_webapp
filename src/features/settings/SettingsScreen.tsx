@@ -1,16 +1,18 @@
 /* ============================================
    SETTINGS SCREEN
-   Timer defaults, sound, vibration, data reset
+   Timer defaults, sound, vibration, gym hours, data reset
    ============================================ */
 
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Clock, RefreshCw } from 'lucide-react';
 import { AppShell, ScreenHeader } from '@/components/layout';
 import { Toggle, ConfirmDialog } from '@/components/ui';
 import { settingsRepo, resetAllData } from '@/db/repositories';
-import { seedDatabase } from '@/db/seed';
+import { seedDatabase, restoreDefaultProgram } from '@/db/seed';
 import { useTimerStore } from '@/features/timer/timerStore';
 import { useWorkoutStore } from '@/stores/workoutStore';
+import { GYM_SCHEDULE, getGymStatus } from '@/lib/gymSchedule';
 import { strings } from '@/lib/strings';
 import type { AppSettings } from '@/types';
 
@@ -26,13 +28,18 @@ const rowClass = 'flex items-center justify-between px-5 py-4 border-b border-bo
 
 export const SettingsScreen: React.FC = () => {
   const [settings, setSettings] = useState<AppSettings>({
-    defaultRestSeconds: 90,
+    defaultRestSeconds: 120,
     soundEnabled: true,
     vibrationEnabled: true,
   });
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showRestoreProgramConfirm, setShowRestoreProgramConfirm] = useState(false);
   const [resetDone, setResetDone] = useState(false);
+  const [restoreDone, setRestoreDone] = useState(false);
   const [, setIsResetting] = useState(false);
+
+  const gymStatus = getGymStatus();
+  const todayDayOfWeek = new Date().getDay();
 
   useEffect(() => {
     void settingsRepo.get().then(setSettings);
@@ -60,12 +67,65 @@ export const SettingsScreen: React.FC = () => {
     setSettings(fresh);
   };
 
+  const handleRestoreProgram = async () => {
+    await restoreDefaultProgram();
+    setShowRestoreProgramConfirm(false);
+    setRestoreDone(true);
+    setTimeout(() => setRestoreDone(false), 3000);
+  };
+
   return (
     <AppShell>
       <ScreenHeader title={strings.settings.title} variant="display" titleSize="lg" />
 
       <div className="flex-1 overflow-y-auto pb-[calc(80px+env(safe-area-inset-bottom))]">
         <div className="px-5 pt-4 space-y-5">
+          {/* Gym Schedule */}
+          <div>
+            <div className="flex items-center justify-between mb-3 px-1">
+              <p className="text-label-sm text-text-secondary uppercase">ORARI PALESTRA</p>
+              <span className="text-meta text-accent-primary font-semibold flex items-center gap-1.5">
+                <span
+                  className={`inline-block w-2 h-2 rounded-full ${
+                    gymStatus.isOpen ? 'bg-accent-primary animate-pulse' : 'bg-text-secondary opacity-40'
+                  }`}
+                />
+                {gymStatus.statusText}
+              </span>
+            </div>
+
+            <div className={sectionClass}>
+              <div className="p-5 space-y-3">
+                {GYM_SCHEDULE.map((item) => {
+                  const isToday = item.days.includes(todayDayOfWeek);
+                  return (
+                    <div
+                      key={item.dayLabel}
+                      className={`flex items-center justify-between text-meta py-1.5 px-3 rounded-btn ${
+                        isToday
+                          ? 'bg-accent-primary/10 text-accent-primary font-semibold'
+                          : 'text-text-secondary'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Clock className={`w-4 h-4 ${isToday ? 'text-accent-primary' : 'text-text-secondary'}`} />
+                        <span>{item.dayLabel}</span>
+                        {isToday && (
+                          <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.2 rounded-full bg-accent-primary text-bg-app font-bold">
+                            Oggi
+                          </span>
+                        )}
+                      </div>
+                      <span className={isToday ? 'text-accent-primary' : 'text-text-primary'}>
+                        {item.hoursFormatted}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
           {/* Timer default */}
           <div>
             <p className="text-label-sm text-text-secondary mb-3 px-1">TIMER</p>
@@ -115,7 +175,7 @@ export const SettingsScreen: React.FC = () => {
             </div>
           </div>
 
-          {/* Apple Health */}
+          {/* Integrations */}
           <div>
             <p className="text-label-sm text-text-secondary mb-3 px-1">INTEGRAZIONI</p>
             <div className={sectionClass}>
@@ -136,7 +196,7 @@ export const SettingsScreen: React.FC = () => {
               {strings.settings.data}
             </p>
             <div className={sectionClass}>
-              <div className="px-5 py-4">
+              <div className="px-5 py-4 border-b border-border-default">
                 <p className="text-meta text-text-secondary">
                   {strings.settings.dataInfo}
                 </p>
@@ -144,10 +204,32 @@ export const SettingsScreen: React.FC = () => {
                   Tutti i dati rimangono sul dispositivo.
                 </p>
               </div>
-              <div className="px-5 pb-4">
+
+              {/* Restore Default Workout Routine */}
+              <div className="px-5 py-3 border-b border-border-default flex items-center justify-between">
+                <div>
+                  <p className="text-[15px] font-semibold text-text-primary">
+                    Ripristina scheda predefinita
+                  </p>
+                  <p className="text-meta text-text-secondary">
+                    Aggiorna le 4 sedute all'ultima versione senza toccare lo storico
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowRestoreProgramConfirm(true)}
+                  className="min-h-[44px] px-3 text-meta text-accent-primary font-semibold flex items-center gap-1.5 hover:underline"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Ripristina
+                </button>
+              </div>
+
+              {/* Reset all data */}
+              <div className="px-5 py-3">
                 <button
                   onClick={() => setShowResetConfirm(true)}
-                  className="text-danger text-meta font-semibold min-h-[44px] px-2 -mx-2 py-2 flex items-center justify-center rounded-btn hover:bg-danger/10 transition-colors"
+                  className="text-danger text-meta font-semibold min-h-[44px] py-2 flex items-center rounded-btn hover:underline transition-colors"
                 >
                   {strings.settings.resetData}
                 </button>
@@ -158,18 +240,18 @@ export const SettingsScreen: React.FC = () => {
           {/* Version */}
           <div className="text-center pb-4">
             <p className="text-label-sm text-text-secondary">
-              {strings.settings.version} 1.0.0
+              {strings.settings.version} 1.0.0 (Scheda V2)
             </p>
           </div>
 
-          {/* Reset done toast */}
+          {/* Toasts */}
           <AnimatePresence>
             {resetDone && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
-                className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-bg-elevated border border-border-default rounded-pill px-5 py-3 text-meta text-text-primary shadow-lg"
+                className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-bg-elevated border border-border-default rounded-pill px-5 py-3 text-meta text-text-primary shadow-lg z-50"
               >
                 <span className="text-icon-accent" aria-hidden>
                   ✓
@@ -177,12 +259,37 @@ export const SettingsScreen: React.FC = () => {
                 Dati resettati
               </motion.div>
             )}
+            {restoreDone && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-bg-elevated border border-accent-primary/40 rounded-pill px-5 py-3 text-meta text-text-primary shadow-lg z-50"
+              >
+                <span className="text-icon-accent" aria-hidden>
+                  ✓
+                </span>{' '}
+                Scheda predefinita ripristinata con successo
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
       </div>
 
-      {/* Reset Confirm */}
+      {/* Confirm Dialogs */}
       <AnimatePresence>
+        {showRestoreProgramConfirm && (
+          <ConfirmDialog
+            isOpen={showRestoreProgramConfirm}
+            title="Ripristinare la scheda predefinita?"
+            description="Le 4 sedute verranno reimpostate alla versione ufficiale (Scheda Allenamento 4 sedute). Lo storico dei workout già completati rimarrà intatto."
+            confirmLabel="Ripristina Scheda"
+            cancelLabel="Annulla"
+            onConfirm={handleRestoreProgram}
+            onCancel={() => setShowRestoreProgramConfirm(false)}
+          />
+        )}
+
         {showResetConfirm && (
           <ConfirmDialog
             isOpen={showResetConfirm}

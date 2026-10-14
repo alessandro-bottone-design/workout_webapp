@@ -144,8 +144,12 @@ export function isSameDay(a: number, b: number): boolean {
 
 /**
  * Get number of days between two timestamps (absolute).
+ * Uses UTC normalization to avoid DST off-by-one errors.
  */
 export function daysBetween(a: number, b: number): number {
-  const ms = Math.abs(a - b);
-  return Math.floor(ms / (1000 * 60 * 60 * 24));
+  const da = new Date(a);
+  const db = new Date(b);
+  const utcA = Date.UTC(da.getFullYear(), da.getMonth(), da.getDate());
+  const utcB = Date.UTC(db.getFullYear(), db.getMonth(), db.getDate());
+  return Math.floor(Math.abs(utcA - utcB) / (1000 * 60 * 60 * 24));
 }

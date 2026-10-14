@@ -20,7 +20,7 @@ interface FormState {
   targetReps: string;
   defaultWeight: string;
   restSeconds: string;
-  durationSeconds: string;
+  durationMinutes: string;
   notes: string;
 }
 
@@ -47,7 +47,7 @@ export const EditExerciseScreen: React.FC = () => {
     targetReps: '8',
     defaultWeight: '0',
     restSeconds: '90',
-    durationSeconds: '600',
+    durationMinutes: '10',
     notes: '',
   });
   const [programId, setProgramId] = useState<string | null>(null);
@@ -73,7 +73,7 @@ export const EditExerciseScreen: React.FC = () => {
           targetReps: String(ex.targetReps ?? 8),
           defaultWeight: String(ex.defaultWeight ?? 0).replace('.', ','),
           restSeconds: String(ex.restSeconds ?? 90),
-          durationSeconds: String(ex.durationSeconds ?? 600),
+          durationMinutes: String(Math.round((ex.durationSeconds ?? 600) / 60)),
           notes: ex.notes ?? '',
         });
         return;
@@ -95,7 +95,7 @@ export const EditExerciseScreen: React.FC = () => {
         targetReps: String(ex.targetReps ?? 8),
         defaultWeight: String(ex.defaultWeight ?? 0),
         restSeconds: String(ex.restSeconds ?? 90),
-        durationSeconds: String(ex.durationSeconds ?? 600),
+        durationMinutes: String(Math.round((ex.durationSeconds ?? 600) / 60)),
         notes: ex.notes ?? '',
       });
     };
@@ -132,7 +132,7 @@ export const EditExerciseScreen: React.FC = () => {
       defaultWeight:
         form.type === 'strength' ? parseWeight(form.defaultWeight) || 0 : undefined,
       restSeconds: form.type === 'strength' ? parseInt(form.restSeconds) || 90 : undefined,
-      durationSeconds: form.type === 'cardio' ? parseInt(form.durationSeconds) || 600 : undefined,
+      durationSeconds: form.type === 'cardio' ? (parseInt(form.durationMinutes) || 10) * 60 : undefined,
       notes: form.notes.trim() || undefined,
     };
 
@@ -284,19 +284,20 @@ export const EditExerciseScreen: React.FC = () => {
             /* Cardio duration */
             <div>
               <label htmlFor="ex-duration" className={labelClass}>
-                Durata (secondi)
+                Durata (minuti)
               </label>
               <input
                 id="ex-duration"
                 type="number"
                 inputMode="numeric"
-                min={60}
-                value={form.durationSeconds}
-                onChange={(e) => set('durationSeconds')(e.target.value)}
+                min={1}
+                max={240}
+                value={form.durationMinutes}
+                onChange={(e) => set('durationMinutes')(e.target.value)}
                 className={inputClass}
               />
               <p className="text-meta text-text-secondary mt-1">
-                = {Math.floor(parseInt(form.durationSeconds || '0') / 60)} minuti
+                = {(parseInt(form.durationMinutes || '1') || 1) * 60} secondi
               </p>
             </div>
           )}

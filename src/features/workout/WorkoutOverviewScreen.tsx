@@ -155,6 +155,7 @@ export const WorkoutOverviewScreen: React.FC = () => {
 
   const [localWorkout, setLocalWorkout] = useState<Workout | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showEarlyCompleteConfirm, setShowEarlyCompleteConfirm] = useState(false);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [isCompleting, setIsCompleting] = useState(false);
 
@@ -363,13 +364,41 @@ export const WorkoutOverviewScreen: React.FC = () => {
                 COMPLETA WORKOUT
               </Button>
             ) : (
-              <p className="text-center text-meta text-text-secondary">
-                Completa tutti gli esercizi per terminare
-              </p>
+              <div className="space-y-3">
+                <p className="text-center text-meta text-text-secondary">
+                  Completa tutti gli esercizi per terminare
+                </p>
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  isLoading={isCompleting}
+                  onClick={() => setShowEarlyCompleteConfirm(true)}
+                >
+                  Termina comunque
+                </Button>
+              </div>
             )}
           </div>
         )}
       </div>
+
+      {/* Confirm Early Complete Dialog */}
+      <AnimatePresence>
+        {showEarlyCompleteConfirm && (
+          <ConfirmDialog
+            isOpen={showEarlyCompleteConfirm}
+            title="Termina comunque"
+            description="Hai esercizi non completati. Vuoi terminare comunque l'allenamento? I set già registrati verranno salvati."
+            confirmLabel="Termina allenamento"
+            cancelLabel="Annulla"
+            onConfirm={async () => {
+              setShowEarlyCompleteConfirm(false);
+              await handleCompleteWorkout();
+            }}
+            onCancel={() => setShowEarlyCompleteConfirm(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Confirm Cancel Dialog */}
       <AnimatePresence>

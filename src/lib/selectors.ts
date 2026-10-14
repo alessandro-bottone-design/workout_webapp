@@ -90,6 +90,7 @@ export function weeklyWorkoutCount(workouts: Workout[]): number {
 /**
  * Calculate current workout streak (consecutive days with at least one workout).
  * Counts backwards from today.
+ * Uses UTC normalization to avoid DST off-by-one errors.
  */
 export function currentStreak(workouts: Workout[]): number {
   const completedDates = workouts
@@ -103,15 +104,20 @@ export function currentStreak(workouts: Workout[]): number {
   const today = startOfDay(Date.now());
 
   // Check if there's a workout today or yesterday (allow for mid-day streak)
-  if (uniqueDates[0] < today - 24 * 60 * 60 * 1000) return 0;
+  if (daysBetween(uniqueDates[0], today) > 1) return 0;
 
   let streak = 0;
-  let expected = uniqueDates[0];
+  let expectedDate = new Date(uniqueDates[0]);
 
   for (const date of uniqueDates) {
-    if (date === expected) {
+    const d = new Date(date);
+    const utcExpected = Date.UTC(expectedDate.getFullYear(), expectedDate.getMonth(), expectedDate.getDate());
+    const utcCurrent = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+    if (utcCurrent === utcExpected) {
       streak++;
-      expected = date - 24 * 60 * 60 * 1000;
+      // Move to previous day using calendar date arithmetic (DST-safe)
+      expectedDate = new Date(expectedDate);
+      expectedDate.setDate(expectedDate.getDate() - 1);
     } else {
       break;
     }
