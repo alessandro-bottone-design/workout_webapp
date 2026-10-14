@@ -43,12 +43,16 @@ export const ProgressScreen: React.FC = () => {
   const completed = workouts.filter((w) => w.status === 'completed');
   const metrics = getWorkoutMetrics(completed);
 
-  // Get unique strength exercises from program
+  // Unique strength exercises across all sessions, deduped by name so an
+  // exercise repeated in several sessions is listed once (was arbitrarily
+  // truncated to 6 before).
   const strengthExercises =
     program?.sessions
       .flatMap((s) => s.exercises)
       .filter((e) => e.type === 'strength')
-      .slice(0, 6) ?? [];
+      .filter(
+        (e, i, arr) => arr.findIndex((x) => x.name === e.name) === i
+      ) ?? [];
 
   if (isLoading) {
     return (
