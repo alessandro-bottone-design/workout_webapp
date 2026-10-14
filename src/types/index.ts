@@ -105,6 +105,8 @@ export interface SetLog {
   weight: number;
   reps: number;
   completedAt: number;
+  /** For cardio logs: seconds actually performed for this bout. */
+  durationSeconds?: number;
 }
 
 /** Cardio log — extends WorkoutExerciseLog semantics */

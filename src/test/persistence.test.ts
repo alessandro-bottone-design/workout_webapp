@@ -369,6 +369,55 @@ describe('next session with real workout history', () => {
   })
 })
 
+describe('cardio exercise logging', () => {
+  it('snapshots the planned duration onto the exercise log', async () => {
+    const cardio = makeExercise({
+      name: 'Tapis Roulant',
+      type: 'cardio',
+      sets: undefined,
+      targetReps: undefined,
+      defaultWeight: undefined,
+      restSeconds: undefined,
+      durationSeconds: 1800,
+    })
+    const program = await seedProgram(makeSession([cardio]))
+
+    const workout = await useWorkoutStore
+      .getState()
+      .startWorkout(program.id, program.sessions[0])
+
+    const log = workout.exerciseLogs[0]
+    expect(log.exerciseTypeSnapshot).toBe('cardio')
+    expect(log.plannedDurationSeconds).toBe(1800)
+    // A cardio bout is a single effort, not a strength set count
+    expect(log.plannedSetsSnapshot).toBe(1)
+  })
+
+  it('persists the completed duration on the set log', async () => {
+    const cardio = makeExercise({
+      name: 'Bici',
+      type: 'cardio',
+      sets: undefined,
+      durationSeconds: 600,
+    })
+    const program = await seedProgram(makeSession([cardio]))
+    const workout = await useWorkoutStore
+      .getState()
+      .startWorkout(program.id, program.sessions[0])
+
+    await useWorkoutStore.getState().completeSet(workout.exerciseLogs[0].id, {
+      setNumber: 1,
+      weight: 0,
+      reps: 0,
+      completedAt: Date.now(),
+      durationSeconds: 595,
+    })
+
+    const stored = await workoutRepo.getById(workout.id)
+    expect(stored?.exerciseLogs[0].setLogs[0].durationSeconds).toBe(595)
+  })
+})
+
 /* ============================================
    G2. BATCHED PREVIOUS-PERFORMANCE LOOKUP
    ============================================ */

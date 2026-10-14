@@ -13,7 +13,7 @@ import { RestPresets } from '@/features/timer/TimerComponents';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { useTimerStore } from '@/features/timer/timerStore';
 import { workoutRepo, programRepo, settingsRepo } from '@/db/repositories';
-import { formatWeight, formatWeightValue } from '@/lib/formatters';
+import { formatTimerSeconds, formatWeight, formatWeightValue } from '@/lib/formatters';
 import { strings } from '@/lib/strings';
 import type { WorkoutExerciseLog } from '@/types';
 import { WeightEditorSheet } from './WeightEditorSheet';
@@ -37,6 +37,9 @@ export const ExerciseFocusScreen: React.FC = () => {
   const [isCompletingSet, setIsCompletingSet] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [preferredRest, setPreferredRest] = useState(90);
+  // Cardio-only state: countdown toward the planned duration + tracked elapsed.
+  const [cardioElapsed, setCardioElapsed] = useState(0);
+  const [cardioRunning, setCardioRunning] = useState(false);
   // Guards one-time initialization per exercise so that completing a set
   // (which updates the workout) never overwrites the user's current input.
   const initForExerciseRef = useRef<string | null>(null);
@@ -135,6 +138,31 @@ export const ExerciseFocusScreen: React.FC = () => {
     };
   }, [exerciseId]);
 
+  const isCardio = exerciseLog?.exerciseTypeSnapshot === 'cardio';
+  const plannedDuration = exerciseLog?.plannedDurationSeconds ?? 0;
+
+  // Cardio countdown ticker — only runs while the user has started the bout.
+  useEffect(() => {
+    if (!cardioRunning) return;
+    const id = setInterval(() => setCardioElapsed((e) => e + 1), 1000);
+    return () => clearInterval(id);
+  }, [cardioRunning]);
+
+  const handleCompleteCardio = useCallback(async () => {
+    if (!exerciseLog) return;
+    setIsCompletingSet(true);
+    await completeSet(exerciseLog.id, {
+      setNumber: 1,
+      weight: 0,
+      reps: 0,
+      completedAt: Date.now(),
+      durationSeconds: cardioElapsed,
+    });
+    await completeExercise(exerciseLog.id);
+    setShowSuccess(true);
+    setIsCompletingSet(false);
+  }, [exerciseLog, completeSet, completeExercise, cardioElapsed]);
+
   const handleCompleteSet = useCallback(async () => {
     if (!exerciseLog || !workout) return;
     setIsCompletingSet(true);
@@ -187,7 +215,6 @@ export const ExerciseFocusScreen: React.FC = () => {
   const completedSets = exerciseLog.setLogs.length;
   const plannedSets = exerciseLog.plannedSetsSnapshot;
   const currentSetNum = completedSets + 1;
-  const isCardio = exerciseLog.exerciseTypeSnapshot === 'cardio';
 
   return (
     <AppShell showNav={false}>
@@ -282,16 +309,65 @@ export const ExerciseFocusScreen: React.FC = () => {
         )}
 
         {/* Complete Set CTA */}
-        <div className="px-5 mb-6">
-          <Button
-            variant="primary"
-            fullWidth
-            isLoading={isCompletingSet}
-            onClick={handleCompleteSet}
-          >
-            {strings.workout.completeSet}
-          </Button>
-        </div>
+        {isCardio ? (
+          <div className="px-5 mb-6">
+            <div className="bg-bg-surface rounded-card border border-border-default p-5">
+              <p className="text-label-sm text-text-secondary mb-3">
+                {strings.workout.duration}
+              </p>
+              <div className="text-center mb-4">
+                <span className="text-[48px] font-bold text-text-primary tabular-nums">
+                  {formatTimerSeconds(cardioElapsed)}
+                </span>
+                {plannedDuration > 0 && (
+                  <span className="text-[20px] font-normal text-text-secondary ml-2">
+                    / {formatTimerSeconds(plannedDuration)}
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-2 mb-4">
+                <Button
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={() => setCardioRunning((r) => !r)}
+                >
+                  {cardioRunning
+                    ? strings.workout.pause
+                    : strings.workout.cardioStart}
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="flex-1"
+                  onClick={() => {
+                    setCardioRunning(false);
+                    setCardioElapsed(0);
+                  }}
+                >
+                  {strings.workout.reset}
+                </Button>
+              </div>
+              <Button
+                variant="primary"
+                fullWidth
+                isLoading={isCompletingSet}
+                onClick={handleCompleteCardio}
+              >
+                {strings.workout.cardioComplete}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="px-5 mb-6">
+            <Button
+              variant="primary"
+              fullWidth
+              isLoading={isCompletingSet}
+              onClick={handleCompleteSet}
+            >
+              {strings.workout.completeSet}
+            </Button>
+          </div>
+        )}
 
         {/* Sets Overview */}
         <div className="px-5 mb-6">

@@ -65,6 +65,7 @@ export const useWorkoutStore = create<WorkoutStore>((set, get) => ({
       exerciseTypeSnapshot: ex.type,
       plannedSetsSnapshot: ex.sets ?? 1,
       targetRepsSnapshot: ex.targetReps,
+      plannedDurationSeconds: ex.type === 'cardio' ? ex.durationSeconds : undefined,
       order: i,
       status: 'pending',
       setLogs: [],
