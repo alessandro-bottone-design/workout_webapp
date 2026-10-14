@@ -4,6 +4,7 @@
    ============================================ */
 
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { AppShell, ScreenHeader } from '@/components/layout';
@@ -32,6 +33,7 @@ function getMondayOffset(year: number, month: number): number {
 }
 
 export const CalendarScreen: React.FC = () => {
+  const navigate = useNavigate();
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [viewYear, setViewYear] = useState(new Date().getFullYear());
@@ -171,9 +173,12 @@ export const CalendarScreen: React.FC = () => {
               {selectedWorkouts.length > 0 ? (
                 <div className="space-y-3">
                   {selectedWorkouts.map((w) => (
-                    <div
+                    <motion.button
                       key={w.id}
-                      className="bg-bg-surface rounded-card border border-border-default p-4"
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => navigate(`/workout/${w.id}`)}
+                      aria-label={`Apri ${w.sessionNameSnapshot} del ${formatDate(selectedDay)}`}
+                      className="w-full text-left bg-bg-surface rounded-card border border-border-default p-4 active:border-accent-primary/50 transition-colors"
                     >
                       <div className="flex items-center justify-between mb-1">
                         <h3 className="text-[15px] font-semibold text-text-primary">
@@ -194,7 +199,7 @@ export const CalendarScreen: React.FC = () => {
                         }{' '}
                         esercizi
                       </p>
-                    </div>
+                    </motion.button>
                   ))}
                 </div>
               ) : (
