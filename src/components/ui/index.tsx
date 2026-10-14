@@ -262,6 +262,20 @@ export const NumericStepper: React.FC<NumericStepperProps> = ({
   const dec = () => onChange(Math.max(min, value - step));
   const inc = () => onChange(Math.min(max, value + step));
 
+  const name = label ?? 'valore';
+
+  // Arrow keys adjust the value when the spinbutton itself has focus, so
+  // keyboard/switch users don't have to tab through the −/+ buttons.
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      inc();
+    } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      dec();
+    }
+  };
+
   return (
     <div className="flex flex-col items-center gap-2">
       {label && (
@@ -272,19 +286,29 @@ export const NumericStepper: React.FC<NumericStepperProps> = ({
           whileTap={{ scale: 0.9 }}
           onClick={dec}
           disabled={value <= min}
-          aria-label={`Riduci ${label ?? 'valore'}`}
+          aria-label={`Riduci ${name}`}
           className="w-14 h-14 rounded-full bg-bg-elevated border border-border-default text-text-primary text-2xl font-light flex items-center justify-center disabled:opacity-30 active:bg-white/10"
         >
           −
         </motion.button>
-        <span className="text-[52px] font-bold text-text-primary w-20 text-center tabular-nums">
+        <span
+          role="spinbutton"
+          tabIndex={0}
+          aria-label={name}
+          aria-valuenow={value}
+          aria-valuemin={min}
+          aria-valuemax={max}
+          aria-valuetext={`${value}`}
+          onKeyDown={handleKeyDown}
+          className="text-[52px] font-bold text-text-primary w-20 text-center tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary rounded-btn"
+        >
           {value}
         </span>
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={inc}
           disabled={value >= max}
-          aria-label={`Aumenta ${label ?? 'valore'}`}
+          aria-label={`Aumenta ${name}`}
           className="w-14 h-14 rounded-full bg-bg-elevated border border-border-default text-text-primary text-2xl font-light flex items-center justify-center disabled:opacity-30 active:bg-white/10"
         >
           +
@@ -457,26 +481,40 @@ export const Toggle: React.FC<ToggleProps> = ({
   onChange,
   label,
   disabled,
-}) => (
-  <div className="flex items-center justify-between gap-4">
-    {label && <span className="text-body text-text-primary">{label}</span>}
-    <motion.button
-      role="switch"
-      aria-checked={checked}
-      aria-label={label}
-      disabled={disabled}
-      onClick={() => onChange(!checked)}
-      className={`relative w-12 h-7 rounded-pill transition-colors duration-200 flex items-center px-0.5 after:absolute after:-inset-y-2 after:-inset-x-1 after:content-[''] ${
-        checked ? 'bg-accent-primary' : 'bg-bg-elevated border border-border-default'
-      } disabled:opacity-40`}
-    >
-      <motion.div
-        animate={{ x: checked ? 20 : 1 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-        className={`w-6 h-6 rounded-full shadow-sm ${
-          checked ? 'bg-bg-app' : 'bg-text-secondary'
-        }`}
-      />
-    </motion.button>
-  </div>
-);
+}) => {
+  // Associate the visible text with the switch so clicking the label
+  // toggles it and screen readers announce the name via <label>.
+  const toggleId = React.useId();
+
+  return (
+    <div className="flex items-center justify-between gap-4">
+      {label && (
+        <label
+          htmlFor={toggleId}
+          className="text-body text-text-primary cursor-pointer select-none"
+        >
+          {label}
+        </label>
+      )}
+      <motion.button
+        id={toggleId}
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
+        disabled={disabled}
+        onClick={() => onChange(!checked)}
+        className={`relative w-12 h-7 rounded-pill transition-colors duration-200 flex items-center px-0.5 after:absolute after:-inset-y-2 after:-inset-x-1 after:content-[''] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary ${
+          checked ? 'bg-accent-primary' : 'bg-bg-elevated border border-border-default'
+        } disabled:opacity-40`}
+      >
+        <motion.div
+          animate={{ x: checked ? 20 : 1 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          className={`w-6 h-6 rounded-full shadow-sm ${
+            checked ? 'bg-bg-app' : 'bg-text-secondary'
+          }`}
+        />
+      </motion.button>
+    </div>
+  );
+};

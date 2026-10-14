@@ -402,29 +402,48 @@ export const RestPresets: React.FC<RestPresetsProps> = ({
   preferredSeconds,
   onSelect,
   activeSeconds,
-}) => (
-  <div className="flex gap-2 flex-wrap">
-    {PRESETS.map((s) => {
-      const isPreferred = s === preferredSeconds;
-      const isActive = s === activeSeconds;
-      return (
-        <motion.button
-          key={s}
-          whileTap={{ scale: 0.92 }}
-          onClick={() => onSelect(s)}
-          className={`flex-1 min-w-[60px] h-[44px] rounded-btn text-[14px] font-semibold border transition-all duration-200 ${
-            isActive
-              ? 'bg-accent-primary text-bg-app border-accent-primary'
-              : isPreferred
-              ? 'bg-accent-primary/10 text-accent-primary border-accent-primary/30'
-              : 'bg-bg-elevated text-text-secondary border-border-default hover:border-text-secondary'
-          }`}
-          aria-label={`${formatTimerSeconds(s)} recupero`}
-          aria-pressed={isActive}
-        >
-          {formatTimerSeconds(s)}
-        </motion.button>
-      );
-    })}
-  </div>
-);
+}) => {
+  // Rest presets are mutually exclusive → radio semantics (not aria-pressed),
+  // so screen readers announce "selected, 1 of 4" instead of a toggle.
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    e.preventDefault();
+    const idx = PRESETS.findIndex((s) => s === activeSeconds);
+    const dir = e.key === 'ArrowRight' ? 1 : -1;
+    const next = PRESETS[(idx + dir + PRESETS.length) % PRESETS.length];
+    if (next !== undefined) onSelect(next);
+  };
+
+  return (
+    <div
+      role="radiogroup"
+      aria-label={strings.workout.restPresets}
+      onKeyDown={handleKeyDown}
+      className="flex gap-2 flex-wrap"
+    >
+      {PRESETS.map((s) => {
+        const isPreferred = s === preferredSeconds;
+        const isActive = s === activeSeconds;
+        return (
+          <motion.button
+            key={s}
+            whileTap={{ scale: 0.92 }}
+            onClick={() => onSelect(s)}
+            role="radio"
+            aria-checked={isActive}
+            tabIndex={isActive || (!activeSeconds && isPreferred) ? 0 : -1}
+            className={`flex-1 min-w-[60px] h-[44px] rounded-btn text-[14px] font-semibold border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary ${
+              isActive
+                ? 'bg-accent-primary text-bg-app border-accent-primary'
+                : isPreferred
+                ? 'bg-accent-primary/10 text-accent-primary border-accent-primary/30'
+                : 'bg-bg-elevated text-text-secondary border-border-default hover:border-text-secondary'
+            }`}
+          >
+            {formatTimerSeconds(s)}
+          </motion.button>
+        );
+      })}
+    </div>
+  );
+};

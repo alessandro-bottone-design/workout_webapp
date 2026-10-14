@@ -125,7 +125,19 @@ export const ExerciseHistoryScreen: React.FC = () => {
               <p className="text-label-sm text-text-secondary mb-4">
                 {strings.exerciseHistory.chart}
               </p>
-              <ResponsiveContainer width="100%" height={180}>
+              {/* Recharts SVGs are not announced by screen readers; describe
+                  the trend in text so the data is still conveyed. */}
+              <div
+                role="img"
+                aria-label={`${exerciseName || 'Esercizio'}: andamento del peso da ${formatWeight(
+                  chartData[0].weight
+                )} a ${formatWeight(chartData[chartData.length - 1].weight)} su ${
+                  chartData.length
+                } allenamenti, dal ${chartData[0].date} al ${
+                  chartData[chartData.length - 1].date
+                }.`}
+              >
+                <ResponsiveContainer width="100%" height={180}>
                 <LineChart data={chartData} margin={{ top: 4, right: 4, bottom: 4, left: -20 }}>
                   <CartesianGrid
                     strokeDasharray="3 3"
@@ -165,6 +177,7 @@ export const ExerciseHistoryScreen: React.FC = () => {
                   />
                 </LineChart>
               </ResponsiveContainer>
+              </div>
             </div>
           ) : chartData.length === 1 ? (
             <div className="bg-bg-surface rounded-card border border-border-default p-5 text-center">

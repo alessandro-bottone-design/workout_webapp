@@ -134,13 +134,19 @@ export const SettingsScreen: React.FC = () => {
                 <p className="text-body text-text-primary mb-3">
                   {strings.settings.defaultTimer}
                 </p>
-                <div className="grid grid-cols-4 gap-2">
+                <div
+                  role="radiogroup"
+                  aria-label={strings.settings.defaultTimer}
+                  className="grid grid-cols-4 gap-2"
+                >
                   {REST_OPTIONS.map((opt) => (
                     <motion.button
                       key={opt.value}
                       whileTap={{ scale: 0.92 }}
                       onClick={() => void updateSetting({ defaultRestSeconds: opt.value })}
-                      className={`h-[44px] rounded-btn text-meta font-semibold border transition-all ${
+                      role="radio"
+                      aria-checked={settings.defaultRestSeconds === opt.value}
+                      className={`h-[44px] rounded-btn text-meta font-semibold border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary ${
                         settings.defaultRestSeconds === opt.value
                           ? 'bg-accent-primary text-bg-app border-accent-primary'
                           : 'bg-bg-elevated text-text-secondary border-border-default'
@@ -294,6 +300,7 @@ export const SettingsScreen: React.FC = () => {
           <AnimatePresence>
             {resetDone && (
               <motion.div
+                role="status"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
@@ -307,6 +314,7 @@ export const SettingsScreen: React.FC = () => {
             )}
             {restoreDone && (
               <motion.div
+                role="status"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}

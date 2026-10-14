@@ -79,11 +79,12 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
           )}
         </div>
 
-        {/* Center: Title */}
+        {/* Center: Title — h1 so each screen exposes a real heading to
+            screen readers (was a plain <p>). */}
         <div className="flex-1 text-center min-w-0">
-          <p className="text-label-sm text-text-secondary tracking-widest uppercase truncate">
+          <h1 className="text-label-sm text-text-secondary tracking-widest uppercase truncate">
             {title}
-          </p>
+          </h1>
           {subtitle && (
             <p className="text-meta text-text-primary">{subtitle}</p>
           )}
