@@ -30,7 +30,7 @@ const ProgressScreen = lazy(() =>
   import('@/features/progress/ProgressScreen').then((m) => ({ default: m.ProgressScreen }))
 );
 const ExerciseHistoryScreen = lazy(() =>
-  import('@/features/progress/ProgressScreen').then((m) => ({
+  import('@/features/progress/ExerciseHistoryScreen').then((m) => ({
     default: m.ExerciseHistoryScreen,
   }))
 );
