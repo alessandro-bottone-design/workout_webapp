@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Dumbbell, TrendingUp, Settings, Clock, Sparkles } from 'lucide-react';
 import { AppShell } from '@/components/layout';
 import { Button, ProgressBar, EmptyState, AppLogo, ScreenTitle, IconButton } from '@/components/ui';
-import { programRepo, workoutRepo } from '@/db/repositories';
+import { programRepo, workoutRepo, settingsRepo } from '@/db/repositories';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { getNextSessionId, getWorkoutMetrics } from '@/lib/selectors';
 import { getRepresentativeWeight } from '@/lib/selectors';
@@ -29,6 +29,7 @@ export const HomeScreen: React.FC = () => {
   const [recommendedSessionId, setRecommendedSessionId] = useState<string | null>(null);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [showFullGymHours, setShowFullGymHours] = useState(false);
+  const [weeklyTarget, setWeeklyTarget] = useState(4);
   const [isLoading, setIsLoading] = useState(true);
 
   const hour = new Date().getHours();
@@ -42,12 +43,14 @@ export const HomeScreen: React.FC = () => {
     const load = async () => {
       setIsLoading(true);
       await loadActiveWorkout();
-      const [prog, workouts] = await Promise.all([
+      const [prog, workouts, settings] = await Promise.all([
         programRepo.getFirst(),
         workoutRepo.getCompleted(),
+        settingsRepo.get(),
       ]);
       setProgram(prog ?? null);
       setCompletedWorkouts(workouts);
+      setWeeklyTarget(settings.weeklyTarget ?? 4);
 
       if (prog && prog.sessions.length > 0) {
         const nextId = getNextSessionId(prog.sessions, workouts);
@@ -62,7 +65,7 @@ export const HomeScreen: React.FC = () => {
 
   const lastWorkout = completedWorkouts[0];
   const metrics = getWorkoutMetrics(completedWorkouts);
-  const weekTarget = 4; // 4 sessioni a settimana
+  const weekTarget = weeklyTarget;
 
   const sortedSessions = program ? [...program.sessions].sort((a, b) => a.order - b.order) : [];
 

@@ -154,6 +154,52 @@ export const SettingsScreen: React.FC = () => {
             </div>
           </div>
 
+          {/* Weekly target */}
+          <div>
+            <p className="text-label-sm text-text-secondary mb-3 px-1">OBIETTIVO</p>
+            <div className={sectionClass}>
+              <div className={rowClass}>
+                <div className="pr-4">
+                  <p className="text-body text-text-primary">Sessioni a settimana</p>
+                  <p className="text-meta text-text-secondary mt-0.5">
+                    Quante allenamenti punti ogni settimana
+                  </p>
+                </div>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() =>
+                      void updateSetting({
+                        weeklyTarget: Math.max(1, (settings.weeklyTarget ?? 4) - 1),
+                      })
+                    }
+                    disabled={(settings.weeklyTarget ?? 4) <= 1}
+                    aria-label="Riduci obiettivo settimanale"
+                    className="w-11 h-11 rounded-btn flex items-center justify-center text-text-primary bg-bg-elevated border border-border-default disabled:opacity-40"
+                  >
+                    −
+                  </motion.button>
+                  <span className="w-10 text-center text-[20px] font-bold text-text-primary tabular-nums">
+                    {settings.weeklyTarget ?? 4}
+                  </span>
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() =>
+                      void updateSetting({
+                        weeklyTarget: Math.min(14, (settings.weeklyTarget ?? 4) + 1),
+                      })
+                    }
+                    disabled={(settings.weeklyTarget ?? 4) >= 14}
+                    aria-label="Aumenta obiettivo settimanale"
+                    className="w-11 h-11 rounded-btn flex items-center justify-center text-text-primary bg-bg-elevated border border-border-default disabled:opacity-40"
+                  >
+                    +
+                  </motion.button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Feedback */}
           <div>
             <p className="text-label-sm text-text-secondary mb-3 px-1">FEEDBACK</p>

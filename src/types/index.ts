@@ -134,6 +134,8 @@ export interface AppSettings {
   defaultRestSeconds: number;
   soundEnabled: boolean;
   vibrationEnabled: boolean;
+  /** Weekly workout goal shown on the home progress ring. */
+  weeklyTarget?: number;
 }
 
 /* ============================================
