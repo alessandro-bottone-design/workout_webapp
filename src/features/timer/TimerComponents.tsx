@@ -197,9 +197,12 @@ export const RestTimerLayer: React.FC<RestTimerLayerProps> = ({ hasNav }) => {
         </div>
       )}
 
-      {/* Focused Rest Timer view */}
+      {/* Focused Rest Timer view — receives `remaining` from the layer so a
+          second 250ms ticker isn't mounted here too. */}
       <AnimatePresence>
-        {sheetOpen && <RestTimerSheet onClose={handleCloseSheet} />}
+        {sheetOpen && (
+          <RestTimerSheet remaining={remaining} onClose={handleCloseSheet} />
+        )}
       </AnimatePresence>
     </>
   );
@@ -212,22 +215,17 @@ export const RestTimerLayer: React.FC<RestTimerLayerProps> = ({ hasNav }) => {
    ============================================ */
 
 interface RestTimerSheetProps {
+  /** Seconds remaining, computed once by RestTimerLayer (avoid a 2nd ticker). */
+  remaining: number;
   onClose: () => void;
 }
 
 const PRESETS = [60, 90, 120, 150] as const;
 
-const RestTimerSheet: React.FC<RestTimerSheetProps> = ({ onClose }) => {
+const RestTimerSheet: React.FC<RestTimerSheetProps> = ({ remaining, onClose }) => {
   const { timer, stopTimer, startTimer, extendTimer } = useTimerStore();
-  const [justCompleted, setJustCompleted] = useState(false);
 
-  const handleExpired = useCallback(() => {
-    void fireCompletionFeedback();
-    setJustCompleted(true);
-  }, []);
-
-  const remaining = useRemainingSeconds(handleExpired);
-  const isCompleted = timer?.status === 'completed' || justCompleted;
+  const isCompleted = timer?.status === 'completed';
 
   if (!timer) return null;
 
@@ -241,12 +239,10 @@ const RestTimerSheet: React.FC<RestTimerSheetProps> = ({ onClose }) => {
 
   const handlePreset = async (seconds: number) => {
     await startTimer(seconds, timer.exerciseId, timer.workoutId);
-    setJustCompleted(false);
   };
 
   const handleExtend = async (seconds: number) => {
     await extendTimer(seconds);
-    setJustCompleted(false);
   };
 
   return (
