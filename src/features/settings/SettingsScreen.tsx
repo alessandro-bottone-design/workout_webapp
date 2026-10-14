@@ -36,7 +36,6 @@ export const SettingsScreen: React.FC = () => {
   const [showRestoreProgramConfirm, setShowRestoreProgramConfirm] = useState(false);
   const [resetDone, setResetDone] = useState(false);
   const [restoreDone, setRestoreDone] = useState(false);
-  const [, setIsResetting] = useState(false);
 
   const gymStatus = getGymStatus();
   const todayDayOfWeek = new Date().getDay();
@@ -52,16 +51,13 @@ export const SettingsScreen: React.FC = () => {
   };
 
   const handleReset = async () => {
-    setIsResetting(true);
     await resetAllData();
     // Clear any stale in-memory state referencing deleted records
     useTimerStore.setState({ timer: null });
     useWorkoutStore.getState().clearActiveWorkout();
     await seedDatabase();
-    setIsResetting(false);
     setShowResetConfirm(false);
     setResetDone(true);
-    setTimeout(() => setResetDone(false), 3000);
     // Reload settings
     const fresh = await settingsRepo.get();
     setSettings(fresh);
@@ -71,8 +67,21 @@ export const SettingsScreen: React.FC = () => {
     await restoreDefaultProgram();
     setShowRestoreProgramConfirm(false);
     setRestoreDone(true);
-    setTimeout(() => setRestoreDone(false), 3000);
   };
+
+  // Auto-dismiss the confirmation toasts. Keyed on the flag (not called from
+  // the handlers) so the timer is always cleared if the screen unmounts first.
+  useEffect(() => {
+    if (!resetDone) return;
+    const id = setTimeout(() => setResetDone(false), 3000);
+    return () => clearTimeout(id);
+  }, [resetDone]);
+
+  useEffect(() => {
+    if (!restoreDone) return;
+    const id = setTimeout(() => setRestoreDone(false), 3000);
+    return () => clearTimeout(id);
+  }, [restoreDone]);
 
   return (
     <AppShell>

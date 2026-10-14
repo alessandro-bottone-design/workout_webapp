@@ -67,15 +67,32 @@ export function formatTimerSeconds(seconds: number): string {
 }
 
 /**
+ * Formatters are created once at module load. Constructing an
+ * Intl.DateTimeFormat is expensive (locale data resolution), and these run
+ * once per row in calendars/history lists.
+ */
+const dateFmt = new Intl.DateTimeFormat('it-IT', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+
+const dateShortFmt = new Intl.DateTimeFormat('it-IT', {
+  day: 'numeric',
+  month: 'short',
+});
+
+const monthYearFmt = new Intl.DateTimeFormat('it-IT', {
+  month: 'long',
+  year: 'numeric',
+});
+
+/**
  * Format a timestamp to Italian date string.
  * Examples: 1727000000000 → "23 settembre 2026"
  */
 export function formatDate(timestamp: number): string {
-  return new Intl.DateTimeFormat('it-IT', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date(timestamp));
+  return dateFmt.format(new Date(timestamp));
 }
 
 /**
@@ -83,10 +100,7 @@ export function formatDate(timestamp: number): string {
  * Examples: 1727000000000 → "23 set"
  */
 export function formatDateShort(timestamp: number): string {
-  return new Intl.DateTimeFormat('it-IT', {
-    day: 'numeric',
-    month: 'short',
-  }).format(new Date(timestamp));
+  return dateShortFmt.format(new Date(timestamp));
 }
 
 /**
@@ -94,10 +108,7 @@ export function formatDateShort(timestamp: number): string {
  * Examples: 1727000000000 → "settembre 2026"
  */
 export function formatMonthYear(timestamp: number): string {
-  return new Intl.DateTimeFormat('it-IT', {
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date(timestamp));
+  return monthYearFmt.format(new Date(timestamp));
 }
 
 /**
