@@ -3,10 +3,11 @@
    Bottom sheet with numeric keypad
    ============================================ */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Delete } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useDialogA11y } from '@/lib/useDialogA11y';
 import { parseWeight, formatWeightValue } from '@/lib/formatters';
 import { strings } from '@/lib/strings';
 
@@ -34,6 +35,10 @@ export const WeightEditorSheet: React.FC<WeightEditorSheetProps> = ({
   onSave,
   onCancel,
 }) => {
+  const sheetRef = useRef<HTMLDivElement>(null);
+  // Sheet is only rendered when open, so treat it as always-modal here.
+  useDialogA11y(true, onCancel, sheetRef);
+
   const [input, setInput] = useState(
     currentWeight > 0 ? formatWeightValue(currentWeight) : ''
   );
@@ -90,11 +95,16 @@ export const WeightEditorSheet: React.FC<WeightEditorSheetProps> = ({
 
       {/* Sheet */}
       <motion.div
+        ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="weight-editor-title"
+        tabIndex={-1}
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 26, stiffness: 300 }}
-        className="fixed bottom-0 left-0 right-0 z-50 max-w-[480px] mx-auto bg-bg-elevated rounded-t-modal border-t border-border-default"
+        className="fixed bottom-0 left-0 right-0 z-50 max-w-[480px] mx-auto bg-bg-elevated rounded-t-modal border-t border-border-default focus:outline-none"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         {/* Handle */}
@@ -104,7 +114,7 @@ export const WeightEditorSheet: React.FC<WeightEditorSheetProps> = ({
 
         {/* Header */}
         <div className="px-5 pt-2 pb-4 border-b border-border-default">
-          <p className="screen-title text-[26px] tracking-[-0.42px] uppercase">
+          <p id="weight-editor-title" className="screen-title text-[26px] tracking-[-0.42px] uppercase">
             {exerciseName}
           </p>
           <p className="text-meta text-text-secondary mt-0.5">

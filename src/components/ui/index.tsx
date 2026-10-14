@@ -3,9 +3,10 @@
    All design-system compliant
    ============================================ */
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
+import { useDialogA11y } from '@/lib/useDialogA11y';
 import logoUrl from '@/assets/brand/workout-lab-logo.svg';
 
 /* ============================================
@@ -349,6 +350,9 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onCancel,
   isDanger = false,
 }) => {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogA11y(isOpen, onCancel, dialogRef);
+
   if (!isOpen) return null;
 
   return (
@@ -360,15 +364,25 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       onClick={onCancel}
     >
       <motion.div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-dialog-title"
+        aria-describedby="confirm-dialog-desc"
+        tabIndex={-1}
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 50, opacity: 0 }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="w-full max-w-[480px] bg-bg-elevated rounded-t-modal border-t border-border-default p-6 pb-[calc(24px+env(safe-area-inset-bottom))]"
+        className="w-full max-w-[480px] bg-bg-elevated rounded-t-modal border-t border-border-default p-6 pb-[calc(24px+env(safe-area-inset-bottom))] focus:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-heading text-text-primary mb-2">{title}</h3>
-        <p className="text-body text-text-secondary mb-6">{description}</p>
+        <h3 id="confirm-dialog-title" className="text-heading text-text-primary mb-2">
+          {title}
+        </h3>
+        <p id="confirm-dialog-desc" className="text-body text-text-secondary mb-6">
+          {description}
+        </p>
         <div className="flex flex-col gap-3">
           <Button
             variant={isDanger ? 'danger' : 'primary'}

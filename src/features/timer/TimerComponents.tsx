@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Timer, Check } from 'lucide-react';
 import { useTimerStore, playTimerBeep, vibrateTimerComplete } from './timerStore';
 import { settingsRepo } from '@/db/repositories';
+import { useDialogA11y } from '@/lib/useDialogA11y';
 import { formatTimerSeconds } from '@/lib/formatters';
 import { strings } from '@/lib/strings';
 
@@ -224,6 +225,8 @@ const PRESETS = [60, 90, 120, 150] as const;
 
 const RestTimerSheet: React.FC<RestTimerSheetProps> = ({ remaining, onClose }) => {
   const { timer, stopTimer, startTimer, extendTimer } = useTimerStore();
+  const sheetRef = useRef<HTMLDivElement>(null);
+  useDialogA11y(true, onClose, sheetRef);
 
   const isCompleted = timer?.status === 'completed';
 
@@ -265,7 +268,8 @@ const RestTimerSheet: React.FC<RestTimerSheetProps> = ({ remaining, onClose }) =
         role="dialog"
         aria-modal="true"
         aria-label={strings.timer.rest}
-        className="fixed bottom-0 left-0 right-0 z-50 max-w-[480px] mx-auto bg-bg-elevated rounded-t-modal border-t border-border-default"
+        tabIndex={-1}
+        className="fixed bottom-0 left-0 right-0 z-50 max-w-[480px] mx-auto bg-bg-elevated rounded-t-modal border-t border-border-default focus:outline-none"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         {/* Handle */}
