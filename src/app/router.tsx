@@ -18,7 +18,7 @@ const ProgramScreen = lazy(() =>
   import('@/features/program/ProgramScreen').then((m) => ({ default: m.ProgramScreen }))
 );
 const SessionDetailScreen = lazy(() =>
-  import('@/features/program/ProgramScreen').then((m) => ({ default: m.SessionDetailScreen }))
+  import('@/features/program/SessionDetailScreen').then((m) => ({ default: m.SessionDetailScreen }))
 );
 const EditSessionScreen = lazy(() =>
   import('@/features/program/EditSessionScreen').then((m) => ({ default: m.EditSessionScreen }))
