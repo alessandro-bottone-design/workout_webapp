@@ -336,14 +336,14 @@ const RestTimerSheet: React.FC<RestTimerSheetProps> = ({ remaining, onClose }) =
                 <button
                   onClick={() => void handleExtend(30)}
                   className="flex-1 h-[52px] rounded-btn bg-bg-surface border border-border-default text-text-primary text-[15px] font-semibold active:scale-[0.97] transition-transform"
-                  aria-label="Aggiungi 30 secondi"
+                  aria-label={strings.timer.add30}
                 >
                   +0:30
                 </button>
                 <button
                   onClick={() => void handleExtend(60)}
                   className="flex-1 h-[52px] rounded-btn bg-bg-surface border border-border-default text-text-primary text-[15px] font-semibold active:scale-[0.97] transition-transform"
-                  aria-label="Aggiungi 60 secondi"
+                  aria-label={strings.timer.add60}
                 >
                   +1:00
                 </button>

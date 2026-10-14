@@ -51,7 +51,7 @@ const SortableExItem: React.FC<{
         <button
           {...attributes}
           {...listeners}
-          aria-label="Riordina"
+          aria-label={strings.editSession.reorder}
           className="touch-none w-11 h-11 -ml-2 flex items-center justify-center text-text-secondary opacity-40 hover:opacity-100 cursor-grab active:cursor-grabbing"
         >
           <GripVertical className="w-5 h-5" />
@@ -174,7 +174,7 @@ export const EditSessionScreen: React.FC = () => {
   if (!session) {
     return (
       <AppShell showNav={false}>
-        <ScreenHeader title="MODIFICA SEDUTA" showBack titleSize="sm" />
+        <ScreenHeader title={strings.editSession.title} showBack titleSize="sm" />
         <div className="flex-1 flex items-center justify-center">
           <div className="w-8 h-8 rounded-full border-2 border-accent-primary border-t-transparent animate-spin" />
         </div>

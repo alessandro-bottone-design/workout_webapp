@@ -175,7 +175,7 @@ export const SettingsScreen: React.FC = () => {
             <div className={sectionClass}>
               <div className={rowClass}>
                 <div className="pr-4">
-                  <p className="text-body text-text-primary">Sessioni a settimana</p>
+                  <p className="text-body text-text-primary">{strings.settings.weeklyTarget}</p>
                   <p className="text-meta text-text-secondary mt-0.5">
                     Quante allenamenti punti ogni settimana
                   </p>
@@ -189,7 +189,7 @@ export const SettingsScreen: React.FC = () => {
                       })
                     }
                     disabled={(settings.weeklyTarget ?? 4) <= 1}
-                    aria-label="Riduci obiettivo settimanale"
+                    aria-label={strings.settings.weeklyTargetDecrease}
                     className="w-11 h-11 rounded-btn flex items-center justify-center text-text-primary bg-bg-elevated border border-border-default disabled:opacity-40"
                   >
                     −
@@ -205,7 +205,7 @@ export const SettingsScreen: React.FC = () => {
                       })
                     }
                     disabled={(settings.weeklyTarget ?? 4) >= 14}
-                    aria-label="Aumenta obiettivo settimanale"
+                    aria-label={strings.settings.weeklyTargetIncrease}
                     className="w-11 h-11 rounded-btn flex items-center justify-center text-text-primary bg-bg-elevated border border-border-default disabled:opacity-40"
                   >
                     +
@@ -318,7 +318,7 @@ export const SettingsScreen: React.FC = () => {
                 <span className="text-icon-accent" aria-hidden>
                   ✓
                 </span>{' '}
-                Dati resettati
+                {strings.settings.resetDone}
               </motion.div>
             )}
             {restoreDone && (
@@ -332,7 +332,7 @@ export const SettingsScreen: React.FC = () => {
                 <span className="text-icon-accent" aria-hidden>
                   ✓
                 </span>{' '}
-                Scheda predefinita ripristinata con successo
+                {strings.settings.restoreDone}
               </motion.div>
             )}
           </AnimatePresence>
@@ -344,10 +344,10 @@ export const SettingsScreen: React.FC = () => {
         {showRestoreProgramConfirm && (
           <ConfirmDialog
             isOpen={showRestoreProgramConfirm}
-            title="Ripristinare la scheda predefinita?"
-            description="Le 4 sedute verranno reimpostate alla versione ufficiale (Scheda Allenamento 4 sedute). Lo storico dei workout già completati rimarrà intatto."
-            confirmLabel="Ripristina Scheda"
-            cancelLabel="Annulla"
+            title={strings.settings.restoreTitle}
+            description={strings.settings.restoreDetail}
+            confirmLabel={strings.settings.restoreConfirm}
+            cancelLabel={strings.settings.restoreCancel}
             onConfirm={handleRestoreProgram}
             onCancel={() => setShowRestoreProgramConfirm(false)}
           />

@@ -10,6 +10,7 @@ import { AppRouter } from './router';
 import { seedDatabase } from '@/db/seed';
 import { useTimerStore, unlockAudio } from '@/features/timer/timerStore';
 import { useWorkoutStore } from '@/stores/workoutStore';
+import { strings } from '@/lib/strings';
 
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -28,7 +29,7 @@ class ErrorBoundary extends React.Component<
     if (this.state.hasError) {
       return (
         <div className="flex flex-col items-center justify-center min-h-[100dvh] bg-bg-app px-5 text-center">
-          <p className="text-heading text-text-primary mb-2">Qualcosa è andato storto</p>
+          <p className="text-heading text-text-primary mb-2">{strings.errors.unexpected}</p>
           <p className="text-meta text-text-secondary mb-6">
             {this.state.error?.message ?? 'Errore sconosciuto'}
           </p>

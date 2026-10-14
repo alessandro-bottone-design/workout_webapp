@@ -13,6 +13,7 @@ import { AppShell, ScreenHeader } from '@/components/layout';
 import { Button } from '@/components/ui';
 import { programRepo } from '@/db/repositories';
 import { useWorkoutStore } from '@/stores/workoutStore';
+import { strings } from '@/lib/strings';
 import type { SessionTemplate } from '@/types';
 
 export const SessionDetailScreen: React.FC = () => {
@@ -35,7 +36,7 @@ export const SessionDetailScreen: React.FC = () => {
   if (!session) {
     return (
       <AppShell>
-        <ScreenHeader title="Seduta" showBack />
+        <ScreenHeader title={strings.sessionDetail.title} showBack />
         <div className="flex-1 flex items-center justify-center">
           <div className="w-8 h-8 rounded-full border-2 border-accent-primary border-t-transparent animate-spin" />
         </div>
@@ -63,7 +64,7 @@ export const SessionDetailScreen: React.FC = () => {
         rightAction={
           <button
             onClick={() => navigate(`/program/session/${sessionId}/edit`)}
-            aria-label="Modifica seduta"
+            aria-label={strings.sessionDetail.editLabel}
             className="w-11 h-11 flex items-center justify-center text-text-secondary hover:text-text-primary"
           >
             <Pencil className="w-5 h-5" />
@@ -93,10 +94,8 @@ export const SessionDetailScreen: React.FC = () => {
                 <p className="text-[15px] font-semibold text-text-primary">{ex.name}</p>
                 <p className="text-meta text-text-secondary mt-0.5">
                   {ex.type === 'cardio'
-                    ? 'Cardio'
-                    : `${ex.sets} × ${ex.targetReps}${
-                        ex.defaultWeight ? ` · ${ex.defaultWeight} kg` : ''
-                      }`}
+                    ? strings.sessionDetail.cardio
+                    : strings.sessionDetail.setLine(ex.sets, ex.targetReps, ex.defaultWeight)}
                 </p>
               </div>
               <ChevronRight className="w-5 h-5 text-text-secondary" />
@@ -108,7 +107,7 @@ export const SessionDetailScreen: React.FC = () => {
       {/* Start Workout Action Bar */}
       <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto p-5 bg-gradient-to-t from-bg-app via-bg-app/95 to-transparent pb-[calc(20px+env(safe-area-inset-bottom))] z-20">
         <Button variant="primary" fullWidth onClick={handleStartWorkout}>
-          INIZIA QUESTA SEDUTA
+          {strings.sessionDetail.startCta}
         </Button>
       </div>
     </AppShell>

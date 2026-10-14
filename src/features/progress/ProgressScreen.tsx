@@ -71,7 +71,7 @@ export const ProgressScreen: React.FC = () => {
         <ScreenHeader title={strings.progress.title} variant="display" titleSize="xl" />
         <div className="flex-1 flex items-center justify-center px-5">
           <EmptyState
-            title="Nessun dato ancora"
+            title={strings.progress.noDataTitle}
             description={strings.progress.noData}
           />
         </div>
@@ -163,7 +163,7 @@ export const ProgressScreen: React.FC = () => {
                         <p className="text-meta text-text-secondary mt-0.5">
                           {latest
                             ? formatWeight(latest.representativeWeight)
-                            : 'Nessun dato'}
+                            : strings.progress.noDataShort}
                         </p>
                       </div>
 

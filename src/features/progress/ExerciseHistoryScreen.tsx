@@ -67,7 +67,7 @@ export const ExerciseHistoryScreen: React.FC = () => {
   if (isLoading) {
     return (
       <AppShell showNav={false}>
-        <ScreenHeader title="Storico" showBack />
+        <ScreenHeader title={strings.exerciseHistory.sectionTitle} showBack />
         <div className="flex-1 flex items-center justify-center">
           <div className="w-8 h-8 rounded-full border-2 border-accent-primary border-t-transparent animate-spin" />
         </div>
@@ -182,20 +182,20 @@ export const ExerciseHistoryScreen: React.FC = () => {
           ) : chartData.length === 1 ? (
             <div className="bg-bg-surface rounded-card border border-border-default p-5 text-center">
               <p className="text-meta text-text-secondary">
-                Completa un altro allenamento per vedere il grafico
+                {strings.exerciseHistory.chartEmpty}
               </p>
             </div>
           ) : (
             <EmptyState
               title={strings.exerciseHistory.noData}
-              description="I dati appariranno dopo il primo allenamento"
+              description={strings.exerciseHistory.chartEmptyHint}
             />
           )}
 
           {/* Historical entries */}
           {perfs.length > 0 && (
             <div>
-              <SectionHeader title="STORICO" />
+              <SectionHeader title={strings.exerciseHistory.sectionTitle} />
               <div className="space-y-3">
                 {[...perfs].reverse().map((perf) => (
                   <div

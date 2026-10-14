@@ -269,7 +269,7 @@ export const WorkoutOverviewScreen: React.FC = () => {
         rightAction={
           !isReadOnly ? (
             <IconButton
-              label="Termina allenamento"
+              label={strings.workout.cancelWorkout}
               tone="danger"
               onClick={() => setShowCancelConfirm(true)}
             >
@@ -376,7 +376,7 @@ export const WorkoutOverviewScreen: React.FC = () => {
             ) : (
               <div className="space-y-3">
                 <p className="text-center text-meta text-text-secondary">
-                  Completa tutti gli esercizi per terminare
+                  {strings.workout.allDoneHint}
                 </p>
                 <Button
                   variant="secondary"
@@ -384,7 +384,7 @@ export const WorkoutOverviewScreen: React.FC = () => {
                   isLoading={isCompleting}
                   onClick={() => setShowEarlyCompleteConfirm(true)}
                 >
-                  Termina comunque
+                  {strings.workout.earlyCompleteCta}
                 </Button>
               </div>
             )}
@@ -397,10 +397,10 @@ export const WorkoutOverviewScreen: React.FC = () => {
         {showEarlyCompleteConfirm && (
           <ConfirmDialog
             isOpen={showEarlyCompleteConfirm}
-            title="Termina comunque"
-            description="Hai esercizi non completati. Vuoi terminare comunque l'allenamento? I set già registrati verranno salvati."
-            confirmLabel="Termina allenamento"
-            cancelLabel="Annulla"
+            title={strings.workout.earlyCompleteTitle}
+            description={strings.workout.earlyCompleteDetail}
+            confirmLabel={strings.workout.cancelWorkout}
+            cancelLabel={strings.actions.cancel}
             onConfirm={async () => {
               setShowEarlyCompleteConfirm(false);
               await handleCompleteWorkout();
@@ -417,7 +417,7 @@ export const WorkoutOverviewScreen: React.FC = () => {
             isOpen={showCancelConfirm}
             title={strings.workout.inProgress}
             description={strings.workout.confirmCancelDetail}
-            confirmLabel="Termina allenamento"
+            confirmLabel={strings.workout.cancelWorkout}
             cancelLabel={strings.workout.resumeWorkout}
             onConfirm={handleCancel}
             onCancel={() => setShowCancelConfirm(false)}

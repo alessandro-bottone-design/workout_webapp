@@ -83,7 +83,7 @@ export const CalendarScreen: React.FC = () => {
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={prevMonth}
-              aria-label="Mese precedente"
+              aria-label={strings.calendar.prevMonth}
               className="w-11 h-11 flex items-center justify-center text-text-secondary hover:text-text-primary"
             >
               <ChevronLeft className="w-6 h-6" />
@@ -94,7 +94,7 @@ export const CalendarScreen: React.FC = () => {
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={nextMonth}
-              aria-label="Mese successivo"
+              aria-label={strings.calendar.nextMonth}
               className="w-11 h-11 flex items-center justify-center text-text-secondary hover:text-text-primary"
             >
               <ChevronRight className="w-6 h-6" />
@@ -131,7 +131,7 @@ export const CalendarScreen: React.FC = () => {
                   onClick={() =>
                     setSelectedDay(isSelected ? null : dayTs)
                   }
-                  aria-label={`${day.getDate()} ${hasWorkout ? '- allenamento' : ''}`}
+                  aria-label={strings.calendar.dayLabel(day.getDate(), hasWorkout)}
                   aria-pressed={isSelected}
                   className={`relative flex flex-col items-center justify-center w-full aspect-square rounded-full mx-auto max-w-[44px] transition-all duration-150 ${
                     isSelected
@@ -205,7 +205,7 @@ export const CalendarScreen: React.FC = () => {
               ) : (
                 <div className="bg-bg-surface rounded-card border border-border-default p-5 text-center">
                   <p className="text-meta text-text-secondary">
-                    Nessun allenamento in questo giorno
+                    {strings.calendar.noWorkout}
                   </p>
                 </div>
               )}

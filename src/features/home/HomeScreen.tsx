@@ -132,7 +132,7 @@ export const HomeScreen: React.FC = () => {
                 </p>
               </div>
               <IconButton
-                label="Impostazioni"
+                label={strings.home.settings}
                 onClick={() => navigate('/settings')}
                 className="-mr-2 -mt-1"
               >
@@ -270,11 +270,11 @@ export const HomeScreen: React.FC = () => {
           ) : !activeWorkout && !isLoading ? (
             <EmptyState
               icon={<Dumbbell className="w-8 h-8" />}
-              title="Nessuna scheda"
+              title={strings.home.noSessionTitle}
               description={strings.home.noProgram}
               action={
                 <Button variant="secondary" size="sm" onClick={() => navigate('/program')}>
-                  Vai alla scheda
+                  {strings.program.goToProgram}
                 </Button>
               }
             />

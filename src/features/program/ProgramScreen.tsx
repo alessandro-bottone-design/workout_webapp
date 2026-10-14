@@ -42,7 +42,7 @@ export const ProgramScreen: React.FC = () => {
   if (isLoading) {
     return (
       <AppShell>
-        <ScreenHeader title="LA MIA SCHEDA" variant="display" titleSize="md" />
+        <ScreenHeader title={strings.program.title} variant="display" titleSize="md" />
         <div className="flex-1 flex items-center justify-center">
           <div className="w-8 h-8 rounded-full border-2 border-accent-primary border-t-transparent animate-spin" />
         </div>
@@ -53,11 +53,11 @@ export const ProgramScreen: React.FC = () => {
   if (!program) {
     return (
       <AppShell>
-        <ScreenHeader title="LA MIA SCHEDA" variant="display" titleSize="md" />
+        <ScreenHeader title={strings.program.title} variant="display" titleSize="md" />
         <div className="flex-1 flex items-center justify-center px-5">
           <EmptyState
             title={strings.program.noProgram}
-            description="Crea una scheda per iniziare ad allenarti"
+            description={strings.program.createProgramDetail}
           />
         </div>
       </AppShell>
@@ -75,7 +75,7 @@ export const ProgramScreen: React.FC = () => {
         titleSize="md"
         rightAction={
           <IconButton
-            label="Modifica scheda"
+            label={strings.program.editProgramLabel}
             onClick={() => navigate(`/program/${program.id}/edit`)}
           >
             <Pencil className="w-5 h-5" strokeWidth={2} />
@@ -115,7 +115,7 @@ export const ProgramScreen: React.FC = () => {
 
           {/* Sessions */}
           <div>
-            <p className="text-label-sm text-text-secondary mb-3 px-1">SEDUTE</p>
+            <p className="text-label-sm text-text-secondary mb-3 px-1">{strings.program.sessionsSection}</p>
             <div className="space-y-2">
               {sortedSessions.map((session, idx) => {
                 const isNext = session.id === nextSessionId;

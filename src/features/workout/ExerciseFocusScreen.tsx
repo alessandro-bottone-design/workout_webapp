@@ -228,7 +228,7 @@ export const ExerciseFocusScreen: React.FC = () => {
         <div className="pt-[calc(env(safe-area-inset-top)+8px)] px-5">
           <div className="flex items-center justify-between h-14">
             <IconButton
-              label="Torna alla panoramica"
+              label={strings.workout.backToOverview}
               onClick={() => navigate(`/workout/${workout.id}`)}
               className="-ml-1.5 w-auto min-w-[44px] gap-1 rounded-none"
             >

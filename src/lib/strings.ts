@@ -25,6 +25,8 @@ export const strings = {
     workoutsPerWeek: (done: number, target: number) => `${done} / ${target} workout`,
     noWorkoutHistory: 'Nessun allenamento completato ancora.',
     noProgram: 'Nessuna scheda configurata.',
+    noSessionTitle: 'Nessuna scheda',
+    settings: 'Impostazioni',
   },
 
   // Workout
@@ -58,6 +60,13 @@ export const strings = {
     reset: 'AZZERA',
     cardioStart: 'AVVIA',
     cardioComplete: 'COMPLETA',
+    completeWorkoutCta: 'COMPLETA WORKOUT',
+    allDoneHint: 'Completa tutti gli esercizi per terminare',
+    earlyCompleteCta: 'Termina comunque',
+    earlyCompleteTitle: 'Termina comunque',
+    earlyCompleteDetail:
+      'Hai esercizi non completati. Vuoi terminare comunque l\'allenamento? I set già registrati verranno salvati.',
+    backToOverview: 'Torna alla panoramica',
   },
 
   // Exercise
@@ -75,6 +84,8 @@ export const strings = {
     presets: 'RICOMINCIA',
     dismiss: 'CHIUDI',
     running: 'Recupero in corso',
+    add30: 'Aggiungi 30 secondi',
+    add60: 'Aggiungi 60 secondi',
   },
 
   // Workout Complete
@@ -95,6 +106,27 @@ export const strings = {
     addExercise: '+ AGGIUNGI ESERCIZIO',
     noProgram: 'Nessuna scheda configurata.',
     createProgram: 'Crea scheda',
+    sessionsSection: 'SEDUTE',
+    createProgramDetail: 'Crea una scheda per iniziare ad allenarti',
+    editProgramLabel: 'Modifica scheda',
+    goToProgram: 'Vai alla scheda',
+    loading: 'Caricamento in corso…',
+  },
+
+  // Session detail (route /program/session/:sessionId)
+  sessionDetail: {
+    title: 'Seduta',
+    editLabel: 'Modifica seduta',
+    startCta: 'INIZIA QUESTA SEDUTA',
+    cardio: 'Cardio',
+    setLine: (sets: number | undefined, reps: number | undefined, weight?: number) =>
+      `${sets} × ${reps}${weight ? ` · ${weight} kg` : ''}`,
+  },
+
+  // Edit session (route /program/session/:sessionId/edit)
+  editSession: {
+    title: 'MODIFICA SEDUTA',
+    reorder: 'Riordina',
   },
 
   // Edit exercise
@@ -122,6 +154,8 @@ export const strings = {
     avgDuration: 'Durata media',
     exerciseTrends: 'ANDAMENTO ESERCIZI',
     noData: 'I tuoi progressi appariranno dopo i primi allenamenti.',
+    noDataTitle: 'Nessun dato ancora',
+    noDataShort: 'Nessun dato',
     stall: 'PROGRESSIONE',
     stallDetail: (weight: string, days: number) =>
       `Sei a ${weight} da ${days} giorni.\n\nTi senti stabile con tecnica e ripetizioni?\nPotresti provare un piccolo aumento di carico.`,
@@ -131,6 +165,9 @@ export const strings = {
   exerciseHistory: {
     last: 'ULTIMO',
     chart: 'Storico peso',
+    sectionTitle: 'STORICO',
+    chartEmpty: 'Completa un altro allenamento per vedere il grafico',
+    chartEmptyHint: 'I dati appariranno dopo il primo allenamento',
     noData: 'Nessun dato disponibile per questo esercizio.',
   },
 
@@ -138,6 +175,11 @@ export const strings = {
   calendar: {
     title: 'CALENDARIO',
     completed: 'COMPLETATO',
+    prevMonth: 'Mese precedente',
+    nextMonth: 'Mese successivo',
+    noWorkout: 'Nessun allenamento in questo giorno',
+    dayLabel: (date: number, hasWorkout: boolean) =>
+      `${date} ${hasWorkout ? '- allenamento' : ''}`,
   },
 
   // Settings
@@ -155,11 +197,23 @@ export const strings = {
     appleHealth: 'Apple Health',
     appleHealthNote: 'Richiede app nativa',
     version: 'Versione',
+    weeklyTarget: 'Sessioni a settimana',
+    weeklyTargetInfo: 'Quanti allenamenti punti ogni settimana',
+    weeklyTargetDecrease: 'Riduci obiettivo settimanale',
+    weeklyTargetIncrease: 'Aumenta obiettivo settimanale',
+    restoreTitle: 'Ripristinare la scheda predefinita?',
+    restoreDetail:
+      'Le 4 sedute verranno reimpostate alla versione ufficiale (Scheda Allenamento 4 sedute). Lo storico dei workout già completati rimarrà intatto.',
+    restoreConfirm: 'Ripristina Scheda',
+    restoreCancel: 'Annulla',
+    resetDone: 'Dati resettati',
+    restoreDone: 'Scheda predefinita ripristinata con successo',
   },
 
   // Errors / Empty states
   errors: {
     genericError: 'Si è verificato un errore.',
+    unexpected: 'Qualcosa è andato storto',
     dbError: 'Errore nel salvataggio dei dati.',
     retry: 'Riprova',
     notFound: 'Pagina non trovata.',
