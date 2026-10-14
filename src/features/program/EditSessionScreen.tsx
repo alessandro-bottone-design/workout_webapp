@@ -84,7 +84,6 @@ export const EditSessionScreen: React.FC = () => {
   const [program, setProgram] = useState<Program | null>(null);
   const [session, setSession] = useState<SessionTemplate | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ExerciseTemplate | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
 
   const sensors = useSensors(
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
@@ -102,7 +101,22 @@ export const EditSessionScreen: React.FC = () => {
     void load();
   }, [sessionId]);
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  /**
+   * All mutations auto-save so the DB is always in sync with what's shown.
+   * This is required because "add exercise" navigates away — any local-only
+   * reorder/delete would otherwise be silently lost.
+   */
+  const persistSession = async (updated: SessionTemplate) => {
+    if (!program) return;
+    setSession(updated);
+    try {
+      await programRepo.updateSession(program.id, updated);
+    } catch (e) {
+      console.error('Failed to persist session', e);
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
     if (!session) return;
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -113,11 +127,18 @@ export const EditSessionScreen: React.FC = () => {
       ...e,
       order: i,
     }));
-    setSession({ ...session, exercises: reordered });
+    await persistSession({ ...session, exercises: reordered });
   };
 
-  const handleAddExercise = () => {
+  const handleAddExercise = async () => {
     if (!session || !program) return;
+    // Persist any pending reorder/delete before navigating away, so nothing
+    // is lost. The new exercise itself is saved by EditExerciseScreen.
+    try {
+      await programRepo.updateSession(program.id, session);
+    } catch (e) {
+      console.error('Failed to persist session before adding exercise', e);
+    }
     const newEx: ExerciseTemplate = {
       id: generateId(),
       name: 'Nuovo esercizio',
@@ -128,9 +149,6 @@ export const EditSessionScreen: React.FC = () => {
       defaultWeight: 0,
       restSeconds: 90,
     };
-    const updated = { ...session, exercises: [...session.exercises, newEx] };
-    setSession(updated);
-    // Navigate to edit it
     navigate(`/exercise/${newEx.id}/edit`, {
       state: {
         programId: program.id,
@@ -149,17 +167,8 @@ export const EditSessionScreen: React.FC = () => {
         .filter((e) => e.id !== deleteTarget.id)
         .map((e, i) => ({ ...e, order: i })),
     };
-    setSession(updated);
     setDeleteTarget(null);
-    await programRepo.updateSession(program.id, updated);
-  };
-
-  const handleSave = async () => {
-    if (!program || !session) return;
-    setIsSaving(true);
-    await programRepo.updateSession(program.id, session);
-    setIsSaving(false);
-    navigate(-1);
+    await persistSession(updated);
   };
 
   if (!session) {
@@ -221,10 +230,10 @@ export const EditSessionScreen: React.FC = () => {
         </div>
       </div>
 
-      {/* Save Button */}
+      {/* Done Button — edits auto-save, this just returns to the session */}
       <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-4 bg-bg-app border-t border-border-default">
-        <Button variant="primary" fullWidth isLoading={isSaving} onClick={handleSave}>
-          SALVA SEDUTA
+        <Button variant="primary" fullWidth onClick={() => navigate(-1)}>
+          {strings.actions.done}
         </Button>
       </div>
 
