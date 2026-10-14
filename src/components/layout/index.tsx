@@ -115,7 +115,7 @@ export const BottomNavigation: React.FC = () => {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-30 bg-bg-surface/95 backdrop-blur-md border-t border-border-default"
+      className="fixed bottom-0 left-0 right-0 z-30 mx-auto max-w-[480px] bg-bg-surface/95 backdrop-blur-md border-t border-border-default"
       aria-label="Navigazione principale"
     >
       <div
