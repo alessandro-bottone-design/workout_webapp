@@ -370,6 +370,101 @@ describe('next session with real workout history', () => {
 })
 
 /* ============================================
+   G2. BATCHED PREVIOUS-PERFORMANCE LOOKUP
+   ============================================ */
+
+describe('getPreviousPerformances (batched, single scan)', () => {
+  it('returns the last pre-workout performance for each exercise in one pass', async () => {
+    const exA = makeExercise({ name: 'A' })
+    const exB = makeExercise({ name: 'B' })
+    const program = await seedProgram(makeSession([exA, exB]))
+
+    // First workout: A=40, B=30
+    const w1 = await useWorkoutStore
+      .getState()
+      .startWorkout(program.id, program.sessions[0])
+    await useWorkoutStore.getState().completeSet(w1.exerciseLogs[0].id, {
+      setNumber: 1, weight: 40, reps: 8, completedAt: Date.now(),
+    })
+    await useWorkoutStore.getState().completeSet(w1.exerciseLogs[1].id, {
+      setNumber: 1, weight: 30, reps: 8, completedAt: Date.now(),
+    })
+    await useWorkoutStore.getState().completeExercise(w1.exerciseLogs[0].id)
+    await useWorkoutStore.getState().completeExercise(w1.exerciseLogs[1].id)
+    await useWorkoutStore.getState().completeWorkout()
+
+    // Tests run within the same millisecond, so force w1's start clearly
+    // earlier than w2's to make the "strictly before" filter deterministic.
+    const w1Stored = (await workoutRepo.getById(w1.id))!
+    await workoutRepo.update({ ...w1Stored, startedAt: w1Stored.startedAt - 60_000 })
+
+    // Second workout: bump A to 45, B to 35
+    const w2 = await useWorkoutStore
+      .getState()
+      .startWorkout(program.id, program.sessions[0])
+    await useWorkoutStore.getState().completeSet(w2.exerciseLogs[0].id, {
+      setNumber: 1, weight: 45, reps: 8, completedAt: Date.now(),
+    })
+    await useWorkoutStore.getState().completeSet(w2.exerciseLogs[1].id, {
+      setNumber: 1, weight: 35, reps: 8, completedAt: Date.now(),
+    })
+    await useWorkoutStore.getState().completeExercise(w2.exerciseLogs[0].id)
+    await useWorkoutStore.getState().completeExercise(w2.exerciseLogs[1].id)
+    await useWorkoutStore.getState().completeWorkout()
+
+    // Ask for the "previous" performance relative to w2's start
+    const ids = w2.exerciseLogs.map((l) => l.exerciseTemplateId)
+    const prev = await workoutRepo.getPreviousPerformances(ids, w2.startedAt)
+
+    expect(prev.get(exA.id)?.setLogs[0].weight).toBe(40)
+    expect(prev.get(exB.id)?.setLogs[0].weight).toBe(30)
+  })
+
+  it('excludes the reference workout itself and anything before it', async () => {
+    const exA = makeExercise({ name: 'A' })
+    const program = await seedProgram(makeSession([exA]))
+
+    const w1 = await useWorkoutStore
+      .getState()
+      .startWorkout(program.id, program.sessions[0])
+    await useWorkoutStore.getState().completeSet(w1.exerciseLogs[0].id, {
+      setNumber: 1, weight: 40, reps: 8, completedAt: Date.now(),
+    })
+    await useWorkoutStore.getState().completeExercise(w1.exerciseLogs[0].id)
+    await useWorkoutStore.getState().completeWorkout()
+
+    const w2 = await useWorkoutStore
+      .getState()
+      .startWorkout(program.id, program.sessions[0])
+    await useWorkoutStore.getState().completeExercise(w2.exerciseLogs[0].id)
+    await useWorkoutStore.getState().completeWorkout()
+
+    // Force distinct start times (tests run in the same millisecond) so the
+    // "strictly before" filter is deterministic.
+    const w1Stored = (await workoutRepo.getById(w1.id))!
+    const w1Start = w1Stored.startedAt - 60_000
+    await workoutRepo.update({ ...w1Stored, startedAt: w1Start })
+    const w2Stored = (await workoutRepo.getById(w2.id))!
+    const w2Start = w2Stored.startedAt + 60_000
+    await workoutRepo.update({ ...w2Stored, startedAt: w2Start })
+
+    // Relative to w1 (earliest) → nothing precedes it
+    const prevForW1 = await workoutRepo.getPreviousPerformances(
+      [exA.id],
+      w1Start
+    )
+    expect(prevForW1.has(exA.id)).toBe(false)
+
+    // Relative to w2 → w1 is the previous one (weight 40)
+    const prevForW2 = await workoutRepo.getPreviousPerformances(
+      [exA.id],
+      w2Start
+    )
+    expect(prevForW2.get(exA.id)?.setLogs[0].weight).toBe(40)
+  })
+})
+
+/* ============================================
    G. RESET DATA
    ============================================ */
 

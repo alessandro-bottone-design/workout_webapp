@@ -3,7 +3,7 @@
    Shows exercise list with status + reordering
    ============================================ */
 
-import React, { useEffect, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -139,6 +139,25 @@ const SortableExerciseRow: React.FC<ExerciseRowProps & { id: string }> = ({
 };
 
 /* ============================================
+   WORKOUT ELAPSED TIMER
+   Isolated so its 1s tick re-renders only this
+   <span>, not the whole screen (DndContext,
+   SortableContext, ProgressBar, ExerciseRows).
+   ============================================ */
+
+const WorkoutElapsedTimer = memo(({ startedAt }: { startedAt: number }) => {
+  const [elapsedMs, setElapsedMs] = useState(() => Date.now() - startedAt);
+
+  useEffect(() => {
+    const id = setInterval(() => setElapsedMs(Date.now() - startedAt), 1000);
+    return () => clearInterval(id);
+  }, [startedAt]);
+
+  return <>{formatDuration(elapsedMs)}</>;
+});
+WorkoutElapsedTimer.displayName = 'WorkoutElapsedTimer';
+
+/* ============================================
    WORKOUT OVERVIEW SCREEN
    ============================================ */
 
@@ -156,7 +175,6 @@ export const WorkoutOverviewScreen: React.FC = () => {
   const [localWorkout, setLocalWorkout] = useState<Workout | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [showEarlyCompleteConfirm, setShowEarlyCompleteConfirm] = useState(false);
-  const [elapsedMs, setElapsedMs] = useState(0);
   const [isCompleting, setIsCompleting] = useState(false);
 
   const sensors = useSensors(
@@ -192,16 +210,6 @@ export const WorkoutOverviewScreen: React.FC = () => {
       setLocalWorkout(activeWorkout);
     }
   }, [activeWorkout, workoutId]);
-
-  // Elapsed timer
-  useEffect(() => {
-    if (!localWorkout || localWorkout.status !== 'active') return;
-    const interval = setInterval(() => {
-      setElapsedMs(Date.now() - localWorkout.startedAt);
-    }, 1000);
-    setElapsedMs(Date.now() - localWorkout.startedAt);
-    return () => clearInterval(interval);
-  }, [localWorkout]);
 
   const workout = localWorkout;
   if (!workout) {
@@ -253,7 +261,9 @@ export const WorkoutOverviewScreen: React.FC = () => {
     <AppShell showNav={false}>
       <ScreenHeader
         title={workout.sessionNameSnapshot.toUpperCase()}
-        subtitle={isReadOnly ? undefined : formatDuration(elapsedMs)}
+        subtitle={
+          isReadOnly ? undefined : <WorkoutElapsedTimer startedAt={workout.startedAt} />
+        }
         showBack
         onBack={() => navigate('/')}
         rightAction={

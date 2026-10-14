@@ -10,7 +10,7 @@ import { IconButton, ScreenTitle } from '@/components/ui';
 
 interface ScreenHeaderProps {
   title: string;
-  subtitle?: string;
+  subtitle?: React.ReactNode;
   showBack?: boolean;
   onBack?: () => void;
   rightAction?: React.ReactNode;

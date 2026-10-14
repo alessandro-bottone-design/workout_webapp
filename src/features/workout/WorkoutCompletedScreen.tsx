@@ -32,25 +32,24 @@ export const WorkoutCompletedScreen: React.FC = () => {
       if (!w) return;
       setWorkout(w);
 
-      // Load previous weights for comparison
+      // Load previous weights for comparison with a single scan over the
+      // completed workouts instead of one full scan per exercise (N+1).
+      const strengthIds = w.exerciseLogs
+        .filter(
+          (exLog) =>
+            exLog.status === 'completed' && exLog.exerciseTypeSnapshot !== 'cardio'
+        )
+        .map((exLog) => exLog.exerciseTemplateId);
+
+      const prevPerfMap = await workoutRepo.getPreviousPerformances(
+        strengthIds,
+        w.startedAt
+      );
+
       const prevMap = new Map<string, number>();
-      for (const exLog of w.exerciseLogs) {
-        if (exLog.status !== 'completed' || exLog.exerciseTypeSnapshot === 'cardio') continue;
-        const prevPerfs = await workoutRepo.getAllPerformancesForExercise(
-          exLog.exerciseTemplateId
-        );
-        // Find the workout BEFORE this one
-        const beforeThis = prevPerfs.filter(
-          (p) => p.workoutDate < w.startedAt
-        );
-        if (beforeThis.length > 0) {
-          const lastPrev = beforeThis[beforeThis.length - 1];
-          prevMap.set(
-            exLog.exerciseTemplateId,
-            getRepresentativeWeight(lastPrev.log)
-          );
-        }
-      }
+      prevPerfMap.forEach((log, templateId) => {
+        prevMap.set(templateId, getRepresentativeWeight(log));
+      });
       setPrevWorkoutLogs(prevMap);
     };
     void load();

@@ -246,6 +246,38 @@ export const workoutRepo = {
     return results;
   },
 
+  /**
+   * Single-scan lookup of the last completed performance for MANY exercises
+   * at once. Avoids the N+1 pattern where each exercise triggered its own full
+   * scan of completed workouts. `beforeTimestamp` limits results to workouts
+   * started strictly before that time (used to find the "previous" workout).
+   */
+  async getPreviousPerformances(
+    exerciseTemplateIds: UUID[],
+    beforeTimestamp: number
+  ): Promise<Map<UUID, WorkoutExerciseLog>> {
+    const completed = await db.workouts
+      .where('status')
+      .equals('completed')
+      .reverse()
+      .sortBy('startedAt');
+
+    const wanted = new Set(exerciseTemplateIds);
+    const result = new Map<UUID, WorkoutExerciseLog>();
+
+    for (const workout of completed) {
+      if (workout.startedAt >= beforeTimestamp) continue;
+      for (const exLog of workout.exerciseLogs) {
+        if (result.has(exLog.exerciseTemplateId)) continue;
+        if (!wanted.has(exLog.exerciseTemplateId)) continue;
+        if (exLog.status !== 'completed') continue;
+        result.set(exLog.exerciseTemplateId, exLog);
+      }
+      if (result.size === wanted.size) break;
+    }
+    return result;
+  },
+
   async deleteAll(): Promise<void> {
     await db.workouts.clear();
   },
