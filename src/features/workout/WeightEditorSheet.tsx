@@ -64,6 +64,16 @@ export const WeightEditorSheet: React.FC<WeightEditorSheetProps> = ({
     onSave(parsedWeight);
   };
 
+  // Quick +Δ for progressive overload: snaps the running value to the new
+  // total so the user does not retype the whole weight.
+  const handleDelta = useCallback((delta: number) => {
+    setInput((prev) => {
+      const base = parseWeight(prev);
+      const next = Math.max(0, Math.round((base + delta) * 100) / 100);
+      return formatWeightValue(next);
+    });
+  }, []);
+
   // Italian display: decimal comma (domain value stays numeric)
   const displayValue = input.replace('.', ',');
 
@@ -115,6 +125,23 @@ export const WeightEditorSheet: React.FC<WeightEditorSheetProps> = ({
               Ultima volta: {formatWeightValue(lastWeight)} kg
             </p>
           )}
+        </div>
+
+        {/* Quick Δ for progressive overload */}
+        <div className="px-5 pb-4">
+          <div className="grid grid-cols-3 gap-2">
+            {[1, 2.5, 5].map((delta) => (
+              <motion.button
+                key={delta}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => handleDelta(delta)}
+                aria-label={`Aumenta di ${formatWeightValue(delta)} kg`}
+                className="h-[44px] rounded-btn flex items-center justify-center text-[15px] font-semibold bg-bg-surface border border-border-default text-text-primary hover:bg-white/5 active:bg-white/10 transition-colors"
+              >
+                +{formatWeightValue(delta)}
+              </motion.button>
+            ))}
+          </div>
         </div>
 
         {/* Numeric Keypad */}
