@@ -181,10 +181,14 @@ export const ExerciseFocusScreen: React.FC = () => {
       // Complete the exercise
       await completeExercise(exerciseLog.id);
       setShowSuccess(true);
+    } else if (preferredRest > 0) {
+      // Auto-start the rest timer between sets (3.4). The pill rendered by
+      // RestTimerLayer takes over from here; a preset tap can still override.
+      await startTimer(preferredRest, exerciseLog.id, workout.id);
     }
 
     setIsCompletingSet(false);
-  }, [exerciseLog, workout, completeSet, completeExercise, weight, reps]);
+  }, [exerciseLog, workout, completeSet, completeExercise, weight, reps, preferredRest, startTimer]);
 
   const handleStartTimer = async (seconds: number) => {
     await startTimer(seconds, exerciseLog?.id, workout?.id);
