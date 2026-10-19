@@ -424,10 +424,34 @@ function mergeExercises(
 }
 
 /**
+ * Single-flight guard for the seed run.
+ *
+ * In dev React.StrictMode mounts AppInitializer's effect twice (mount →
+ * unmount → mount), so seedDatabase() is called twice back to back. Both runs
+ * read the DB before either has written, then both try to insert the same
+ * singleton rows ("default") and the second one throws
+ * `ConstraintError: Key already exists`, which surfaced as
+ * "Errore di inizializzazione del database" on every page load.
+ *
+ * Everyone awaits the same run; the entry is cleared as soon as the run
+ * settles, so a later call (a retry, or a fresh DB in tests) runs again.
+ */
+let seedRun: Promise<void> | null = null;
+
+export function seedDatabase(): Promise<void> {
+  if (!seedRun) {
+    seedRun = performSeed().finally(() => {
+      seedRun = null;
+    });
+  }
+  return seedRun;
+}
+
+/**
  * Seeds the database with demo data on first launch,
  * and auto-migrates existing programs to V2 if they are on an older revision.
  */
-export async function seedDatabase(): Promise<void> {
+async function performSeed(): Promise<void> {
   const existingPrograms = await db.programs.toArray();
   const existingSettings = await db.settings.get('default');
   const existingAppState = await db.appState.get('default');
@@ -452,14 +476,14 @@ export async function seedDatabase(): Promise<void> {
     }
   }
 
-  // Seed settings if not present
+  // Seed settings if not present (put = idempotent on the "default" key)
   if (!existingSettings) {
-    await db.settings.add(DEFAULT_SETTINGS);
+    await db.settings.put(DEFAULT_SETTINGS);
   }
 
   // Initialize app state if not present
   if (!existingAppState) {
-    await db.appState.add(DEFAULT_APP_STATE);
+    await db.appState.put(DEFAULT_APP_STATE);
   }
 }
 
