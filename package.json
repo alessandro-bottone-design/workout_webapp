@@ -12,6 +12,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:e2e": "node scripts/qa-e2e.mjs",
+    "check:preview": "node scripts/check-preview.mjs",
     "icons:generate": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
