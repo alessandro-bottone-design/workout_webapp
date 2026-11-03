@@ -1,166 +1,162 @@
-# Workout App
+# WorkoutApp 🏋️‍♂️
 
-App personale per il tracking degli allenamenti in palestra. Progettata per uso durante l'allenamento con pesi — veloce, offline-first, ottimizzata per iPhone.
+> Web App & Progressive Web App (PWA) ad alte prestazioni per il tracciamento degli allenamenti con i pesi. Progettata secondo l'architettura **Local-First**, l'estetica **Apple visionOS** e sincronizzata in tempo reale con **Supabase (PostgreSQL + RLS)**.
 
-## Caratteristiche principali
+---
 
-- **Offline-first** — funziona senza connessione dopo il primo caricamento
-- **PWA installabile** — si installa come app nativa su iPhone
-- **Nessun account** — tutti i dati locali su IndexedDB
-- **14 schermate complete** — Home, Workout, Esercizio, Timer, Progressi, Calendario, Impostazioni
-- **Timer anti-drift** — usa `endAt - Date.now()`, non un countdown variabile
-- **Drag-and-drop** — riordina esercizi durante il workout
-- **Stall detection** — rilevamento plateau automatico senza AI
-- **UI italiana** — tutta l'interfaccia in italiano
+## Caratteristiche Principali
 
-## Stack tecnico
+- **Design System Apple visionOS (Zero AI Slop)**:
+  - Materiali traslucidi in vetro smerigliato (`GlassCard`) con `backdrop-blur-2xl`.
+  - Spaziature geometriche su griglia a passo 8 rigorosa (`8px`, `16px`, `24px`, `32px`, `48px`).
+  - Massima eleganza tipografica con due soli pesi di font (400 e 600) e testi in sentence case (nessun testo maiuscolo artificiale).
+  - Palette monocromatica e scura, ideale per schermi OLED e visibilità in palestra.
+  - Iconografia sottile ed uniforme da `lucide-react` (tratto 1.75).
 
-| Layer | Tecnologia |
-|-------|-----------|
-| Framework | React 18 + TypeScript (strict) |
-| Build | Vite 5 |
-| Styling | Tailwind CSS v3 + CSS custom properties |
-| Icons | lucide-react |
-| Animation | Framer Motion |
-| Routing | React Router v6 |
-| Database | Dexie.js (IndexedDB) |
-| State | Zustand (UI) + Dexie (persistente) |
-| Drag & Drop | @dnd-kit |
-| Charts | Recharts |
-| PWA | vite-plugin-pwa + Workbox |
-| Test | Vitest + React Testing Library |
+- **Architettura Local-First a Latenza Zero**:
+  - Funzionamento completo offline su **IndexedDB (Dexie.js)**.
+  - Nessuna attesa di rete o schermata di caricamento durante il workout: serie, ripetizioni e carichi vengono salvati istantaneamente sul dispositivo.
 
-## Installazione e avvio
+- **Account Utente & Sincronizzazione Cloud (Supabase)**:
+  - Autenticazione sicura con **Supabase Auth**.
+  - Database relazionale cloud **PostgreSQL 17** protetto da **Row Level Security (RLS)** su misura per ogni utente.
+  - Sincronizzazione automatica bidirezionale al termine di ogni workout e all'avvio dell'app.
+  - Migrazione automatica dei dati locali al primo accesso.
+
+- **Timer di Recupero Anti-Drift**:
+  - Calcolo temporale assoluto (`endAt - Date.now()`).
+  - Resiste al blocco dello schermo di iOS/Android, al cambio di app e al ricaricamento della pagina.
+  - Notifiche con vibrazione e suoni alla scadenza del timer.
+
+- **Tracciamento Progressi & Rilevamento Stallo**:
+  - Calcolo automatico dei carichi rappresentativi e trend visivi (frecce verdi in crescita, rosse in calo, stabili).
+  - Algoritmo di rilevamento stallo (plateau) automatico basato su serie temporali.
+  - Statistiche aggregate su streak, volume e durata media.
+
+- **Backup & Portabilità dei Dati**:
+  - Esportazione ed importazione completa in formato standard **JSON**.
+  - Pulsante con 1-click in Impostazioni per ripristinare all'istante la scheda e lo storico completo dei 9 workout.
+
+---
+
+## Stack Tecnologico
+
+| Componente | Tecnologia | Ruolo |
+|------------|------------|-------|
+| **Framework UI** | React 18 + TypeScript (Strict) | Rendering reattivo tipizzato |
+| **Build & Tooling** | Vite 5 + SWC | Compilazione rapida e HMR |
+| **Styling** | Tailwind CSS v3 | Design system basato su utility e token CSS |
+| **Animazioni & Smooth Scroll** | Framer Motion + Lenis | Transizioni fluide e feedback aptico visivo |
+| **Stato Applicativo** | Zustand | Gestione dello stato globale UI e timer |
+| **Database Locale** | Dexie.js (IndexedDB) | Storage offline local-first |
+| **Backend & Cloud** | Supabase (PostgreSQL 17 + GoTrue) | Autenticazione, RLS e cloud sync |
+| **PWA & Offline** | vite-plugin-pwa + Workbox | Service Worker, precaching e installazione PWA |
+| **Testing** | Vitest + React Testing Library | 14 suite con 141 test automatizzati |
+| **Hosting & CI/CD** | Vercel Edge Network | Hosting ad altissima velocità e CDN globale |
+
+---
+
+## Struttura del Progetto
+
+```
+WorkoutApp/
+├── .env.example               # Template variabili d'ambiente
+├── .env.local                 # Credenziali locali Supabase (ignorato da git)
+├── .gitignore                 # Regole git (esclude cache, build, .env)
+├── README.md                  # Documentazione generale
+├── index.html                 # Entry point HTML e configurazione viewport PWA
+├── package.json               # Dipendenze e script npm
+├── tailwind.config.js         # Token di design visionOS e palette monocromatica
+├── tsconfig.json              # Configurazione TypeScript strict
+├── vercel.json                # Configurazione routing e headers di sicurezza Vercel
+├── vite.config.ts             # Configurazione Vite e plugin PWA Workbox
+│
+├── data/                      # Backup e dati di riferimento
+│   └── workout-backup-progressi.json
+│
+├── docs/                      # Documentazione tecnica approfondita
+│   ├── ARCHITECTURE.md        # Architettura del sistema e flusso dei dati
+│   ├── DATABASE_AND_SYNC.md   # Schema PostgreSQL, policy RLS e motore di sync
+│   ├── DESIGN_SYSTEM.md       # Specifiche grafiche visionOS (Anti-AI slop)
+│   └── DEPLOYMENT.md          # Istruzioni di deploy per GitHub e Vercel
+│
+├── public/                    # Asset statici, icone PWA e manifest
+├── scripts/                   # Script di supporto e utility di QA
+│
+├── src/                       # Codice sorgente dell'applicazione
+│   ├── app/                   # App root, router e provider
+│   ├── assets/                # Asset vettoriali e logo brand
+│   ├── components/            # Componenti UI visionOS e layout
+│   ├── db/                    # Schema Dexie, repository e seed
+│   ├── features/              # Moduli di business (auth, workout, progress, settings)
+│   ├── lib/                   # Utilità, selettori, formattatori e sync engine
+│   ├── stores/                # Zustand stores (authStore, workoutStore)
+│   ├── styles/                # CSS globale e token
+│   ├── test/                  # Test suite Vitest e RTL
+│   └── types/                 # Interfacce e tipi TypeScript
+│
+└── supabase/                  # Backend Supabase
+    └── migrations/            # File SQL migrazioni e RLS
+```
+
+---
+
+## Installazione e Avvio Locale
+
+### Requisiti
+- **Node.js** >= 18
+- **npm** >= 9
+
+### Procedura
 
 ```bash
-# Installa dipendenze
+# 1. Clona la repository
+git clone https://github.com/alessandrobottone2005-crypto/workout_webapp.git
+cd workout_webapp
+
+# 2. Installa le dipendenze
 npm install
 
-# Dev server
+# 3. Configura le variabili d'ambiente
+cp .env.example .env.local
+# Inserisci le tue chiavi Supabase in .env.local
+
+# 4. Avvia il server di sviluppo
 npm run dev
+```
 
-# Build produzione
-npm run build
+L'applicazione sarà attiva su `http://localhost:5173`.
 
-# Preview build
-npm run preview
+---
 
-# Typecheck
-npm run typecheck
+## Script di Verifica e Qualità
 
-# Lint
+```bash
+# Controllo lint con ESLint (0 warning tollerati)
 npm run lint
 
-# Test unit + component (una volta)
+# Controllo dei tipi con TypeScript strict
+npm run typecheck
+
+# Esecuzione completa di tutti i test (14 suite, 141 test)
 npm run test:run
 
-# Test in watch mode
-npm test
-
-# E2E: journey completa in Chromium (serve Chrome di sistema)
-npm run test:e2e
-
-# Rigenera le icone PWA in public/
-npm run icons:generate
+# Build di produzione e generazione PWA Service Worker
+npm run build
 ```
 
-## PWA
+---
 
-L'app è installabile come PWA su iPhone:
+## Documentazione Dettagliata
 
-1. Apri `http://localhost:5174` su Safari iPhone
-2. Tocca il pulsante "Condividi"
-3. Seleziona "Aggiungi a schermata Home"
-4. L'app funziona offline dopo il primo caricamento
+Per approfondire ogni aspetto del progetto, consulta le guide dedicate:
+- 📐 [Architettura del Sistema](docs/ARCHITECTURE.md)
+- 🗄️ [Database, RLS e Sincronizzazione](docs/DATABASE_AND_SYNC.md)
+- 👓 [Design System Apple visionOS](docs/DESIGN_SYSTEM.md)
+- 🚀 [Deployment GitHub & Vercel](docs/DEPLOYMENT.md)
 
-Service worker pre-cacha tutti gli asset statici. I dati del workout vengono salvati in IndexedDB e sopravvivono ai refresh.
+---
 
-## Architettura database
+## Licenza
 
-**IndexedDB via Dexie.js** — 4 tabelle:
-
-| Tabella | Chiave | Contenuto |
-|---------|--------|-----------|
-| `programs` | `id` | Programma + sedute + esercizi template |
-| `workouts` | `id` | Log workout con tutti i set |
-| `settings` | `id='default'` | Impostazioni utente |
-| `appState` | `id='default'` | Workout attivo, stato timer |
-
-## Struttura cartelle
-
-```
-src/
-  app/           → App.tsx, router.tsx
-  components/
-    ui/           → barrel (index.tsx) + un file per componente:
-                    Button, Toggle, NumericStepper, ConfirmDialog, ecc.
-    layout/       → AppShell, ScreenHeader, BottomNavigation
-  features/
-    home/         → HomeScreen
-    workout/      → WorkoutOverview, ExerciseFocus, ExerciseCompleted,
-                    WeightEditor, WorkoutCompleted
-    program/      → ProgramScreen, SessionDetailScreen, EditSession,
-                    EditExercise
-    timer/        → timerStore, TimerComponents (pill + sheet + presets)
-    progress/     → ProgressScreen, ExerciseHistory (chunk separato con recharts)
-    calendar/     → CalendarScreen
-    settings/     → SettingsScreen
-  db/             → database.ts, repositories.ts, seed.ts
-  lib/            → formatters.ts, selectors.ts, strings.ts, ids.ts,
-                    gymSchedule.ts, useDialogA11y.ts
-  stores/         → workoutStore.ts
-  types/          → index.ts
-  styles/         → globals.css, tailwind.css
-  test/           → setup.ts + suite (persistence, selectors, seedMigration,
-                    routineAndSchedule, e 5 suite RTL *.rtl.test.tsx)
-```
-
-Ogni schermata route è un export nominato (`export const XxxScreen`) così il
-router la carica con `lazy(() => import(...).then(m => ({ default: m.XxxScreen })))`.
-Uno schermata per file: il chunk di ogni rotta è autonomo (ad esempio
-`ExerciseHistoryScreen` contiene recharts, `ProgressScreen` no).
-
-## Test
-
-| Suite | Cosa copre |
-|-------|-----------|
-| `persistence.test.ts` | set/esercizio/workout persistiti, recupero dopo reload, isolamento snapshot, lookup batch |
-| `selectors.test.ts` | metriche, tendenze, prossima seduta |
-| `seedMigration.test.ts` | migrazione `sheetRevision` senza perdere gli UUID (storico non orphanato) |
-| `routineAndSchedule.test.ts` | orari palestra, seed idempotente |
-| `*.rtl.test.tsx` (5) | ConfirmDialog, NumericStepper, Toggle, RestPresets, WeightEditorSheet |
-
-I test RTL verificano anche i contratti di accessibilità (ruoli ARIA, Escape,
-focus trap, frecce) aggiunti in questa passata.
-
-## Come funzionano i dati locali
-
-Tutti i dati sono su IndexedDB (`WorkoutAppDB`). Non c'è backend, non c'è sincronizzazione cloud. I dati sopravvivono ai refresh grazie a Dexie.
-
-**Snapshot strategy**: i record storici salvano snapshot del nome esercizio e dei parametri al momento del workout. Se rinomini "Chest Press" → "Chest Press Machine", i vecchi workout mostrano ancora il nome originale.
-
-## Limitazioni note
-
-- **Background timer iOS**: iOS Safari può throttlare i timer quando l'app è in background. Il timer usa `endAt` timestamps per recuperare il tempo corretto alla riapertura.
-- **Notifiche push**: non implementate in V1.
-- **Vibrazione**: supportata solo dove disponibile `navigator.vibrate` (non iOS Safari).
-- **Audio**: richiede interazione utente preventiva per sblocco su iOS.
-
-## Dati seed
-
-Al primo avvio, l'app carica un programma demo con 4 sedute realistiche (Seduta 1–4). La scheda è completamente modificabile dall'utente tramite la sezione "Scheda".
-
-Quando `CURRENT_SHEET_REVISION` viene incrementato, `seedDatabase()` esegue un
-**merge non distruttivo** invece di sovrascrivere:
-
-- gli **UUID** di sedute ed esercizi vengono riusati (match posizionale), quindi
-  lo storico workout che li referenzia resta collegato;
-- gli esercizi **già allenati** mantengono il loro `defaultWeight` (non viene
-  azzerato il carico progresso);
-- le sedute/esercizi **aggiunti dall'utente** che non esistono nel seed vengono
-  conservati;
-- i nuovi elementi del seed vengono aggiunti.
-
-`restoreDefaultProgram()` (pulsante "Ripristina") usa la stessa preservazione
-degli UUID ma prende il contenuto fresco dal seed, come atteso da un reset
-esplicito. In entrambi i casi lo storico workout non viene mai perso.
+Progetto personale di proprietà di **Alessandro Bottone**. Tutti i diritti riservati.

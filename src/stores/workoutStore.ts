@@ -7,6 +7,8 @@ import { create } from 'zustand';
 import type { Workout, WorkoutExerciseLog, SetLog, ExerciseTemplate } from '@/types';
 import { generateId } from '@/lib/ids';
 import { workoutRepo, appStateRepo } from '@/db/repositories';
+import { useAuthStore } from '@/stores/authStore';
+import { syncAll } from '@/lib/sync';
 
 interface WorkoutStore {
   activeWorkout: Workout | null;
@@ -57,6 +59,12 @@ export const useWorkoutStore = create<WorkoutStore>((set, get) => ({
   },
 
   startWorkout: async (programId, session) => {
+    // Only one workout can be active at a time. A workout left active by a
+    // previous entry point (Session detail, another tab, a crash) would
+    // otherwise be orphaned forever with status "active": invisible in
+    // history and never cancelled. Close it first, then start the new one.
+    await workoutRepo.cancelAllActive();
+
     const now = Date.now();
     const exerciseLogs: WorkoutExerciseLog[] = session.exercises.map((ex, i) => ({
       id: generateId(),
@@ -65,7 +73,9 @@ export const useWorkoutStore = create<WorkoutStore>((set, get) => ({
       exerciseTypeSnapshot: ex.type,
       plannedSetsSnapshot: ex.sets ?? 1,
       targetRepsSnapshot: ex.targetReps,
+      plannedWeightSnapshot: ex.type === 'strength' ? ex.defaultWeight : undefined,
       plannedDurationSeconds: ex.type === 'cardio' ? ex.durationSeconds : undefined,
+      notesSnapshot: ex.notes,
       order: i,
       status: 'pending',
       setLogs: [],
@@ -216,6 +226,10 @@ export const useWorkoutStore = create<WorkoutStore>((set, get) => ({
     try {
       await workoutRepo.update(completed);
       await appStateRepo.setActiveWorkout(undefined);
+      const currentUser = useAuthStore.getState().user;
+      if (currentUser) {
+        void syncAll(currentUser.id);
+      }
     } catch (e) {
       set({ activeWorkout: prev });
       console.error('Failed to persist complete workout:', e);

@@ -17,6 +17,9 @@ import { WorkoutCompletedScreen } from '@/features/workout/WorkoutCompletedScree
 const ProgramScreen = lazy(() =>
   import('@/features/program/ProgramScreen').then((m) => ({ default: m.ProgramScreen }))
 );
+const EditProgramScreen = lazy(() =>
+  import('@/features/program/EditProgramScreen').then((m) => ({ default: m.EditProgramScreen }))
+);
 const SessionDetailScreen = lazy(() =>
   import('@/features/program/SessionDetailScreen').then((m) => ({ default: m.SessionDetailScreen }))
 );
@@ -40,18 +43,21 @@ const CalendarScreen = lazy(() =>
 const SettingsScreen = lazy(() =>
   import('@/features/settings/SettingsScreen').then((m) => ({ default: m.SettingsScreen }))
 );
+const WorkoutHistoryScreen = lazy(() =>
+  import('@/features/workout/WorkoutHistoryScreen').then((m) => ({ default: m.WorkoutHistoryScreen }))
+);
 
 const PageLoader = () => (
   <div className="flex-1 flex items-center justify-center min-h-[100dvh] bg-bg-app">
-    <div className="w-8 h-8 rounded-full border-2 border-accent-primary border-t-transparent animate-spin" />
+    <div className="w-8 h-8 rounded-full border-2 border-white/30 border-t-white animate-spin" />
   </div>
 );
 
 const NotFoundScreen = () => (
-  <div className="flex-1 flex flex-col items-center justify-center min-h-[100dvh] bg-bg-app px-5 text-center">
+  <div className="flex-1 flex flex-col items-center justify-center min-h-[100dvh] bg-bg-app px-4 text-center">
     <p className="text-heading text-text-primary mb-2">404</p>
     <p className="text-meta text-text-secondary mb-6">Pagina non trovata</p>
-    <Link to="/" className="text-accent-primary text-meta font-semibold">
+    <Link to="/" className="text-white hover:text-white/80 text-meta font-semibold underline underline-offset-4">
       Torna alla home
     </Link>
   </div>
@@ -69,12 +75,16 @@ export const AppRouter: React.FC = () => {
 
           {/* Program */}
           <Route path="/program" element={<ProgramScreen />} />
-          <Route path="/program/:programId/edit" element={<ProgramScreen />} />
+          <Route path="/program/:programId/edit" element={<EditProgramScreen />} />
           <Route path="/program/session/:sessionId" element={<SessionDetailScreen />} />
           <Route path="/program/session/:sessionId/edit" element={<EditSessionScreen />} />
 
           {/* Exercise edit */}
           <Route path="/exercise/:exerciseId/edit" element={<EditExerciseScreen />} />
+
+          {/* History */}
+          <Route path="/history" element={<WorkoutHistoryScreen />} />
+          <Route path="/workout/history" element={<WorkoutHistoryScreen />} />
 
           {/* Workout */}
           <Route path="/workout/:workoutId" element={<WorkoutOverviewScreen />} />

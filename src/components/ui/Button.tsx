@@ -1,5 +1,5 @@
 /* ============================================
-   BUTTON COMPONENTS
+   BUTTON COMPONENTS — Apple visionOS Style
    ============================================ */
 
 import React from 'react';
@@ -24,28 +24,28 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const base =
-    'inline-flex items-center justify-center font-semibold rounded-btn transition-all duration-200 select-none active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary disabled:opacity-40 disabled:pointer-events-none';
+    'inline-flex items-center justify-center font-semibold rounded-btn transition-all duration-200 select-none active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-40 disabled:pointer-events-none';
 
   const variants = {
     primary:
-      'bg-accent-primary text-bg-app hover:brightness-110',
+      'bg-white text-black hover:bg-white/90 shadow-sm',
     secondary:
-      'bg-bg-elevated text-text-primary border border-border-default hover:bg-white/5',
+      'bg-white/[0.08] backdrop-blur-xl text-white border border-white/[0.12] hover:bg-white/[0.14]',
     danger:
-      'bg-danger/10 text-danger border border-danger/20 hover:bg-danger/20',
+      'bg-danger/15 text-danger border border-danger/30 hover:bg-danger/25',
     ghost:
-      'text-text-secondary hover:text-text-primary hover:bg-white/5',
+      'text-text-secondary hover:text-white hover:bg-white/[0.06]',
   };
 
   const sizes = {
-    default: 'h-[56px] px-6 text-[15px] tracking-wide',
-    sm: 'h-[44px] px-4 text-[14px]',
-    lg: 'h-[64px] px-8 text-[16px]',
+    default: 'h-12 px-6 text-[15px]',
+    sm: 'h-10 px-4 text-[14px]',
+    lg: 'h-16 px-8 text-[16px]',
   };
 
   return (
     <motion.button
-      whileTap={{ scale: 0.97 }}
+      whileTap={{ scale: 0.98 }}
       className={`${base} ${variants[variant]} ${sizes[size]} ${fullWidth ? 'w-full' : ''} ${className}`}
       disabled={disabled || isLoading}
       onClick={props.onClick}

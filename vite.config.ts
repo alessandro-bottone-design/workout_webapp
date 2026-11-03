@@ -9,7 +9,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'icons/*.png'],
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'icons/*.png', 'screenshots/*.png'],
       manifest: {
         name: 'Workout App',
         short_name: 'Workout',
@@ -38,6 +38,22 @@ export default defineConfig({
             type: 'image/png',
             purpose: 'any maskable'
           }
+        ],
+        screenshots: [
+          {
+            src: 'screenshots/home-narrow.png',
+            sizes: '393x852',
+            type: 'image/png',
+            form_factor: 'narrow',
+            label: 'Home - Scheda e prossimo allenamento'
+          },
+          {
+            src: 'screenshots/workout-narrow.png',
+            sizes: '393x852',
+            type: 'image/png',
+            form_factor: 'narrow',
+            label: 'Workout - Panoramica esercizi e serie'
+          }
         ]
       },
       workbox: {
@@ -49,6 +65,16 @@ export default defineConfig({
       }
     })
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-framer': ['framer-motion'],
+          'vendor-dnd': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
+        }
+      }
+    }
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src')

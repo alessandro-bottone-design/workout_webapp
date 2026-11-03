@@ -1,6 +1,6 @@
 /* ============================================
-   Italian UI strings
-   Centralized for future localization
+   Italian UI strings — Natural Sentence Case
+   Apple Design System: No all-caps
    ============================================ */
 
 export const strings = {
@@ -16,11 +16,11 @@ export const strings = {
   home: {
     greeting: 'Buongiorno',
     subtitle: 'Pronto ad allenarti?',
-    todayLabel: 'OGGI',
-    lastWorkout: 'ULTIMO WORKOUT',
-    thisWeek: 'QUESTA SETTIMANA',
-    startWorkout: 'INIZIA WORKOUT',
-    resumeWorkout: 'RIPRENDI ALLENAMENTO',
+    todayLabel: 'Oggi',
+    lastWorkout: 'Ultimo workout',
+    thisWeek: 'Questa settimana',
+    startWorkout: 'Inizia workout',
+    resumeWorkout: 'Riprendi allenamento',
     exercises: (n: number) => `${n} esercizi`,
     workoutsPerWeek: (done: number, target: number) => `${done} / ${target} workout`,
     noWorkoutHistory: 'Nessun allenamento completato ancora.',
@@ -31,36 +31,36 @@ export const strings = {
 
   // Workout
   workout: {
-    overview: 'WORKOUT',
+    overview: 'Workout',
     progress: (done: number, total: number) => `${done} / ${total} esercizi completati`,
     status: {
-      upcoming: 'PROSSIMO',
-      active: 'ATTIVO',
-      done: 'FATTO',
+      upcoming: 'Prossimo',
+      active: 'Attivo',
+      done: 'Completato',
     },
-    startCta: 'INIZIA WORKOUT',
-    continueCta: 'CONTINUA WORKOUT',
-    completeCta: 'COMPLETA',
-    endCta: 'TERMINA',
+    startCta: 'Inizia workout',
+    continueCta: 'Continua workout',
+    completeCta: 'Completa',
+    endCta: 'Termina',
     cancelWorkout: 'Termina allenamento',
     resumeWorkout: 'Riprendi',
     inProgress: 'Allenamento in corso',
     confirmCancel: 'Sei sicuro di voler terminare l\'allenamento?',
     confirmCancelDetail: 'Il progresso parziale verrà salvato.',
     seriesLabel: (current: number, total: number) => `Serie ${current} di ${total}`,
-    lastTime: 'ULTIMA VOLTA',
+    lastTime: 'Ultima volta',
     noLastTime: 'Primo allenamento',
-    reps: 'RIPETIZIONI',
-    weight: 'PESO',
-    edit: 'modifica',
-    completeSet: 'COMPLETA SERIE',
-    restPresets: 'RECUPERO',
-    duration: 'DURATA',
-    pause: 'PAUSA',
-    reset: 'AZZERA',
-    cardioStart: 'AVVIA',
-    cardioComplete: 'COMPLETA',
-    completeWorkoutCta: 'COMPLETA WORKOUT',
+    reps: 'Ripetizioni',
+    weight: 'Peso',
+    edit: 'Modifica',
+    completeSet: 'Completa serie',
+    restPresets: 'Recupero',
+    duration: 'Durata',
+    pause: 'Pausa',
+    reset: 'Azzera',
+    cardioStart: 'Avvia',
+    cardioComplete: 'Completa',
+    completeWorkoutCta: 'Completa workout',
     allDoneHint: 'Completa tutti gli esercizi per terminare',
     earlyCompleteCta: 'Termina comunque',
     earlyCompleteTitle: 'Termina comunque',
@@ -71,18 +71,19 @@ export const strings = {
 
   // Exercise
   exercise: {
-    completed: 'COMPLETATA',
+    completed: 'Completato',
     series: (n: number) => `${n} serie`,
+    cardioDone: 'Cardio completato',
   },
 
   // Timer
   timer: {
-    rest: 'RECUPERO',
-    restDone: 'RECUPERO TERMINATO',
-    adjust: 'AGGIUNGI TEMPO',
-    stop: 'TERMINA RECUPERO',
-    presets: 'RICOMINCIA',
-    dismiss: 'CHIUDI',
+    rest: 'Recupero',
+    restDone: 'Recupero terminato',
+    adjust: 'Aggiungi tempo',
+    stop: 'Termina recupero',
+    presets: 'Ricomincia',
+    dismiss: 'Chiudi',
     running: 'Recupero in corso',
     add30: 'Aggiungi 30 secondi',
     add60: 'Aggiungi 60 secondi',
@@ -90,23 +91,23 @@ export const strings = {
 
   // Workout Complete
   workoutComplete: {
-    title: 'WORKOUT\nCOMPLETATO',
+    title: 'Workout\ncompletato',
     exercises: (n: number) => `${n} esercizi`,
     sets: (n: number) => `${n} serie`,
-    progress: 'PROGRESSI',
-    end: 'TERMINA',
+    progress: 'Progressi',
+    end: 'Termina',
   },
 
   // Program
   program: {
-    title: 'LA MIA SCHEDA',
+    title: 'La mia scheda',
     current: 'Programma attuale',
     weeks: (current: number, total: number) => `${current} / ${total} settimane`,
-    editProgram: 'MODIFICA SCHEDA',
-    addExercise: '+ AGGIUNGI ESERCIZIO',
+    editProgram: 'Modifica scheda',
+    addExercise: '+ Aggiungi esercizio',
     noProgram: 'Nessuna scheda configurata.',
     createProgram: 'Crea scheda',
-    sessionsSection: 'SEDUTE',
+    sessionsSection: 'Sedute',
     createProgramDetail: 'Crea una scheda per iniziare ad allenarti',
     editProgramLabel: 'Modifica scheda',
     goToProgram: 'Vai alla scheda',
@@ -117,7 +118,7 @@ export const strings = {
   sessionDetail: {
     title: 'Seduta',
     editLabel: 'Modifica seduta',
-    startCta: 'INIZIA QUESTA SEDUTA',
+    startCta: 'Inizia questa seduta',
     cardio: 'Cardio',
     setLine: (sets: number | undefined, reps: number | undefined, weight?: number) =>
       `${sets} × ${reps}${weight ? ` · ${weight} kg` : ''}`,
@@ -125,47 +126,50 @@ export const strings = {
 
   // Edit session (route /program/session/:sessionId/edit)
   editSession: {
-    title: 'MODIFICA SEDUTA',
+    title: 'Modifica seduta',
     reorder: 'Riordina',
   },
 
   // Edit exercise
   editExercise: {
-    title: 'ESERCIZIO',
+    title: 'Esercizio',
     name: 'Nome',
     sets: 'Serie',
     reps: 'Ripetizioni',
     weight: 'Peso iniziale',
     rest: 'Recupero',
     notes: 'Note',
-    save: 'SALVA ESERCIZIO',
+    save: 'Salva esercizio',
     cancel: 'Annulla',
     delete: 'Elimina esercizio',
     confirmDelete: 'Eliminare questo esercizio dalla scheda?',
     confirmDeleteDetail: 'Lo storico allenamenti non verrà eliminato.',
+    notFoundTitle: 'Esercizio non trovato',
+    notFoundDetail:
+      'L\'esercizio non esiste più nella scheda oppure il link non è valido.',
   },
 
   // Progress
   progress: {
-    title: 'PROGRESSI',
-    thisWeek: 'QUESTA SETTIMANA',
+    title: 'Progressi',
+    thisWeek: 'Questa settimana',
     streak: 'Streak',
     totalWorkouts: 'Workout completati',
     avgDuration: 'Durata media',
-    exerciseTrends: 'ANDAMENTO ESERCIZI',
+    exerciseTrends: 'Andamento esercizi',
     noData: 'I tuoi progressi appariranno dopo i primi allenamenti.',
     noDataTitle: 'Nessun dato ancora',
     noDataShort: 'Nessun dato',
-    stall: 'PROGRESSIONE',
+    stall: 'Progressione',
     stallDetail: (weight: string, days: number) =>
       `Sei a ${weight} da ${days} giorni.\n\nTi senti stabile con tecnica e ripetizioni?\nPotresti provare un piccolo aumento di carico.`,
   },
 
   // Exercise history
   exerciseHistory: {
-    last: 'ULTIMO',
+    last: 'Ultimo',
     chart: 'Storico peso',
-    sectionTitle: 'STORICO',
+    sectionTitle: 'Storico',
     chartEmpty: 'Completa un altro allenamento per vedere il grafico',
     chartEmptyHint: 'I dati appariranno dopo il primo allenamento',
     noData: 'Nessun dato disponibile per questo esercizio.',
@@ -173,8 +177,8 @@ export const strings = {
 
   // Calendar
   calendar: {
-    title: 'CALENDARIO',
-    completed: 'COMPLETATO',
+    title: 'Calendario',
+    completed: 'Completato',
     prevMonth: 'Mese precedente',
     nextMonth: 'Mese successivo',
     noWorkout: 'Nessun allenamento in questo giorno',
@@ -184,15 +188,15 @@ export const strings = {
 
   // Settings
   settings: {
-    title: 'IMPOSTAZIONI',
+    title: 'Impostazioni',
     defaultTimer: 'Timer recupero predefinito',
     sound: 'Suono',
     vibration: 'Vibrazione',
-    data: 'DATI',
+    data: 'Dati',
     dataInfo: 'I dati sono salvati localmente su questo dispositivo.',
     resetData: 'Resetta dati app',
     resetConfirm: 'Questa azione eliminerà definitivamente scheda, allenamenti e storico presenti su questo dispositivo.',
-    resetButton: 'ELIMINA TUTTO',
+    resetButton: 'Elimina tutto',
     resetCancel: 'Annulla',
     appleHealth: 'Apple Health',
     appleHealthNote: 'Richiede app nativa',
@@ -218,6 +222,9 @@ export const strings = {
     retry: 'Riprova',
     notFound: 'Pagina non trovata.',
     goHome: 'Torna alla home',
+    workoutNotFound: 'Allenamento non trovato',
+    workoutNotFoundDetail:
+      'Il link non è valido oppure l\'allenamento non è più disponibile.',
   },
 
   // Actions

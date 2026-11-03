@@ -1,12 +1,13 @@
 /* ============================================
-   SCREEN HEADER — Top navigation bar
-   Used across all main screens
+   SCREEN HEADER & BOTTOM NAVIGATION
+   Apple visionOS Glassmorphism · 8px Grid
    ============================================ */
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { ChevronLeft, Home, ClipboardList, BarChart2, CalendarDays } from 'lucide-react';
 import { IconButton, ScreenTitle } from '@/components/ui';
+import { RestTimerLayer } from '@/features/timer/TimerComponents';
 
 interface ScreenHeaderProps {
   title: string;
@@ -15,9 +16,7 @@ interface ScreenHeaderProps {
   onBack?: () => void;
   rightAction?: React.ReactNode;
   transparent?: boolean;
-  /** Left-aligned Syne ExtraBold display title (root tab screens) */
   variant?: 'centered' | 'display';
-  /** Display title size: sm=24 md=26 lg=28 xl=30 */
   titleSize?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
@@ -45,16 +44,16 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
     return (
       <header
         className={`sticky top-0 z-30 pt-[env(safe-area-inset-top)] ${
-          transparent ? 'bg-transparent' : 'bg-bg-app/95 backdrop-blur-md'
+          transparent ? 'bg-transparent' : 'bg-bg-app/80 backdrop-blur-xl border-b border-border-glass'
         }`}
       >
-        <div className="flex items-start justify-between gap-3 px-5 pt-4 pb-3">
+        <div className="flex items-start justify-between gap-4 px-4 pt-4 pb-4">
           <div className="min-w-0 flex-1">
-            <ScreenTitle size={titleSize} className="break-words">
+            <ScreenTitle size={titleSize} className="break-words font-semibold text-text-primary">
               {title}
             </ScreenTitle>
             {subtitle && (
-              <p className="text-body text-text-secondary mt-1.5">{subtitle}</p>
+              <p className="text-body text-text-secondary mt-1">{subtitle}</p>
             )}
           </div>
           <div className="flex-shrink-0 pt-0.5">{rightAction}</div>
@@ -66,42 +65,39 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
   return (
     <header
       className={`sticky top-0 z-30 pt-[env(safe-area-inset-top)] ${
-        transparent ? 'bg-transparent' : 'bg-bg-app/95 backdrop-blur-md'
+        transparent ? 'bg-transparent' : 'bg-bg-app/80 backdrop-blur-xl border-b border-border-glass'
       }`}
     >
-      <div className="flex items-center justify-between px-5 h-14">
+      <div className="flex items-center justify-between px-4 h-16">
         {/* Left: Back button */}
-        <div className="w-11">
+        <div className="w-12 flex items-center">
           {showBack && (
-            <IconButton label="Indietro" onClick={handleBack} className="-ml-1.5">
-              <ChevronLeft className="w-6 h-6" strokeWidth={2} />
+            <IconButton label="Indietro" onClick={handleBack} className="-ml-1">
+              <ChevronLeft className="w-6 h-6 text-text-primary" strokeWidth={1.75} />
             </IconButton>
           )}
         </div>
 
-        {/* Center: Title — h1 so each screen exposes a real heading to
-            screen readers (was a plain <p>). */}
-        <div className="flex-1 text-center min-w-0">
-          <h1 className="text-label-sm text-text-secondary tracking-widest uppercase truncate">
+        {/* Center: Title — No uppercase, SF Pro typography */}
+        <div className="flex-1 text-center min-w-0 px-2">
+          <h1 className="text-heading font-semibold text-text-primary truncate">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-meta text-text-primary">{subtitle}</p>
+            <p className="text-meta text-text-secondary truncate">{subtitle}</p>
           )}
         </div>
 
         {/* Right: Action */}
-        <div className="w-11 flex justify-end">{rightAction}</div>
+        <div className="w-12 flex justify-end items-center">{rightAction}</div>
       </div>
     </header>
   );
 };
 
 /* ============================================
-   BOTTOM NAVIGATION
+   BOTTOM NAVIGATION — visionOS Floating Dock
    ============================================ */
-
-import { Link, useLocation } from 'react-router-dom';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Home', icon: Home },
@@ -115,12 +111,11 @@ export const BottomNavigation: React.FC = () => {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-30 mx-auto max-w-[480px] bg-bg-surface/95 backdrop-blur-md border-t border-border-default"
+      className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-[calc(100%-32px)] max-w-[400px]"
       aria-label="Navigazione principale"
     >
       <div
-        className="flex items-stretch justify-between px-[22px] pt-[10px] pb-[20px]"
-        style={{ paddingBottom: 'calc(20px + env(safe-area-inset-bottom))' }}
+        className="glass-dock rounded-full h-16 px-4 flex items-center justify-around shadow-2xl"
       >
         {NAV_ITEMS.map(({ to, label, icon: Icon }) => {
           const isActive =
@@ -134,17 +129,17 @@ export const BottomNavigation: React.FC = () => {
               to={to}
               aria-label={label}
               aria-current={isActive ? 'page' : undefined}
-              className="flex-1 flex flex-col items-center justify-center gap-[3px] min-h-[44px] py-1 relative"
+              className="flex-1 flex flex-col items-center justify-center gap-1 min-h-[48px] py-1 transition-transform active:scale-95"
             >
               <Icon
                 className={`w-5 h-5 transition-colors duration-200 ${
-                  isActive ? 'text-accent-primary' : 'text-icon-secondary'
+                  isActive ? 'text-white' : 'text-icon-secondary'
                 }`}
-                strokeWidth={2}
+                strokeWidth={isActive ? 2 : 1.75}
               />
               <span
-                className={`text-[12px] font-semibold leading-none transition-colors duration-200 ${
-                  isActive ? 'text-accent-primary' : 'text-text-secondary'
+                className={`text-[12px] leading-none transition-colors duration-200 ${
+                  isActive ? 'text-white font-semibold' : 'text-text-secondary font-normal'
                 }`}
               >
                 {label}
@@ -158,10 +153,8 @@ export const BottomNavigation: React.FC = () => {
 };
 
 /* ============================================
-    APP SHELL — Full screen wrapper
-    ============================================ */
-
-import { RestTimerLayer } from '@/features/timer/TimerComponents';
+   APP SHELL — Full screen wrapper
+   ============================================ */
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -175,7 +168,6 @@ export const AppShell: React.FC<AppShellProps> = ({
   <div className="min-h-[100dvh] bg-bg-app flex flex-col max-w-[480px] mx-auto relative">
     <main className="flex-1 flex flex-col">{children}</main>
     {showNav && <BottomNavigation />}
-    {/* Persistent rest-timer pill + focused view, visible from any screen */}
     <RestTimerLayer hasNav={showNav} />
   </div>
 );

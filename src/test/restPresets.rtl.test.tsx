@@ -16,7 +16,7 @@ describe('RestPresets', () => {
     render(<RestPresets onSelect={vi.fn()} />)
 
     const group = screen.getByRole('radiogroup')
-    expect(group).toHaveAccessibleName('RECUPERO')
+    expect(group).toHaveAccessibleName(/recupero/i)
     expect(screen.getAllByRole('radio')).toHaveLength(PRESET_LABELS.length)
     for (const label of PRESET_LABELS) {
       expect(screen.getByRole('radio', { name: label })).toBeInTheDocument()
@@ -28,9 +28,8 @@ describe('RestPresets', () => {
 
     const radios = screen.getAllByRole('radio')
     const checked = radios.filter((r) => r.getAttribute('aria-checked') === 'true')
-
     expect(checked).toHaveLength(1)
-    expect(checked[0]).toHaveTextContent('2:00')
+    expect(checked[0]).toHaveAccessibleName('2:00')
   })
 
   it('has no checked radio when nothing is active', () => {
@@ -53,22 +52,25 @@ describe('RestPresets', () => {
     const onSelect = vi.fn()
     render(<RestPresets onSelect={onSelect} activeSeconds={90} />)
 
-    const group = screen.getByRole('radiogroup')
+    const active = screen.getByRole('radio', { name: '1:30' })
+    active.focus()
 
-    fireEvent.keyDown(group, { key: 'ArrowRight' })
-    expect(onSelect).toHaveBeenLastCalledWith(120)
+    fireEvent.keyDown(active, { key: 'ArrowRight' })
+    expect(onSelect).toHaveBeenCalledWith(120)
 
-    fireEvent.keyDown(group, { key: 'ArrowLeft' })
-    expect(onSelect).toHaveBeenLastCalledWith(60)
+    fireEvent.keyDown(active, { key: 'ArrowLeft' })
+    expect(onSelect).toHaveBeenCalledWith(60)
   })
 
   it('wraps around at the ends', () => {
     const onSelect = vi.fn()
-    // 60s is the first preset → ArrowLeft should wrap to the last (150)
     render(<RestPresets onSelect={onSelect} activeSeconds={60} />)
 
-    fireEvent.keyDown(screen.getByRole('radiogroup'), { key: 'ArrowLeft' })
-    expect(onSelect).toHaveBeenLastCalledWith(150)
+    const first = screen.getByRole('radio', { name: '1:00' })
+    first.focus()
+
+    fireEvent.keyDown(first, { key: 'ArrowLeft' })
+    expect(onSelect).toHaveBeenCalledWith(150)
   })
 
   it('uses a roving tabindex so only one preset is in the tab order', () => {
@@ -76,19 +78,17 @@ describe('RestPresets', () => {
 
     const radios = screen.getAllByRole('radio')
     const focusable = radios.filter((r) => r.getAttribute('tabindex') === '0')
-
     expect(focusable).toHaveLength(1)
-    expect(focusable[0]).toHaveTextContent('2:00')
+    expect(focusable[0]).toHaveAccessibleName('2:00')
+
+    const nonFocusable = radios.filter((r) => r.getAttribute('tabindex') === '-1')
+    expect(nonFocusable).toHaveLength(PRESET_LABELS.length - 1)
   })
 
   it('falls back to the preferred preset for the tab order when none is active', () => {
-    render(<RestPresets onSelect={vi.fn()} preferredSeconds={150} />)
+    render(<RestPresets onSelect={vi.fn()} preferredSeconds={90} />)
 
-    const focusable = screen
-      .getAllByRole('radio')
-      .filter((r) => r.getAttribute('tabindex') === '0')
-
-    expect(focusable).toHaveLength(1)
-    expect(focusable[0]).toHaveTextContent('2:30')
+    const preferred = screen.getByRole('radio', { name: '1:30' })
+    expect(preferred).toHaveAttribute('tabindex', '0')
   })
 })

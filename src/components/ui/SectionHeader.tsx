@@ -10,7 +10,7 @@ interface SectionHeaderProps {
 }
 
 export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, action }) => (
-  <div className="flex items-center justify-between mb-3">
+  <div className="flex items-center justify-between mb-4">
     <h2 className="text-label-sm text-text-secondary">{title}</h2>
     {action}
   </div>

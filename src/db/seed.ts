@@ -288,6 +288,7 @@ const DEFAULT_SETTINGS: AppSettings & { id: string } = {
   defaultRestSeconds: 120,
   soundEnabled: true,
   vibrationEnabled: true,
+  weeklyTarget: 4,
 };
 
 const DEFAULT_APP_STATE: AppState = {

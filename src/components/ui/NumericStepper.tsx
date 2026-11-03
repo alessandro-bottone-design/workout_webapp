@@ -1,9 +1,10 @@
 /* ============================================
-   NUMERIC STEPPER
+   NUMERIC STEPPER — visionOS Glass Controls
    ============================================ */
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Minus, Plus } from 'lucide-react';
 
 interface NumericStepperProps {
   value: number;
@@ -27,8 +28,6 @@ export const NumericStepper: React.FC<NumericStepperProps> = ({
 
   const name = label ?? 'valore';
 
-  // Arrow keys adjust the value when the spinbutton itself has focus, so
-  // keyboard/switch users don't have to tab through the −/+ buttons.
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
       e.preventDefault();
@@ -42,17 +41,17 @@ export const NumericStepper: React.FC<NumericStepperProps> = ({
   return (
     <div className="flex flex-col items-center gap-2">
       {label && (
-        <p className="text-label-sm text-text-secondary">{label}</p>
+        <p className="text-label-sm text-text-secondary font-semibold">{label}</p>
       )}
       <div className="flex items-center gap-6">
         <motion.button
-          whileTap={{ scale: 0.9 }}
+          whileTap={{ scale: 0.92 }}
           onClick={dec}
           disabled={value <= min}
           aria-label={`Riduci ${name}`}
-          className="w-14 h-14 rounded-full bg-bg-elevated border border-border-default text-text-primary text-2xl font-light flex items-center justify-center disabled:opacity-30 active:bg-white/10"
+          className="w-14 h-14 rounded-full bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] text-white flex items-center justify-center disabled:opacity-25 hover:bg-white/[0.14] active:bg-white/[0.20] transition-colors"
         >
-          −
+          <Minus className="w-6 h-6" strokeWidth={1.75} />
         </motion.button>
         <span
           role="spinbutton"
@@ -63,18 +62,18 @@ export const NumericStepper: React.FC<NumericStepperProps> = ({
           aria-valuemax={max}
           aria-valuetext={`${value}`}
           onKeyDown={handleKeyDown}
-          className="text-[52px] font-bold text-text-primary w-20 text-center tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary rounded-btn"
+          className="text-numeric-lg font-semibold text-text-primary w-24 text-center tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-btn select-none"
         >
           {value}
         </span>
         <motion.button
-          whileTap={{ scale: 0.9 }}
+          whileTap={{ scale: 0.92 }}
           onClick={inc}
           disabled={value >= max}
           aria-label={`Aumenta ${name}`}
-          className="w-14 h-14 rounded-full bg-bg-elevated border border-border-default text-text-primary text-2xl font-light flex items-center justify-center disabled:opacity-30 active:bg-white/10"
+          className="w-14 h-14 rounded-full bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] text-white flex items-center justify-center disabled:opacity-25 hover:bg-white/[0.14] active:bg-white/[0.20] transition-colors"
         >
-          +
+          <Plus className="w-6 h-6" strokeWidth={1.75} />
         </motion.button>
       </div>
     </div>

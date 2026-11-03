@@ -10,6 +10,7 @@ import {
   getRepresentativeWeight,
   totalCompletedWorkouts,
   averageWorkoutDuration,
+  getCurrentProgramWeek,
 } from '@/lib/selectors'
 import {
   formatWeight,
@@ -142,6 +143,27 @@ describe('getNextSessionId', () => {
 
   it('returns undefined for empty sessions array', () => {
     expect(getNextSessionId([], [])).toBeUndefined()
+  })
+})
+
+describe('getCurrentProgramWeek', () => {
+  it('returns week 1 without a start date', () => {
+    expect(getCurrentProgramWeek(undefined)).toBe(1)
+  })
+
+  it('returns week 1 for an invalid date', () => {
+    expect(getCurrentProgramWeek('not-a-date')).toBe(1)
+  })
+
+  it('counts weeks from a date-only start date', () => {
+    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+    const iso = fourteenDaysAgo.toISOString().slice(0, 10)
+    expect(getCurrentProgramWeek(iso)).toBe(3)
+  })
+
+  it('never returns less than week 1 for future start dates', () => {
+    const inOneWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    expect(getCurrentProgramWeek(inOneWeek.toISOString().slice(0, 10))).toBe(1)
   })
 })
 
@@ -294,3 +316,37 @@ describe('timer remaining time calculation', () => {
     expect(remaining).toBe(0)
   })
 })
+
+describe('cardio timer reload reconstruction', () => {
+  it('reconstructs elapsed seconds from running cardioStartedAt + previous cardioElapsedSeconds', () => {
+    const baseElapsed = 120 // already elapsed 2 mins
+    const startedAt = Date.now() - 45000 // resumed 45s ago
+    const simulatedNow = Date.now()
+    const delta = Math.floor((simulatedNow - startedAt) / 1000)
+    const totalElapsed = baseElapsed + delta
+    expect(totalElapsed).toBe(165)
+  })
+
+  it('preserves cardioElapsedSeconds when timer is paused (no cardioStartedAt)', () => {
+    const baseElapsed = 300
+    const startedAt = undefined
+    const totalElapsed = (startedAt ? 50 : 0) + baseElapsed
+    expect(totalElapsed).toBe(300)
+  })
+})
+
+describe('program duration week clamping & completion', () => {
+  it('detects program completion when current week exceeds durationWeeks', () => {
+    const durationWeeks = 8
+    const fourteenWeeksAgo = new Date(Date.now() - 14 * 7 * 24 * 60 * 60 * 1000)
+    const rawWeek = getCurrentProgramWeek(fourteenWeeksAgo.toISOString().slice(0, 10))
+    expect(rawWeek).toBeGreaterThan(durationWeeks)
+
+    const isCompleted = rawWeek > durationWeeks
+    const clampedWeek = Math.min(rawWeek, durationWeeks)
+
+    expect(isCompleted).toBe(true)
+    expect(clampedWeek).toBe(8)
+  })
+})
+

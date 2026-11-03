@@ -1,0 +1,1945 @@
+{
+  "schemaVersion": 1,
+  "exportedAt": "2026-11-03T10:36:26.280Z",
+  "app": "workout-app",
+  "data": {
+    "programs": [
+      {
+        "id": "a1111111-1111-4111-8111-111111111111",
+        "name": "Scheda Allenamento",
+        "createdAt": 1729000000000,
+        "durationWeeks": 8,
+        "sheetRevision": 2,
+        "sessions": [
+          {
+            "id": "b1111111-1111-4111-8111-111111111101",
+            "name": "Seduta 1",
+            "order": 0,
+            "exercises": [
+              {
+                "id": "c1111111-1111-4111-8111-000000000001",
+                "name": "Cyclette",
+                "type": "cardio",
+                "order": 0,
+                "durationSeconds": 600,
+                "notes": "10 min riscaldamento"
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000002",
+                "name": "Chest Press",
+                "type": "strength",
+                "order": 1,
+                "sets": 3,
+                "targetReps": 8,
+                "defaultWeight": 52,
+                "restSeconds": 120,
+                "notes": "Drop set: 8 rip con 52kg + 8 rip con 45kg senza pausa"
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000003",
+                "name": "Panca 45° al multipower",
+                "type": "strength",
+                "order": 2,
+                "sets": 3,
+                "targetReps": 6,
+                "defaultWeight": 35,
+                "restSeconds": 120,
+                "notes": "Bilanciere multipower circa 10kg incluso nel totale"
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000004",
+                "name": "Lat Machine Maniglia Singola",
+                "type": "strength",
+                "order": 3,
+                "sets": 4,
+                "targetReps": 8,
+                "defaultWeight": 20.3,
+                "restSeconds": 120
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000005",
+                "name": "Alzate Laterali Cavo Medio",
+                "type": "strength",
+                "order": 4,
+                "sets": 3,
+                "targetReps": 8,
+                "defaultWeight": 10,
+                "restSeconds": 120
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000006",
+                "name": "Tapis Roulant",
+                "type": "cardio",
+                "order": 5,
+                "durationSeconds": 1800,
+                "notes": "20 min a velocità 6.2 + 10 min a velocità 4.0 senza inclinazione"
+              }
+            ]
+          },
+          {
+            "id": "b1111111-1111-4111-8111-111111111102",
+            "name": "Seduta 2",
+            "order": 1,
+            "exercises": [
+              {
+                "id": "c1111111-1111-4111-8111-000000000007",
+                "name": "Ellittica",
+                "type": "cardio",
+                "order": 0,
+                "durationSeconds": 360,
+                "notes": "6 min riscaldamento"
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000008",
+                "name": "Leg Extension",
+                "type": "strength",
+                "order": 1,
+                "sets": 4,
+                "targetReps": 8,
+                "defaultWeight": 59,
+                "restSeconds": 120
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000009",
+                "name": "Leg Press Piedi stretti",
+                "type": "strength",
+                "order": 2,
+                "sets": 3,
+                "targetReps": 8,
+                "defaultWeight": 79,
+                "restSeconds": 120
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000010",
+                "name": "Reverse Fly Machine",
+                "type": "strength",
+                "order": 3,
+                "sets": 3,
+                "targetReps": 12,
+                "defaultWeight": 32,
+                "restSeconds": 120
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000011",
+                "name": "Lento Avanti Manubri",
+                "type": "strength",
+                "order": 4,
+                "sets": 3,
+                "targetReps": 8,
+                "defaultWeight": 16,
+                "restSeconds": 120
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000012",
+                "name": "Tapis Roulant",
+                "type": "cardio",
+                "order": 5,
+                "durationSeconds": 1800,
+                "notes": "20 min a velocità 6.2 + 10 min a velocità 4.0 senza inclinazione"
+              }
+            ]
+          },
+          {
+            "id": "b1111111-1111-4111-8111-111111111103",
+            "name": "Seduta 3",
+            "order": 2,
+            "exercises": [
+              {
+                "id": "c1111111-1111-4111-8111-000000000013",
+                "name": "Tapis Roulant Riscaldamento",
+                "type": "cardio",
+                "order": 0,
+                "durationSeconds": 600,
+                "notes": "10 min riscaldamento"
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000014",
+                "name": "Leg Curl Monopodalica",
+                "type": "strength",
+                "order": 1,
+                "sets": 3,
+                "targetReps": 8,
+                "defaultWeight": 32,
+                "restSeconds": 120
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000015",
+                "name": "Stacchi Manubri (gambe leggermente piegate)",
+                "type": "strength",
+                "order": 2,
+                "sets": 3,
+                "targetReps": 8,
+                "defaultWeight": 18,
+                "restSeconds": 120
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000016",
+                "name": "Adductor + Abductor (Superserie)",
+                "type": "strength",
+                "order": 3,
+                "sets": 3,
+                "targetReps": 10,
+                "defaultWeight": 36,
+                "restSeconds": 120,
+                "notes": "Superserie: 10 rip Adductor + 10 rip Abductor con 36kg"
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000017",
+                "name": "Russian Twist con Kettlebell",
+                "type": "strength",
+                "order": 4,
+                "sets": 3,
+                "targetReps": 12,
+                "defaultWeight": 8,
+                "restSeconds": 120
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000018",
+                "name": "Plank",
+                "type": "strength",
+                "order": 5,
+                "sets": 3,
+                "targetReps": 1,
+                "defaultWeight": 0,
+                "restSeconds": 60,
+                "notes": "Massima tenuta"
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000019",
+                "name": "Tapis Roulant",
+                "type": "cardio",
+                "order": 6,
+                "durationSeconds": 1800,
+                "notes": "20 min a velocità 6.2 + 10 min a velocità 4.0 senza inclinazione"
+              }
+            ]
+          },
+          {
+            "id": "b1111111-1111-4111-8111-111111111104",
+            "name": "Seduta 4",
+            "order": 3,
+            "exercises": [
+              {
+                "id": "c1111111-1111-4111-8111-000000000020",
+                "name": "Rematore Manubrio",
+                "type": "strength",
+                "order": 0,
+                "sets": 3,
+                "targetReps": 8,
+                "defaultWeight": 24,
+                "restSeconds": 120
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000021",
+                "name": "Pull Down Asta",
+                "type": "strength",
+                "order": 1,
+                "sets": 3,
+                "targetReps": 12,
+                "defaultWeight": 18,
+                "restSeconds": 120
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000022",
+                "name": "Curl Bilanciere EZ Panca Scott",
+                "type": "strength",
+                "order": 2,
+                "sets": 3,
+                "targetReps": 8,
+                "defaultWeight": 20,
+                "restSeconds": 120,
+                "notes": "18 / 20 kg"
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000023",
+                "name": "Tricipiti Corda",
+                "type": "strength",
+                "order": 3,
+                "sets": 4,
+                "targetReps": 8,
+                "defaultWeight": 14,
+                "restSeconds": 120
+              },
+              {
+                "id": "c1111111-1111-4111-8111-000000000024",
+                "name": "Tapis Roulant",
+                "type": "cardio",
+                "order": 4,
+                "durationSeconds": 1800,
+                "notes": "20 min a velocità 6.2 + 10 min a velocità 4.0 senza inclinazione"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "workouts": [
+      {
+        "id": "d1111111-1111-4111-8111-000000000001",
+        "programId": "a1111111-1111-4111-8111-111111111111",
+        "sessionTemplateId": "b1111111-1111-4111-8111-111111111101",
+        "sessionNameSnapshot": "Seduta 1",
+        "startedAt": 1791993600000,
+        "completedAt": 1791999060000,
+        "status": "completed",
+        "exerciseLogs": [
+          {
+            "id": "0c7b75d7-4c5b-411f-b9bb-8aeccb4121f1",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000001",
+            "exerciseNameSnapshot": "Cyclette",
+            "exerciseTypeSnapshot": "cardio",
+            "plannedSetsSnapshot": 1,
+            "plannedDurationSeconds": 600,
+            "order": 0,
+            "status": "completed",
+            "setLogs": [],
+            "startedAt": 1791993600000,
+            "completedAt": 1791994200000
+          },
+          {
+            "id": "8c787b84-a7e8-48bc-87f5-58d5c7981aa3",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000002",
+            "exerciseNameSnapshot": "Chest Press",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 47.3,
+            "order": 1,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "30b78fca-66a2-4720-85fa-cd5a9c6fd9a6",
+                "setNumber": 1,
+                "weight": 47.3,
+                "reps": 8,
+                "completedAt": 1791994320000
+              },
+              {
+                "id": "b469f25f-cb89-4438-ad08-004066914291",
+                "setNumber": 2,
+                "weight": 47.3,
+                "reps": 8,
+                "completedAt": 1791994440000
+              },
+              {
+                "id": "31c5d902-d0a7-4666-afec-fd87813d62bb",
+                "setNumber": 3,
+                "weight": 47.3,
+                "reps": 8,
+                "completedAt": 1791994560000
+              }
+            ],
+            "startedAt": 1791994200000,
+            "completedAt": 1791994560000
+          },
+          {
+            "id": "dee67b86-942a-40ae-a5ed-5dea89534c0d",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000003",
+            "exerciseNameSnapshot": "Panca 45° al multipower",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 6,
+            "plannedWeightSnapshot": 37.5,
+            "order": 2,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "dc8802ab-7c8d-4ead-9ef1-8689cb72eef5",
+                "setNumber": 1,
+                "weight": 37.5,
+                "reps": 6,
+                "completedAt": 1791994920000
+              },
+              {
+                "id": "7cdb1d61-4954-4616-8a9c-22ed7847f2c3",
+                "setNumber": 2,
+                "weight": 37.5,
+                "reps": 6,
+                "completedAt": 1791995040000
+              },
+              {
+                "id": "4255bf55-6944-49f8-ad61-80ab922aef9c",
+                "setNumber": 3,
+                "weight": 37.5,
+                "reps": 6,
+                "completedAt": 1791995160000
+              }
+            ],
+            "startedAt": 1791994800000,
+            "completedAt": 1791995160000
+          },
+          {
+            "id": "141381e9-811b-413a-989b-b023ccf0c843",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000004",
+            "exerciseNameSnapshot": "Lat Machine Maniglia Singola",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 4,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 20.3,
+            "order": 3,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "a18a176f-ed2f-4f1c-b2b6-20c900a55d0f",
+                "setNumber": 1,
+                "weight": 20.3,
+                "reps": 8,
+                "completedAt": 1791995520000
+              },
+              {
+                "id": "208c3fff-d94c-4157-917d-cfb578c823e5",
+                "setNumber": 2,
+                "weight": 20.3,
+                "reps": 8,
+                "completedAt": 1791995640000
+              },
+              {
+                "id": "fc40c02b-2136-4111-92a7-f83e5bf08eff",
+                "setNumber": 3,
+                "weight": 20.3,
+                "reps": 8,
+                "completedAt": 1791995760000
+              },
+              {
+                "id": "39d0b749-0353-4ac7-9a52-72f04729a76c",
+                "setNumber": 4,
+                "weight": 20.3,
+                "reps": 8,
+                "completedAt": 1791995880000
+              }
+            ],
+            "startedAt": 1791995400000,
+            "completedAt": 1791995880000
+          },
+          {
+            "id": "c6cc349d-38b3-408b-be15-b081c2f7d234",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000005",
+            "exerciseNameSnapshot": "Alzate Laterali Cavo Medio",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 10,
+            "order": 4,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "97c64d28-1f79-4ebe-90b8-290da9c2d97c",
+                "setNumber": 1,
+                "weight": 10,
+                "reps": 8,
+                "completedAt": 1791996120000
+              },
+              {
+                "id": "7f489de8-1fe6-48e2-beef-9ff835d2b0ec",
+                "setNumber": 2,
+                "weight": 10,
+                "reps": 8,
+                "completedAt": 1791996240000
+              },
+              {
+                "id": "13748fb5-b500-4e48-aa21-299206bec2f4",
+                "setNumber": 3,
+                "weight": 10,
+                "reps": 8,
+                "completedAt": 1791996360000
+              }
+            ],
+            "startedAt": 1791996000000,
+            "completedAt": 1791996360000
+          },
+          {
+            "id": "c28a7ea4-0fd9-4ffe-9c08-3139627b3399",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000006",
+            "exerciseNameSnapshot": "Tapis Roulant",
+            "exerciseTypeSnapshot": "cardio",
+            "plannedSetsSnapshot": 1,
+            "plannedDurationSeconds": 1800,
+            "order": 5,
+            "status": "completed",
+            "setLogs": [],
+            "startedAt": 1791996600000,
+            "completedAt": 1791998400000
+          }
+        ]
+      },
+      {
+        "id": "d1111111-1111-4111-8111-000000000002",
+        "programId": "a1111111-1111-4111-8111-111111111111",
+        "sessionTemplateId": "b1111111-1111-4111-8111-111111111102",
+        "sessionNameSnapshot": "Seduta 2",
+        "startedAt": 1792166400000,
+        "completedAt": 1792171860000,
+        "status": "completed",
+        "exerciseLogs": [
+          {
+            "id": "363b359a-c2d1-46d4-9d32-45988f9a9110",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000007",
+            "exerciseNameSnapshot": "Ellittica",
+            "exerciseTypeSnapshot": "cardio",
+            "plannedSetsSnapshot": 1,
+            "plannedDurationSeconds": 360,
+            "order": 0,
+            "status": "completed",
+            "setLogs": [],
+            "startedAt": 1792166400000,
+            "completedAt": 1792166760000
+          },
+          {
+            "id": "5322f715-969b-442d-b78e-caf3ff58c5de",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000008",
+            "exerciseNameSnapshot": "Leg Extension",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 4,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 59,
+            "order": 1,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "455712ac-c0e4-4faf-a2d5-8f2ad4e2f0db",
+                "setNumber": 1,
+                "weight": 59,
+                "reps": 8,
+                "completedAt": 1792166920000
+              },
+              {
+                "id": "9f463e79-8a70-4b59-be5c-3064a4cc8621",
+                "setNumber": 2,
+                "weight": 59,
+                "reps": 8,
+                "completedAt": 1792167040000
+              },
+              {
+                "id": "9da49bad-fba0-4df9-9330-3250faf2b839",
+                "setNumber": 3,
+                "weight": 59,
+                "reps": 8,
+                "completedAt": 1792167160000
+              },
+              {
+                "id": "996983e3-f7b0-432f-acf8-0d304fa14e39",
+                "setNumber": 4,
+                "weight": 59,
+                "reps": 8,
+                "completedAt": 1792167280000
+              }
+            ],
+            "startedAt": 1792166800000,
+            "completedAt": 1792167280000
+          },
+          {
+            "id": "baa92839-e186-428d-bcba-7dcc01c01ae3",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000009",
+            "exerciseNameSnapshot": "Leg Press Piedi stretti",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 83.6,
+            "order": 2,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "5a52e56f-0a2e-48cb-986b-13796ad3e3c2",
+                "setNumber": 1,
+                "weight": 83.6,
+                "reps": 8,
+                "completedAt": 1792167520000
+              },
+              {
+                "id": "d4cfbdbe-e8cb-4041-b71d-f20ddb7438dd",
+                "setNumber": 2,
+                "weight": 83.6,
+                "reps": 8,
+                "completedAt": 1792167640000
+              },
+              {
+                "id": "2f236030-723d-447e-a2cf-4c9e622a8f2f",
+                "setNumber": 3,
+                "weight": 83.6,
+                "reps": 8,
+                "completedAt": 1792167760000
+              }
+            ],
+            "startedAt": 1792167400000,
+            "completedAt": 1792167760000
+          },
+          {
+            "id": "785d7627-477d-4b52-b9d6-e4e54e70b2e9",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000010",
+            "exerciseNameSnapshot": "Reverse Fly Machine",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 12,
+            "plannedWeightSnapshot": 32,
+            "order": 3,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "60051f4d-03cf-4835-bd67-d5d46a24cf31",
+                "setNumber": 1,
+                "weight": 32,
+                "reps": 12,
+                "completedAt": 1792168120000
+              },
+              {
+                "id": "945f23d0-79fb-4cce-bc37-2e76cceeff77",
+                "setNumber": 2,
+                "weight": 32,
+                "reps": 12,
+                "completedAt": 1792168240000
+              },
+              {
+                "id": "6fd6ba0c-ac2c-4916-836f-433003c12dd5",
+                "setNumber": 3,
+                "weight": 32,
+                "reps": 12,
+                "completedAt": 1792168360000
+              }
+            ],
+            "startedAt": 1792168000000,
+            "completedAt": 1792168360000
+          },
+          {
+            "id": "001903e3-fa57-44f5-8444-ba4d9f4f0961",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000011",
+            "exerciseNameSnapshot": "Lento Avanti Manubri",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 16,
+            "order": 4,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "a7db5f74-748a-42b5-93a4-9e7ed2ab590e",
+                "setNumber": 1,
+                "weight": 16,
+                "reps": 8,
+                "completedAt": 1792168720000
+              },
+              {
+                "id": "993fa6ed-79af-42f5-bd18-078010f8bdce",
+                "setNumber": 2,
+                "weight": 16,
+                "reps": 8,
+                "completedAt": 1792168840000
+              },
+              {
+                "id": "3e1c4e97-c910-4b51-a883-71b3a397b71c",
+                "setNumber": 3,
+                "weight": 16,
+                "reps": 8,
+                "completedAt": 1792168960000
+              }
+            ],
+            "startedAt": 1792168600000,
+            "completedAt": 1792168960000
+          },
+          {
+            "id": "ca3bdafc-4f12-4c9a-9175-a414770299c6",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000012",
+            "exerciseNameSnapshot": "Tapis Roulant",
+            "exerciseTypeSnapshot": "cardio",
+            "plannedSetsSnapshot": 1,
+            "plannedDurationSeconds": 1800,
+            "order": 5,
+            "status": "completed",
+            "setLogs": [],
+            "startedAt": 1792169200000,
+            "completedAt": 1792171000000
+          }
+        ]
+      },
+      {
+        "id": "d1111111-1111-4111-8111-000000000003",
+        "programId": "a1111111-1111-4111-8111-111111111111",
+        "sessionTemplateId": "b1111111-1111-4111-8111-111111111103",
+        "sessionNameSnapshot": "Seduta 3",
+        "startedAt": 1792425600000,
+        "completedAt": 1792431060000,
+        "status": "completed",
+        "exerciseLogs": [
+          {
+            "id": "c3f362b9-a6e3-45a9-b9e6-9ff267bcef5e",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000013",
+            "exerciseNameSnapshot": "Tapis Roulant Riscaldamento",
+            "exerciseTypeSnapshot": "cardio",
+            "plannedSetsSnapshot": 1,
+            "plannedDurationSeconds": 600,
+            "order": 0,
+            "status": "completed",
+            "setLogs": [],
+            "startedAt": 1792425600000,
+            "completedAt": 1792426200000
+          },
+          {
+            "id": "c3d784e0-f9ed-49a5-a1c6-11395fe004fb",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000014",
+            "exerciseNameSnapshot": "Leg Curl Monopodalica",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 32,
+            "order": 1,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "edbcc1a7-fdcd-430f-8b42-01d759fae3d7",
+                "setNumber": 1,
+                "weight": 32,
+                "reps": 8,
+                "completedAt": 1792426320000
+              },
+              {
+                "id": "fe088295-4459-472d-a870-f66319b0a991",
+                "setNumber": 2,
+                "weight": 32,
+                "reps": 8,
+                "completedAt": 1792426440000
+              },
+              {
+                "id": "fbdc1e09-bffa-4afe-bb31-f4fbd5b31768",
+                "setNumber": 3,
+                "weight": 32,
+                "reps": 8,
+                "completedAt": 1792426560000
+              }
+            ],
+            "startedAt": 1792426200000,
+            "completedAt": 1792426560000
+          },
+          {
+            "id": "6ec869fd-65bb-439e-a222-c48b9e8ba8dd",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000015",
+            "exerciseNameSnapshot": "Stacchi Manubri (gambe leggermente piegate)",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 18,
+            "order": 2,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "81539870-4799-44f6-8859-51e793e6fd5a",
+                "setNumber": 1,
+                "weight": 18,
+                "reps": 8,
+                "completedAt": 1792426920000
+              },
+              {
+                "id": "4fa7bf05-10aa-41b4-bd51-ede66c463e9b",
+                "setNumber": 2,
+                "weight": 18,
+                "reps": 8,
+                "completedAt": 1792427040000
+              },
+              {
+                "id": "9f4c7f83-b68c-42e8-a41d-7d057a9e36b9",
+                "setNumber": 3,
+                "weight": 18,
+                "reps": 8,
+                "completedAt": 1792427160000
+              }
+            ],
+            "startedAt": 1792426800000,
+            "completedAt": 1792427160000
+          },
+          {
+            "id": "886edbbb-e9f5-45ff-b558-a6b620059adc",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000016",
+            "exerciseNameSnapshot": "Adductor + Abductor (Superserie)",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 10,
+            "plannedWeightSnapshot": 36,
+            "order": 3,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "226d06e4-a6a0-4b1e-9863-56206cca28dc",
+                "setNumber": 1,
+                "weight": 36,
+                "reps": 10,
+                "completedAt": 1792427520000
+              },
+              {
+                "id": "2dc56acd-7711-48b8-8627-1a3da455f059",
+                "setNumber": 2,
+                "weight": 36,
+                "reps": 10,
+                "completedAt": 1792427640000
+              },
+              {
+                "id": "677abcbe-3de4-4fc5-a560-4fdb5c5aee4f",
+                "setNumber": 3,
+                "weight": 36,
+                "reps": 10,
+                "completedAt": 1792427760000
+              }
+            ],
+            "startedAt": 1792427400000,
+            "completedAt": 1792427760000
+          },
+          {
+            "id": "80dde626-e717-42e8-9897-6b0a0e32af04",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000018",
+            "exerciseNameSnapshot": "Plank",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 1,
+            "plannedWeightSnapshot": 0,
+            "order": 5,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "5267afdf-3a97-4c1b-855a-df519dc7461f",
+                "setNumber": 1,
+                "weight": 0,
+                "reps": 1,
+                "completedAt": 1792428120000
+              },
+              {
+                "id": "c55ac479-2a08-4ebf-befb-9cf4b1253f9c",
+                "setNumber": 2,
+                "weight": 0,
+                "reps": 1,
+                "completedAt": 1792428240000
+              },
+              {
+                "id": "ddc5780b-f328-46ce-9e7d-af3862b9114f",
+                "setNumber": 3,
+                "weight": 0,
+                "reps": 1,
+                "completedAt": 1792428360000
+              }
+            ],
+            "startedAt": 1792428000000,
+            "completedAt": 1792428360000
+          },
+          {
+            "id": "a2cf327f-9e9f-4ead-81ee-74ad4275fbe2",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000019",
+            "exerciseNameSnapshot": "Tapis Roulant",
+            "exerciseTypeSnapshot": "cardio",
+            "plannedSetsSnapshot": 1,
+            "plannedDurationSeconds": 1800,
+            "order": 6,
+            "status": "completed",
+            "setLogs": [],
+            "startedAt": 1792428600000,
+            "completedAt": 1792430400000
+          }
+        ]
+      },
+      {
+        "id": "d1111111-1111-4111-8111-000000000004",
+        "programId": "a1111111-1111-4111-8111-111111111111",
+        "sessionTemplateId": "b1111111-1111-4111-8111-111111111104",
+        "sessionNameSnapshot": "Seduta 4",
+        "startedAt": 1792598400000,
+        "completedAt": 1792603860000,
+        "status": "completed",
+        "exerciseLogs": [
+          {
+            "id": "5516892b-c961-49c3-93e0-5eca2aa8d48d",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000020",
+            "exerciseNameSnapshot": "Rematore Manubrio",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 26,
+            "order": 0,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "b7defbd9-7f21-4a94-8205-4342a0e18280",
+                "setNumber": 1,
+                "weight": 26,
+                "reps": 8,
+                "completedAt": 1792598520000
+              },
+              {
+                "id": "26009518-d18e-415a-898d-0f5543bd3787",
+                "setNumber": 2,
+                "weight": 26,
+                "reps": 8,
+                "completedAt": 1792598640000
+              },
+              {
+                "id": "64975bb9-9d96-488c-a2a5-3c7e80fa7009",
+                "setNumber": 3,
+                "weight": 26,
+                "reps": 8,
+                "completedAt": 1792598760000
+              }
+            ],
+            "startedAt": 1792598400000,
+            "completedAt": 1792598760000
+          },
+          {
+            "id": "2659175e-9b73-4ee4-80f1-78dd0649dd2d",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000021",
+            "exerciseNameSnapshot": "Pull Down Asta",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 12,
+            "plannedWeightSnapshot": 18,
+            "order": 1,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "1acb0f21-2d81-43b1-bd34-d6d3f2e79caa",
+                "setNumber": 1,
+                "weight": 18,
+                "reps": 12,
+                "completedAt": 1792599120000
+              },
+              {
+                "id": "ae6ec0a2-a442-4de5-8f59-5c5ee5a09c37",
+                "setNumber": 2,
+                "weight": 18,
+                "reps": 12,
+                "completedAt": 1792599240000
+              },
+              {
+                "id": "6e8aa43d-4909-4de1-8a94-ba01477b2ad8",
+                "setNumber": 3,
+                "weight": 18,
+                "reps": 12,
+                "completedAt": 1792599360000
+              }
+            ],
+            "startedAt": 1792599000000,
+            "completedAt": 1792599360000
+          },
+          {
+            "id": "371f190d-4ab1-431a-b687-34c1bfd1c616",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000022",
+            "exerciseNameSnapshot": "Curl Bilanciere EZ Panca Scott",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 20,
+            "order": 2,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "8a46f51e-e80d-43ac-a27d-5b807a1aa3be",
+                "setNumber": 1,
+                "weight": 20,
+                "reps": 8,
+                "completedAt": 1792599720000
+              },
+              {
+                "id": "8216d884-426a-4ca3-868d-2f23611017a5",
+                "setNumber": 2,
+                "weight": 20,
+                "reps": 8,
+                "completedAt": 1792599840000
+              },
+              {
+                "id": "dd56867e-ff19-450e-bed9-ec397c1f7544",
+                "setNumber": 3,
+                "weight": 20,
+                "reps": 8,
+                "completedAt": 1792599960000
+              }
+            ],
+            "startedAt": 1792599600000,
+            "completedAt": 1792599960000
+          },
+          {
+            "id": "754240d5-f36a-4db7-b340-103fe0a203e3",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000023",
+            "exerciseNameSnapshot": "Tricipiti Corda",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 4,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 23,
+            "order": 3,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "f0e0eab6-31db-4796-8116-647571edbbe7",
+                "setNumber": 1,
+                "weight": 23,
+                "reps": 8,
+                "completedAt": 1792600320000
+              },
+              {
+                "id": "a1e0741d-3050-414d-8296-40f5861dcce8",
+                "setNumber": 2,
+                "weight": 23,
+                "reps": 8,
+                "completedAt": 1792600440000
+              },
+              {
+                "id": "5384b40c-74dd-4620-959c-f0588442254f",
+                "setNumber": 3,
+                "weight": 23,
+                "reps": 8,
+                "completedAt": 1792600560000
+              },
+              {
+                "id": "aff9d057-c2bb-45ad-b221-e69da6f3901e",
+                "setNumber": 4,
+                "weight": 23,
+                "reps": 8,
+                "completedAt": 1792600680000
+              }
+            ],
+            "startedAt": 1792600200000,
+            "completedAt": 1792600680000
+          },
+          {
+            "id": "8192af99-e1d1-417d-a332-517c83f05536",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000024",
+            "exerciseNameSnapshot": "Tapis Roulant",
+            "exerciseTypeSnapshot": "cardio",
+            "plannedSetsSnapshot": 1,
+            "plannedDurationSeconds": 1800,
+            "order": 4,
+            "status": "completed",
+            "setLogs": [],
+            "startedAt": 1792600800000,
+            "completedAt": 1792602600000
+          }
+        ]
+      },
+      {
+        "id": "d1111111-1111-4111-8111-000000000005",
+        "programId": "a1111111-1111-4111-8111-111111111111",
+        "sessionTemplateId": "b1111111-1111-4111-8111-111111111101",
+        "sessionNameSnapshot": "Seduta 1",
+        "startedAt": 1792771200000,
+        "completedAt": 1792776660000,
+        "status": "completed",
+        "exerciseLogs": [
+          {
+            "id": "1b2ec125-26d9-4552-a450-dacd3f775d2a",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000001",
+            "exerciseNameSnapshot": "Cyclette",
+            "exerciseTypeSnapshot": "cardio",
+            "plannedSetsSnapshot": 1,
+            "plannedDurationSeconds": 600,
+            "order": 0,
+            "status": "completed",
+            "setLogs": [],
+            "startedAt": 1792771200000,
+            "completedAt": 1792771800000
+          },
+          {
+            "id": "84b4a2ba-ffd9-4e92-a97e-6a3470819470",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000002",
+            "exerciseNameSnapshot": "Chest Press",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 47.3,
+            "order": 1,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "c039e9ac-a15f-42fd-9e0a-8d52b8b6cfa0",
+                "setNumber": 1,
+                "weight": 47.3,
+                "reps": 8,
+                "completedAt": 1792771920000
+              },
+              {
+                "id": "d938557d-7518-46aa-bdc6-53b16ecf1b26",
+                "setNumber": 2,
+                "weight": 47.3,
+                "reps": 8,
+                "completedAt": 1792772040000
+              },
+              {
+                "id": "ed373ddf-258f-40d7-916e-69c210fae393",
+                "setNumber": 3,
+                "weight": 47.3,
+                "reps": 8,
+                "completedAt": 1792772160000
+              }
+            ],
+            "startedAt": 1792771800000,
+            "completedAt": 1792772160000
+          },
+          {
+            "id": "9dfb5133-8066-42c9-9ab2-9fc23c096f90",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000003",
+            "exerciseNameSnapshot": "Panca 45° al multipower",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 6,
+            "plannedWeightSnapshot": 37.5,
+            "order": 2,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "4d9654f3-87fb-44d8-8315-41625538007d",
+                "setNumber": 1,
+                "weight": 37.5,
+                "reps": 6,
+                "completedAt": 1792772520000
+              },
+              {
+                "id": "e4db05e0-7f33-4795-9d7f-8ec495b9bc94",
+                "setNumber": 2,
+                "weight": 37.5,
+                "reps": 6,
+                "completedAt": 1792772640000
+              },
+              {
+                "id": "f7b546ae-5d32-4962-8d39-bd8e94629f8d",
+                "setNumber": 3,
+                "weight": 37.5,
+                "reps": 6,
+                "completedAt": 1792772760000
+              }
+            ],
+            "startedAt": 1792772400000,
+            "completedAt": 1792772760000
+          },
+          {
+            "id": "bf5283fb-85a6-4b7d-afb3-8339ba03d308",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000004",
+            "exerciseNameSnapshot": "Lat Machine Maniglia Singola",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 4,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 23,
+            "order": 3,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "d1b74d4d-dc35-4b18-9c0a-77c99ac25138",
+                "setNumber": 1,
+                "weight": 23,
+                "reps": 8,
+                "completedAt": 1792773120000
+              },
+              {
+                "id": "257a3413-e2d5-40a8-aad2-3881825fb751",
+                "setNumber": 2,
+                "weight": 23,
+                "reps": 8,
+                "completedAt": 1792773240000
+              },
+              {
+                "id": "2f0c0036-702c-4d1b-aa08-5849a7c32e03",
+                "setNumber": 3,
+                "weight": 23,
+                "reps": 8,
+                "completedAt": 1792773360000
+              },
+              {
+                "id": "3430dff3-0f41-4ecc-94c6-e9e6e28e0b3a",
+                "setNumber": 4,
+                "weight": 23,
+                "reps": 8,
+                "completedAt": 1792773480000
+              }
+            ],
+            "startedAt": 1792773000000,
+            "completedAt": 1792773480000
+          },
+          {
+            "id": "2eb490cc-118b-4aac-881d-5c5e65a59977",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000005",
+            "exerciseNameSnapshot": "Alzate Laterali Cavo Medio",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 10,
+            "order": 4,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "e789aa16-d118-4c20-a7fe-1098c5e6e186",
+                "setNumber": 1,
+                "weight": 10,
+                "reps": 8,
+                "completedAt": 1792773720000
+              },
+              {
+                "id": "93387b6d-c35b-4ebe-86d0-22b10651f2a9",
+                "setNumber": 2,
+                "weight": 10,
+                "reps": 8,
+                "completedAt": 1792773840000
+              },
+              {
+                "id": "2797a8a0-f0b0-4ec9-a746-48120ada2ff5",
+                "setNumber": 3,
+                "weight": 10,
+                "reps": 8,
+                "completedAt": 1792773960000
+              }
+            ],
+            "startedAt": 1792773600000,
+            "completedAt": 1792773960000
+          },
+          {
+            "id": "53506df9-b388-4dd3-a58c-b7085d74e17c",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000006",
+            "exerciseNameSnapshot": "Tapis Roulant",
+            "exerciseTypeSnapshot": "cardio",
+            "plannedSetsSnapshot": 1,
+            "plannedDurationSeconds": 1800,
+            "order": 5,
+            "status": "completed",
+            "setLogs": [],
+            "startedAt": 1792774200000,
+            "completedAt": 1792776000000
+          }
+        ]
+      },
+      {
+        "id": "d1111111-1111-4111-8111-000000000006",
+        "programId": "a1111111-1111-4111-8111-111111111111",
+        "sessionTemplateId": "b1111111-1111-4111-8111-111111111102",
+        "sessionNameSnapshot": "Seduta 2",
+        "startedAt": 1793034000000,
+        "completedAt": 1793039460000,
+        "status": "completed",
+        "exerciseLogs": [
+          {
+            "id": "2fcdbb0e-27c3-424e-8e59-d86ed6a2b444",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000007",
+            "exerciseNameSnapshot": "Ellittica",
+            "exerciseTypeSnapshot": "cardio",
+            "plannedSetsSnapshot": 1,
+            "plannedDurationSeconds": 360,
+            "order": 0,
+            "status": "completed",
+            "setLogs": [],
+            "startedAt": 1793034000000,
+            "completedAt": 1793034360000
+          },
+          {
+            "id": "9f0a4833-e66e-4846-8617-c5b26e80914e",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000008",
+            "exerciseNameSnapshot": "Leg Extension",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 4,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 63.6,
+            "order": 1,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "b64e84e1-c71a-46e0-9f19-656ff5c78b63",
+                "setNumber": 1,
+                "weight": 63.6,
+                "reps": 8,
+                "completedAt": 1793034520000
+              },
+              {
+                "id": "4cca3107-b873-494d-a197-15bf9b48b52c",
+                "setNumber": 2,
+                "weight": 63.6,
+                "reps": 8,
+                "completedAt": 1793034640000
+              },
+              {
+                "id": "eab6253e-7586-4fd7-8f01-b367ff35cd46",
+                "setNumber": 3,
+                "weight": 63.6,
+                "reps": 8,
+                "completedAt": 1793034760000
+              },
+              {
+                "id": "ab968539-58c7-4588-902a-7c4ff11e9b19",
+                "setNumber": 4,
+                "weight": 63.6,
+                "reps": 8,
+                "completedAt": 1793034880000
+              }
+            ],
+            "startedAt": 1793034400000,
+            "completedAt": 1793034880000
+          },
+          {
+            "id": "2ac02b50-9d0f-4b0e-8bc3-8e634a17d0fd",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000009",
+            "exerciseNameSnapshot": "Leg Press Piedi stretti",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 83.6,
+            "order": 2,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "54667e15-5b9d-44ae-a688-a0f3d7e6a750",
+                "setNumber": 1,
+                "weight": 83.6,
+                "reps": 8,
+                "completedAt": 1793035120000
+              },
+              {
+                "id": "1d039c55-1aca-4e1c-95e1-b10271946020",
+                "setNumber": 2,
+                "weight": 83.6,
+                "reps": 8,
+                "completedAt": 1793035240000
+              },
+              {
+                "id": "cb8ee093-b7fd-4178-8844-59809d9e0dad",
+                "setNumber": 3,
+                "weight": 83.6,
+                "reps": 8,
+                "completedAt": 1793035360000
+              }
+            ],
+            "startedAt": 1793035000000,
+            "completedAt": 1793035360000
+          },
+          {
+            "id": "e0a30a1f-7612-4958-8e16-d15d5ebfdcd6",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000010",
+            "exerciseNameSnapshot": "Reverse Fly Machine",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 12,
+            "plannedWeightSnapshot": 32,
+            "order": 3,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "9ee41eed-2277-4361-bfc5-1257cd74ebf7",
+                "setNumber": 1,
+                "weight": 32,
+                "reps": 12,
+                "completedAt": 1793035720000
+              },
+              {
+                "id": "229decee-4544-4440-af08-170ea4208765",
+                "setNumber": 2,
+                "weight": 32,
+                "reps": 12,
+                "completedAt": 1793035840000
+              },
+              {
+                "id": "0a83829c-ff83-4ec7-a6a2-11a70193cc42",
+                "setNumber": 3,
+                "weight": 32,
+                "reps": 12,
+                "completedAt": 1793035960000
+              }
+            ],
+            "startedAt": 1793035600000,
+            "completedAt": 1793035960000
+          },
+          {
+            "id": "61a3fd59-1b8c-4724-bbdc-fb38435e8cc0",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000011",
+            "exerciseNameSnapshot": "Lento Avanti Manubri",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 18,
+            "order": 4,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "4a1b8328-708b-4e1d-bee5-e563d6765a0d",
+                "setNumber": 1,
+                "weight": 18,
+                "reps": 8,
+                "completedAt": 1793036320000
+              },
+              {
+                "id": "1f8d885d-b370-4493-a3f2-a3240a455a4e",
+                "setNumber": 2,
+                "weight": 18,
+                "reps": 8,
+                "completedAt": 1793036440000
+              },
+              {
+                "id": "1ce2948e-8af4-4335-8ee9-e0cec5be983c",
+                "setNumber": 3,
+                "weight": 18,
+                "reps": 8,
+                "completedAt": 1793036560000
+              }
+            ],
+            "startedAt": 1793036200000,
+            "completedAt": 1793036560000
+          },
+          {
+            "id": "2d0e87af-d669-428f-9f1d-2eee8e8d4c4f",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000012",
+            "exerciseNameSnapshot": "Tapis Roulant",
+            "exerciseTypeSnapshot": "cardio",
+            "plannedSetsSnapshot": 1,
+            "plannedDurationSeconds": 1800,
+            "order": 5,
+            "status": "completed",
+            "setLogs": [],
+            "startedAt": 1793036800000,
+            "completedAt": 1793038600000
+          }
+        ]
+      },
+      {
+        "id": "d1111111-1111-4111-8111-000000000007",
+        "programId": "a1111111-1111-4111-8111-111111111111",
+        "sessionTemplateId": "b1111111-1111-4111-8111-111111111103",
+        "sessionNameSnapshot": "Seduta 3",
+        "startedAt": 1793206800000,
+        "completedAt": 1793212260000,
+        "status": "completed",
+        "exerciseLogs": [
+          {
+            "id": "3b69e4f3-184b-4baf-aaa8-8192c7ce7b2d",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000013",
+            "exerciseNameSnapshot": "Tapis Roulant Riscaldamento",
+            "exerciseTypeSnapshot": "cardio",
+            "plannedSetsSnapshot": 1,
+            "plannedDurationSeconds": 600,
+            "order": 0,
+            "status": "completed",
+            "setLogs": [],
+            "startedAt": 1793206800000,
+            "completedAt": 1793207400000
+          },
+          {
+            "id": "4fac5975-ab57-4b83-9771-a10be74b0988",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000014",
+            "exerciseNameSnapshot": "Leg Curl Monopodalica",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 34.3,
+            "order": 1,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "38ca5969-6036-4249-babb-23737401c6f5",
+                "setNumber": 1,
+                "weight": 34.3,
+                "reps": 8,
+                "completedAt": 1793207520000
+              },
+              {
+                "id": "43685a54-f05e-4aca-af0d-0b6e793bbb4f",
+                "setNumber": 2,
+                "weight": 34.3,
+                "reps": 8,
+                "completedAt": 1793207640000
+              },
+              {
+                "id": "cf96ac01-d881-4d37-9f3b-2e04aa76fb7e",
+                "setNumber": 3,
+                "weight": 34.3,
+                "reps": 8,
+                "completedAt": 1793207760000
+              }
+            ],
+            "startedAt": 1793207400000,
+            "completedAt": 1793207760000
+          },
+          {
+            "id": "457a0712-b21e-43cd-963a-4d46673dd641",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000015",
+            "exerciseNameSnapshot": "Stacchi Manubri (gambe leggermente piegate)",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 22,
+            "order": 2,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "7fda160f-36a8-409c-a95a-ef8cfd68cab2",
+                "setNumber": 1,
+                "weight": 22,
+                "reps": 8,
+                "completedAt": 1793208120000
+              },
+              {
+                "id": "5c7abdad-7462-4713-a20d-03eadb698880",
+                "setNumber": 2,
+                "weight": 22,
+                "reps": 8,
+                "completedAt": 1793208240000
+              },
+              {
+                "id": "a05f9839-971d-48e3-8498-e1d6110f62bc",
+                "setNumber": 3,
+                "weight": 22,
+                "reps": 8,
+                "completedAt": 1793208360000
+              }
+            ],
+            "startedAt": 1793208000000,
+            "completedAt": 1793208360000
+          },
+          {
+            "id": "27ae663f-1ebe-4823-9e57-d598faf4d7f1",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000016",
+            "exerciseNameSnapshot": "Adductor + Abductor (Superserie)",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 10,
+            "plannedWeightSnapshot": 36,
+            "order": 3,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "4f4dfa24-ae98-4002-9e63-260cb9732808",
+                "setNumber": 1,
+                "weight": 36,
+                "reps": 10,
+                "completedAt": 1793208720000
+              },
+              {
+                "id": "cc754176-0a03-4e34-8a51-12ebc92dd0cc",
+                "setNumber": 2,
+                "weight": 36,
+                "reps": 10,
+                "completedAt": 1793208840000
+              },
+              {
+                "id": "a93c565c-06f8-4d7e-89a4-250a10a36fdd",
+                "setNumber": 3,
+                "weight": 36,
+                "reps": 10,
+                "completedAt": 1793208960000
+              }
+            ],
+            "startedAt": 1793208600000,
+            "completedAt": 1793208960000
+          },
+          {
+            "id": "ea4a82f9-0051-4a56-92c9-f72bd4f6511b",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000018",
+            "exerciseNameSnapshot": "Plank",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 1,
+            "plannedWeightSnapshot": 0,
+            "order": 5,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "4c9e0878-112a-4922-a503-57cfcaf44634",
+                "setNumber": 1,
+                "weight": 0,
+                "reps": 1,
+                "completedAt": 1793209320000
+              },
+              {
+                "id": "db2b120f-e04e-4403-ad96-f6852df27f9c",
+                "setNumber": 2,
+                "weight": 0,
+                "reps": 1,
+                "completedAt": 1793209440000
+              },
+              {
+                "id": "d1bebf03-279b-4724-9b32-6e2f0c497afe",
+                "setNumber": 3,
+                "weight": 0,
+                "reps": 1,
+                "completedAt": 1793209560000
+              }
+            ],
+            "startedAt": 1793209200000,
+            "completedAt": 1793209560000
+          },
+          {
+            "id": "63698b0a-67a5-4a06-8ed7-d1bfdc2e9d16",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000019",
+            "exerciseNameSnapshot": "Tapis Roulant",
+            "exerciseTypeSnapshot": "cardio",
+            "plannedSetsSnapshot": 1,
+            "plannedDurationSeconds": 1800,
+            "order": 6,
+            "status": "completed",
+            "setLogs": [],
+            "startedAt": 1793209800000,
+            "completedAt": 1793211600000
+          }
+        ]
+      },
+      {
+        "id": "d1111111-1111-4111-8111-000000000008",
+        "programId": "a1111111-1111-4111-8111-111111111111",
+        "sessionTemplateId": "b1111111-1111-4111-8111-111111111104",
+        "sessionNameSnapshot": "Seduta 4",
+        "startedAt": 1793379600000,
+        "completedAt": 1793385060000,
+        "status": "completed",
+        "exerciseLogs": [
+          {
+            "id": "c959a05e-7004-4691-bc62-c295613a0880",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000020",
+            "exerciseNameSnapshot": "Rematore Manubrio",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 26,
+            "order": 0,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "a8cd30e9-db96-4d1d-bd3d-016e4d77cceb",
+                "setNumber": 1,
+                "weight": 26,
+                "reps": 8,
+                "completedAt": 1793379720000
+              },
+              {
+                "id": "97db6897-a442-4340-b2b8-426a8e1b16c2",
+                "setNumber": 2,
+                "weight": 26,
+                "reps": 8,
+                "completedAt": 1793379840000
+              },
+              {
+                "id": "d66ffd9a-4d75-4cec-b277-2b63267a0efa",
+                "setNumber": 3,
+                "weight": 26,
+                "reps": 8,
+                "completedAt": 1793379960000
+              }
+            ],
+            "startedAt": 1793379600000,
+            "completedAt": 1793379960000
+          },
+          {
+            "id": "3e16aa55-68a7-48b9-8a53-d2f04013a3ef",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000021",
+            "exerciseNameSnapshot": "Pull Down Asta",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 12,
+            "plannedWeightSnapshot": 18,
+            "order": 1,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "b0114c89-244c-48fb-91f4-2d8c01b35190",
+                "setNumber": 1,
+                "weight": 18,
+                "reps": 12,
+                "completedAt": 1793380320000
+              },
+              {
+                "id": "7b8800c5-cdaa-4bf2-a867-d887b9290a4b",
+                "setNumber": 2,
+                "weight": 18,
+                "reps": 12,
+                "completedAt": 1793380440000
+              },
+              {
+                "id": "d4b1fbb1-290b-42c7-b91d-d692fa7e389c",
+                "setNumber": 3,
+                "weight": 18,
+                "reps": 12,
+                "completedAt": 1793380560000
+              }
+            ],
+            "startedAt": 1793380200000,
+            "completedAt": 1793380560000
+          },
+          {
+            "id": "006fc8af-7576-41f4-adcd-8e94bb190750",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000022",
+            "exerciseNameSnapshot": "Curl Bilanciere EZ Panca Scott",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 24.5,
+            "order": 2,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "9e426fd5-ef3e-4b07-b836-0f1e3e9cab29",
+                "setNumber": 1,
+                "weight": 24.5,
+                "reps": 8,
+                "completedAt": 1793380920000
+              },
+              {
+                "id": "1cd0f73c-b3bb-456c-8131-038a3bdc396a",
+                "setNumber": 2,
+                "weight": 24.5,
+                "reps": 8,
+                "completedAt": 1793381040000
+              },
+              {
+                "id": "3cf6dced-5614-4738-b168-5aad69f5a31c",
+                "setNumber": 3,
+                "weight": 24.5,
+                "reps": 8,
+                "completedAt": 1793381160000
+              }
+            ],
+            "startedAt": 1793380800000,
+            "completedAt": 1793381160000
+          },
+          {
+            "id": "76e0340a-f3c9-44b9-8883-54e5cad1c2e2",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000023",
+            "exerciseNameSnapshot": "Tricipiti Corda",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 4,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 23,
+            "order": 3,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "71feab57-2bda-4128-86b7-c708fc617743",
+                "setNumber": 1,
+                "weight": 23,
+                "reps": 8,
+                "completedAt": 1793381520000
+              },
+              {
+                "id": "a5d45122-f1b3-4cd7-a7d8-93d52fbb7dbe",
+                "setNumber": 2,
+                "weight": 23,
+                "reps": 8,
+                "completedAt": 1793381640000
+              },
+              {
+                "id": "110e5c46-4ee9-447c-8abf-e81fbb76a192",
+                "setNumber": 3,
+                "weight": 23,
+                "reps": 8,
+                "completedAt": 1793381760000
+              },
+              {
+                "id": "f93eea9c-7e89-4017-92f7-c01479ab7070",
+                "setNumber": 4,
+                "weight": 23,
+                "reps": 8,
+                "completedAt": 1793381880000
+              }
+            ],
+            "startedAt": 1793381400000,
+            "completedAt": 1793381880000
+          },
+          {
+            "id": "def4ac6b-e790-4919-8ce3-0dd721f4c801",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000024",
+            "exerciseNameSnapshot": "Tapis Roulant",
+            "exerciseTypeSnapshot": "cardio",
+            "plannedSetsSnapshot": 1,
+            "plannedDurationSeconds": 1800,
+            "order": 4,
+            "status": "completed",
+            "setLogs": [],
+            "startedAt": 1793382000000,
+            "completedAt": 1793383800000
+          }
+        ]
+      },
+      {
+        "id": "d1111111-1111-4111-8111-000000000009",
+        "programId": "a1111111-1111-4111-8111-111111111111",
+        "sessionTemplateId": "b1111111-1111-4111-8111-111111111101",
+        "sessionNameSnapshot": "Seduta 1",
+        "startedAt": 1793692320000,
+        "completedAt": 1793697780000,
+        "status": "completed",
+        "exerciseLogs": [
+          {
+            "id": "5b9d6c7b-a083-4dc3-9e01-0ac07c1e32b2",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000001",
+            "exerciseNameSnapshot": "Cyclette",
+            "exerciseTypeSnapshot": "cardio",
+            "plannedSetsSnapshot": 1,
+            "plannedDurationSeconds": 600,
+            "order": 0,
+            "status": "completed",
+            "setLogs": [],
+            "startedAt": 1793692320000,
+            "completedAt": 1793692920000
+          },
+          {
+            "id": "c1a87825-4f27-4cce-bb4d-bb355b303ca3",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000002",
+            "exerciseNameSnapshot": "Chest Press",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 47.3,
+            "order": 1,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "73b69986-99b6-44df-86e9-1d6cd75438b3",
+                "setNumber": 1,
+                "weight": 47.3,
+                "reps": 8,
+                "completedAt": 1793693040000
+              },
+              {
+                "id": "d8960dfb-dd1e-47d4-81ad-d04ed541a36d",
+                "setNumber": 2,
+                "weight": 47.3,
+                "reps": 8,
+                "completedAt": 1793693160000
+              },
+              {
+                "id": "14da1f8d-ba8c-4448-8bf5-a719d2e314f9",
+                "setNumber": 3,
+                "weight": 47.3,
+                "reps": 8,
+                "completedAt": 1793693280000
+              }
+            ],
+            "startedAt": 1793692920000,
+            "completedAt": 1793693280000
+          },
+          {
+            "id": "217379c6-6c55-446c-873e-fc1c501aac6a",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000003",
+            "exerciseNameSnapshot": "Panca 45° al multipower",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 6,
+            "plannedWeightSnapshot": 37.5,
+            "order": 2,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "1931221b-43df-4315-a8ca-fb33c5e0cb16",
+                "setNumber": 1,
+                "weight": 37.5,
+                "reps": 6,
+                "completedAt": 1793693640000
+              },
+              {
+                "id": "ec43a37c-3725-415c-ade2-c9c28d608767",
+                "setNumber": 2,
+                "weight": 37.5,
+                "reps": 6,
+                "completedAt": 1793693760000
+              },
+              {
+                "id": "fb7673e1-bf59-4a36-b5ac-2427c2165cf6",
+                "setNumber": 3,
+                "weight": 37.5,
+                "reps": 6,
+                "completedAt": 1793693880000
+              }
+            ],
+            "startedAt": 1793693520000,
+            "completedAt": 1793693880000
+          },
+          {
+            "id": "9302685a-b1d6-41ba-a68b-823fdadb078c",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000004",
+            "exerciseNameSnapshot": "Lat Machine Maniglia Singola",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 4,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 20.3,
+            "order": 3,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "789e31de-6404-4648-a047-ce90bc5e1fdf",
+                "setNumber": 1,
+                "weight": 20.3,
+                "reps": 8,
+                "completedAt": 1793694240000
+              },
+              {
+                "id": "c373be20-b2a0-40ad-89c9-4930440eba27",
+                "setNumber": 2,
+                "weight": 20.3,
+                "reps": 8,
+                "completedAt": 1793694360000
+              },
+              {
+                "id": "503fdf1c-a53a-4c92-a71c-fb999fdc5cd0",
+                "setNumber": 3,
+                "weight": 20.3,
+                "reps": 8,
+                "completedAt": 1793694480000
+              },
+              {
+                "id": "c67fd62d-6dc7-48df-b8f3-30d42256834c",
+                "setNumber": 4,
+                "weight": 20.3,
+                "reps": 8,
+                "completedAt": 1793694600000
+              }
+            ],
+            "startedAt": 1793694120000,
+            "completedAt": 1793694600000
+          },
+          {
+            "id": "02976d1f-52c5-4875-89e9-27b287f3a1b2",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000005",
+            "exerciseNameSnapshot": "Alzate Laterali Cavo Medio",
+            "exerciseTypeSnapshot": "strength",
+            "plannedSetsSnapshot": 3,
+            "targetRepsSnapshot": 8,
+            "plannedWeightSnapshot": 10,
+            "order": 4,
+            "status": "completed",
+            "setLogs": [
+              {
+                "id": "44452cf3-1d02-4ae0-98d9-d63ee5122336",
+                "setNumber": 1,
+                "weight": 10,
+                "reps": 8,
+                "completedAt": 1793694840000
+              },
+              {
+                "id": "d1efe484-5448-4f68-a347-5e14c8f80eed",
+                "setNumber": 2,
+                "weight": 10,
+                "reps": 8,
+                "completedAt": 1793694960000
+              },
+              {
+                "id": "eec6a1cb-7099-4328-bc2d-cc7b13a9fdba",
+                "setNumber": 3,
+                "weight": 10,
+                "reps": 8,
+                "completedAt": 1793695080000
+              }
+            ],
+            "startedAt": 1793694720000,
+            "completedAt": 1793695080000
+          },
+          {
+            "id": "824946b6-c518-478d-ad18-ef1fe6cb7d0f",
+            "exerciseTemplateId": "c1111111-1111-4111-8111-000000000006",
+            "exerciseNameSnapshot": "Tapis Roulant",
+            "exerciseTypeSnapshot": "cardio",
+            "plannedSetsSnapshot": 1,
+            "plannedDurationSeconds": 1800,
+            "order": 5,
+            "status": "completed",
+            "setLogs": [],
+            "startedAt": 1793695320000,
+            "completedAt": 1793697120000
+          }
+        ]
+      }
+    ],
+    "settings": [
+      {
+        "id": "default",
+        "defaultRestSeconds": 120,
+        "soundEnabled": true,
+        "vibrationEnabled": true,
+        "weeklyTarget": 4
+      }
+    ],
+    "appState": [
+      {
+        "id": "default"
+      }
+    ]
+  }
+}

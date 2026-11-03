@@ -1,6 +1,6 @@
 /* ============================================
-   WORKOUT OVERVIEW SCREEN
-   Shows exercise list with status + reordering
+   WORKOUT OVERVIEW SCREEN — visionOS Style
+   Monochrome Glass · 8px Grid · No Slop
    ============================================ */
 
 import React, { memo, useEffect, useState } from 'react';
@@ -24,10 +24,11 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { Check, ChevronRight, GripVertical, X } from 'lucide-react';
 import { AppShell, ScreenHeader } from '@/components/layout';
-import { Button, ProgressBar, ConfirmDialog, IconButton } from '@/components/ui';
+import { Button, ProgressBar, ConfirmDialog, IconButton, EmptyState, GlassCard } from '@/components/ui';
 import { useWorkoutStore } from '@/stores/workoutStore';
+import { useTimerStore } from '@/features/timer/timerStore';
 import { workoutRepo } from '@/db/repositories';
-import { formatDuration } from '@/lib/formatters';
+import { formatDuration, formatWeightValue } from '@/lib/formatters';
 import { strings } from '@/lib/strings';
 import type { WorkoutExerciseLog, Workout } from '@/types';
 
@@ -64,43 +65,43 @@ const SortableExerciseRow: React.FC<ExerciseRowProps & { id: string }> = ({
     <div ref={setNodeRef} style={style}>
       <motion.div
         animate={{ opacity: isDragging ? 0.7 : 1 }}
-        className={`flex items-center gap-3 p-4 rounded-card border transition-colors duration-200 ${
+        className={`flex items-center gap-4 p-4 rounded-card border transition-all duration-200 ${
           isActive
-            ? 'bg-accent-primary/5 border-accent-primary/30'
+            ? 'bg-white/[0.10] border-white/[0.22] shadow-lg'
             : log.status === 'completed'
-            ? 'bg-bg-surface border-border-default opacity-60'
-            : 'bg-bg-surface border-border-default'
+            ? 'bg-white/[0.03] border-white/[0.06] opacity-60'
+            : 'bg-white/[0.05] border-white/[0.08] hover:bg-white/[0.08]'
         }`}
       >
-        {/* Drag handle */}
+        {/* Drag Handle */}
         <button
           {...attributes}
           {...listeners}
           aria-label={`Riordina ${log.exerciseNameSnapshot}`}
-          className="touch-none w-11 h-11 -ml-2 flex items-center justify-center text-text-secondary opacity-40 hover:opacity-100 cursor-grab active:cursor-grabbing"
+          className="touch-none w-12 h-12 -ml-2 flex items-center justify-center text-text-secondary opacity-40 hover:opacity-100 cursor-grab active:cursor-grabbing"
         >
-          <GripVertical className="w-5 h-5" />
+          <GripVertical className="w-5 h-5" strokeWidth={1.75} />
         </button>
 
-        {/* Status icon */}
+        {/* Status Icon */}
         <div
-          className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+          className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
             log.status === 'completed'
-              ? 'bg-accent-primary/20 text-accent-primary'
+              ? 'bg-white text-black'
               : isActive
-              ? 'bg-accent-primary/10 text-accent-primary border border-accent-primary/30'
-              : 'bg-bg-elevated border border-border-default text-text-secondary'
+              ? 'bg-white/[0.15] text-white border border-white/[0.30]'
+              : 'bg-white/[0.06] border border-white/[0.08] text-text-secondary'
           }`}
         >
           {log.status === 'completed' ? (
-            <Check className="w-4 h-4" />
+            <Check className="w-4 h-4 stroke-[2.5]" />
           ) : (
-            <span className="text-label-sm">{completedSets}</span>
+            <span className="text-label-sm font-semibold">{completedSets}</span>
           )}
         </div>
 
-        {/* Exercise info */}
-        <button className="flex-1 text-left min-w-0 min-h-[44px] flex flex-col justify-center" onClick={onTap}>
+        {/* Exercise Info */}
+        <button className="flex-1 text-left min-w-0 min-h-[48px] flex flex-col justify-center" onClick={onTap}>
           <p
             className={`text-[15px] font-semibold truncate ${
               log.status === 'completed'
@@ -110,14 +111,10 @@ const SortableExerciseRow: React.FC<ExerciseRowProps & { id: string }> = ({
           >
             {log.exerciseNameSnapshot}
           </p>
-          <p className="text-meta text-text-secondary mt-0.5">
+          <p className="text-meta text-text-secondary mt-0.5 font-normal">
             {log.exerciseTypeSnapshot === 'cardio'
               ? 'Cardio'
-              : log.status === 'completed'
-              ? `${completedSets} / ${plannedSets} serie`
-              : isActive
-              ? `${completedSets} / ${plannedSets} serie`
-              : `${plannedSets} serie`}
+              : `${completedSets} / ${plannedSets} serie`}
           </p>
         </button>
 
@@ -126,10 +123,11 @@ const SortableExerciseRow: React.FC<ExerciseRowProps & { id: string }> = ({
           <button
             onClick={onTap}
             aria-label={`Apri ${log.exerciseNameSnapshot}`}
-            className="w-11 h-11 -mr-2 flex items-center justify-center"
+            className="w-12 h-12 -mr-2 flex items-center justify-center"
           >
             <ChevronRight
-              className={`w-5 h-5 ${isActive ? 'text-accent-primary' : 'text-text-secondary'}`}
+              className={`w-5 h-5 ${isActive ? 'text-white' : 'text-text-secondary'}`}
+              strokeWidth={1.75}
             />
           </button>
         )}
@@ -140,9 +138,6 @@ const SortableExerciseRow: React.FC<ExerciseRowProps & { id: string }> = ({
 
 /* ============================================
    WORKOUT ELAPSED TIMER
-   Isolated so its 1s tick re-renders only this
-   <span>, not the whole screen (DndContext,
-   SortableContext, ProgressBar, ExerciseRows).
    ============================================ */
 
 const WorkoutElapsedTimer = memo(({ startedAt }: { startedAt: number }) => {
@@ -173,9 +168,11 @@ export const WorkoutOverviewScreen: React.FC = () => {
   } = useWorkoutStore();
 
   const [localWorkout, setLocalWorkout] = useState<Workout | null>(null);
+  const [notFound, setNotFound] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [showEarlyCompleteConfirm, setShowEarlyCompleteConfirm] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
+  const { stopTimer } = useTimerStore();
 
   const sensors = useSensors(
     useSensor(TouchSensor, {
@@ -188,23 +185,25 @@ export const WorkoutOverviewScreen: React.FC = () => {
 
   useEffect(() => {
     const load = async () => {
-      if (!workoutId) return;
-      // If store has it, use it
+      if (!workoutId) {
+        setNotFound(true);
+        return;
+      }
       if (activeWorkout?.id === workoutId) {
         setLocalWorkout(activeWorkout);
         return;
       }
-      // Otherwise load from DB (e.g., viewing completed workout)
       const w = await workoutRepo.getById(workoutId);
       if (w) {
         setLocalWorkout(w);
         if (w.status === 'active') resumeWorkout(w);
+      } else {
+        setNotFound(true);
       }
     };
     void load();
   }, [workoutId, activeWorkout, resumeWorkout]);
 
-  // Sync local workout with store
   useEffect(() => {
     if (activeWorkout?.id === workoutId) {
       setLocalWorkout(activeWorkout);
@@ -212,11 +211,29 @@ export const WorkoutOverviewScreen: React.FC = () => {
   }, [activeWorkout, workoutId]);
 
   const workout = localWorkout;
+  if (notFound) {
+    return (
+      <AppShell showNav={false}>
+        <div className="flex-1 flex items-center justify-center px-4">
+          <EmptyState
+            title={strings.errors.workoutNotFound}
+            description={strings.errors.workoutNotFoundDetail}
+            action={
+              <Button variant="secondary" onClick={() => navigate('/', { replace: true })}>
+                {strings.errors.goHome}
+              </Button>
+            }
+          />
+        </div>
+      </AppShell>
+    );
+  }
+
   if (!workout) {
     return (
       <AppShell showNav={false}>
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 rounded-full border-2 border-accent-primary border-t-transparent animate-spin" />
+          <div className="w-8 h-8 rounded-full border-2 border-white border-t-transparent animate-spin" />
         </div>
       </AppShell>
     );
@@ -232,27 +249,38 @@ export const WorkoutOverviewScreen: React.FC = () => {
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (!over || active.id === over.id) return;
+    if (!over || active.id === over.id || !workout) return;
 
     const oldIndex = sortedLogs.findIndex((e) => e.id === active.id);
     const newIndex = sortedLogs.findIndex((e) => e.id === over.id);
-    const reordered = arrayMove(sortedLogs, oldIndex, newIndex);
-    void reorderExercises(reordered.map((e) => e.id));
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const reordered = arrayMove(sortedLogs, oldIndex, newIndex);
+      const updatedLogs = reordered.map((e, idx) => ({ ...e, order: idx }));
+      setLocalWorkout({ ...workout, exerciseLogs: updatedLogs });
+      void reorderExercises(updatedLogs.map((e) => e.id));
+    }
   };
 
   const handleExerciseTap = (log: WorkoutExerciseLog) => {
-    if (isReadOnly) return;
     navigate(`/workout/${workout.id}/exercise/${log.id}`);
   };
 
   const handleCompleteWorkout = async () => {
+    if (!workout || isCompleting) return;
     setIsCompleting(true);
-    await completeWorkout();
-    navigate(`/workout/${workout.id}/complete`, { replace: true });
+    try {
+      await stopTimer();
+      await completeWorkout();
+      navigate(`/workout/${workout.id}/complete`, { replace: true });
+    } finally {
+      setIsCompleting(false);
+    }
   };
 
   const handleCancel = async () => {
-    setShowCancelConfirm(false);
+    if (!workout) return;
+    await stopTimer();
     await cancelWorkout();
     navigate('/', { replace: true });
   };
@@ -260,44 +288,45 @@ export const WorkoutOverviewScreen: React.FC = () => {
   return (
     <AppShell showNav={false}>
       <ScreenHeader
-        title={workout.sessionNameSnapshot.toUpperCase()}
+        title={workout.sessionNameSnapshot}
         subtitle={
-          isReadOnly ? undefined : <WorkoutElapsedTimer startedAt={workout.startedAt} />
+          <span className="tabular-nums font-semibold text-text-primary">
+            <WorkoutElapsedTimer startedAt={workout.startedAt} />
+          </span>
         }
         showBack
         onBack={() => navigate('/')}
         rightAction={
-          !isReadOnly ? (
+          !isReadOnly && (
             <IconButton
               label={strings.workout.cancelWorkout}
-              tone="danger"
               onClick={() => setShowCancelConfirm(true)}
+              tone="default"
             >
-              <X className="w-5 h-5" strokeWidth={2} />
+              <X className="w-5 h-5" strokeWidth={1.75} />
             </IconButton>
-          ) : undefined
+          )
         }
       />
 
       <div className="flex-1 overflow-y-auto pb-[calc(96px+env(safe-area-inset-bottom))]">
-        {/* Progress */}
-        <div className="px-5 py-4">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-meta text-text-secondary">
+        {/* Progress Bar Header */}
+        <div className="px-4 py-4">
+          <div className="flex items-center justify-between text-meta text-text-secondary mb-2">
+            <span className="font-normal">
               {strings.workout.progress(completedCount, totalCount)}
-            </p>
-            {!isReadOnly && allCompleted && (
-              <span className="inline-flex items-center gap-1 text-label-sm text-accent-primary">
-                COMPLETO
-                <Check className="w-3.5 h-3.5" strokeWidth={2.5} aria-hidden />
+            </span>
+            {allCompleted && (
+              <span className="text-white font-semibold flex items-center gap-1">
+                <Check className="w-4 h-4" strokeWidth={2} /> Completato
               </span>
             )}
           </div>
           <ProgressBar value={progress} />
         </div>
 
-        {/* Exercise List */}
-        <div className="px-5">
+        {/* Exercises List */}
+        <div className="px-4 mt-2">
           {!isReadOnly ? (
             <DndContext
               sensors={sensors}
@@ -323,47 +352,80 @@ export const WorkoutOverviewScreen: React.FC = () => {
             </DndContext>
           ) : (
             <div className="space-y-2">
-              {sortedLogs.map((log) => (
-                <div
-                  key={log.id}
-                  className={`flex items-center gap-3 p-4 rounded-card border ${
-                    log.status === 'completed'
-                      ? 'bg-bg-surface border-border-default'
-                      : 'bg-bg-surface border-border-default opacity-60'
-                  }`}
-                >
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      log.status === 'completed'
-                        ? 'bg-accent-primary/20 text-accent-primary'
-                        : 'bg-bg-elevated border border-border-default text-text-secondary'
-                    }`}
-                  >
-                    {log.status === 'completed' ? (
-                      <Check className="w-4 h-4" />
-                    ) : (
-                      <span className="text-label-sm">{log.setLogs.length}</span>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-[15px] font-semibold text-text-primary">
-                      {log.exerciseNameSnapshot}
-                    </p>
-                    <p className="text-meta text-text-secondary">
-                      {log.status === 'completed'
-                        ? `${log.setLogs.length} serie`
-                        : `${log.plannedSetsSnapshot} serie`}
-                    </p>
-                  </div>
-                </div>
-              ))}
+              {sortedLogs.map((log) => {
+                const isCardio = log.exerciseTypeSnapshot === 'cardio';
+                const cardioSeconds = log.setLogs[0]?.durationSeconds ?? 0;
+
+                return (
+                  <GlassCard key={log.id} className="p-4">
+                    <div className="flex items-start gap-4">
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                          log.status === 'completed'
+                            ? 'bg-white text-black'
+                            : 'bg-white/[0.06] border border-white/[0.08] text-text-secondary'
+                        }`}
+                      >
+                        {log.status === 'completed' ? (
+                          <Check className="w-4 h-4 stroke-[2.5]" />
+                        ) : (
+                          <span className="text-label-sm font-semibold">{log.setLogs.length}</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="text-[15px] font-semibold text-text-primary">
+                            {log.exerciseNameSnapshot}
+                          </p>
+                          <span className="text-meta text-text-secondary font-normal">
+                            {isCardio ? 'Cardio' : `${log.setLogs.length} serie`}
+                          </span>
+                        </div>
+
+                        {log.notesSnapshot && (
+                          <p className="text-meta text-text-secondary mt-1 font-normal">
+                            {log.notesSnapshot}
+                          </p>
+                        )}
+
+                        {isCardio ? (
+                          <div className="mt-2">
+                            <span className="inline-flex items-center text-meta bg-white/[0.06] border border-white/[0.08] px-4 py-1 rounded-btn text-text-primary tabular-nums">
+                              Durata: {formatDuration(cardioSeconds * 1000)}
+                            </span>
+                          </div>
+                        ) : log.setLogs.length > 0 ? (
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {log.setLogs.map((s, sIdx) => (
+                              <span
+                                key={s.id}
+                                className="inline-flex items-center text-meta bg-white/[0.06] border border-white/[0.08] px-4 py-1 rounded-btn text-text-primary tabular-nums font-normal"
+                              >
+                                <span className="text-text-secondary text-label-sm mr-1.5 font-semibold">
+                                  #{sIdx + 1}
+                                </span>
+                                {s.weight > 0 ? `${formatWeightValue(s.weight)} kg × ` : ''}
+                                {s.reps} rip
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-meta text-text-secondary mt-1 font-normal italic">
+                            Nessuna serie registrata
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </GlassCard>
+                );
+              })}
             </div>
           )}
         </div>
 
         {/* Complete Workout CTA */}
         {!isReadOnly && (
-          <div className="px-5 mt-6">
+          <div className="px-4 mt-6">
             {allCompleted ? (
               <Button
                 variant="primary"
@@ -371,11 +433,11 @@ export const WorkoutOverviewScreen: React.FC = () => {
                 isLoading={isCompleting}
                 onClick={handleCompleteWorkout}
               >
-                COMPLETA WORKOUT
+                {strings.workout.completeWorkoutCta}
               </Button>
             ) : (
-              <div className="space-y-3">
-                <p className="text-center text-meta text-text-secondary">
+              <div className="space-y-4">
+                <p className="text-center text-meta text-text-secondary font-normal">
                   {strings.workout.allDoneHint}
                 </p>
                 <Button

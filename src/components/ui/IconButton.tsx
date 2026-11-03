@@ -1,5 +1,5 @@
 /* ============================================
-   ICON BUTTON — 44×44 hit target, 24px icon
+   ICON BUTTON — 48×48 hit target, Apple visionOS Glass
    ============================================ */
 
 import React from 'react';
@@ -19,9 +19,9 @@ export const IconButton: React.FC<IconButtonProps> = ({
   ...props
 }) => {
   const tones = {
-    default: 'text-icon-secondary hover:text-icon-primary active:text-icon-primary',
-    accent: 'text-icon-accent hover:brightness-110',
-    danger: 'text-danger hover:opacity-80',
+    default: 'text-icon-secondary hover:text-icon-primary hover:bg-white/[0.06] active:bg-white/[0.10]',
+    accent: 'text-white hover:bg-white/[0.10] active:bg-white/[0.16]',
+    danger: 'text-danger hover:bg-danger/10 active:bg-danger/20',
   };
 
   return (
@@ -29,7 +29,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
       type="button"
       aria-label={label}
       title={label}
-      className={`w-11 h-11 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary rounded-full ${tones[tone]} ${className}`}
+      className={`w-12 h-12 shrink-0 flex items-center justify-center transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-2xl active:scale-95 ${tones[tone]} ${className}`}
       {...props}
     >
       {children}

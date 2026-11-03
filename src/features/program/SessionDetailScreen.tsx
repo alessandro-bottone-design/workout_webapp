@@ -1,8 +1,7 @@
 /* ============================================
    SESSION DETAIL SCREEN
    Exercise list for one session + start action.
-   Split out of ProgramScreen so the route lazy-
-   loads its own chunk.
+   Apple visionOS Glass Design System (No AI slop)
    ============================================ */
 
 import React, { useEffect, useState } from 'react';
@@ -10,7 +9,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronRight, Pencil } from 'lucide-react';
 import { AppShell, ScreenHeader } from '@/components/layout';
-import { Button } from '@/components/ui';
+import { Button, IconButton } from '@/components/ui';
 import { programRepo } from '@/db/repositories';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { strings } from '@/lib/strings';
@@ -21,10 +20,11 @@ export const SessionDetailScreen: React.FC = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<SessionTemplate | null>(null);
   const [programId, setProgramId] = useState<string | null>(null);
+  const [isStarting, setIsStarting] = useState(false);
 
   useEffect(() => {
     const load = async () => {
-      const prog = await programRepo.getFirst();
+      const prog = (await programRepo.getActive()) ?? (await programRepo.getFirst());
       if (!prog || !sessionId) return;
       setProgramId(prog.id);
       const s = prog.sessions.find((s) => s.id === sessionId);
@@ -38,7 +38,7 @@ export const SessionDetailScreen: React.FC = () => {
       <AppShell>
         <ScreenHeader title={strings.sessionDetail.title} showBack />
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 rounded-full border-2 border-accent-primary border-t-transparent animate-spin" />
+          <div className="w-8 h-8 rounded-full border-2 border-white/30 border-t-white animate-spin" />
         </div>
       </AppShell>
     );
@@ -47,33 +47,39 @@ export const SessionDetailScreen: React.FC = () => {
   const sortedExercises = [...session.exercises].sort((a, b) => a.order - b.order);
 
   const handleStartWorkout = async () => {
-    if (!programId || !session) return;
-    const workout = await useWorkoutStore.getState().startWorkout(programId, {
-      id: session.id,
-      name: session.name,
-      exercises: session.exercises,
-    });
-    navigate(`/workout/${workout.id}`);
+    if (!programId || !session || isStarting) return;
+    setIsStarting(true);
+    try {
+      const workout = await useWorkoutStore.getState().startWorkout(programId, {
+        id: session.id,
+        name: session.name,
+        exercises: session.exercises,
+      });
+      navigate(`/workout/${workout.id}`);
+    } catch (e) {
+      console.error('Failed to start workout:', e);
+    } finally {
+      setIsStarting(false);
+    }
   };
 
   return (
     <AppShell showNav={false}>
       <ScreenHeader
-        title={session.name.toUpperCase()}
+        title={session.name}
         showBack
         rightAction={
-          <button
+          <IconButton
+            label={strings.sessionDetail.editLabel}
             onClick={() => navigate(`/program/session/${sessionId}/edit`)}
-            aria-label={strings.sessionDetail.editLabel}
-            className="w-11 h-11 flex items-center justify-center text-text-secondary hover:text-text-primary"
           >
-            <Pencil className="w-5 h-5" />
-          </button>
+            <Pencil className="w-5 h-5" strokeWidth={1.75} />
+          </IconButton>
         }
       />
 
-      <div className="flex-1 overflow-y-auto pb-[calc(100px+env(safe-area-inset-bottom))]">
-        <div className="px-5 pt-4 space-y-2">
+      <div className="flex-1 overflow-y-auto pb-32">
+        <div className="px-4 pt-4 space-y-2">
           {sortedExercises.map((ex, i) => (
             <motion.button
               key={ex.id}
@@ -85,28 +91,33 @@ export const SessionDetailScreen: React.FC = () => {
                   state: { programId, sessionId },
                 })
               }
-              className="w-full flex items-center gap-4 p-4 rounded-card border border-border-default bg-bg-surface text-left hover:border-text-secondary/30 transition-colors"
+              className="w-full flex items-center gap-4 p-4 rounded-2xl border border-white/10 bg-white/[0.03] text-left hover:border-white/20 hover:bg-white/[0.06] backdrop-blur-xl transition-all"
             >
-              <div className="w-8 h-8 rounded-full bg-bg-elevated flex items-center justify-center text-meta text-text-secondary font-semibold">
+              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-meta text-text-secondary font-semibold">
                 {i + 1}
               </div>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <p className="text-[15px] font-semibold text-text-primary">{ex.name}</p>
-                <p className="text-meta text-text-secondary mt-0.5">
+                <p className="text-meta text-text-secondary mt-1">
                   {ex.type === 'cardio'
                     ? strings.sessionDetail.cardio
                     : strings.sessionDetail.setLine(ex.sets, ex.targetReps, ex.defaultWeight)}
                 </p>
+                {ex.notes && (
+                  <p className="text-meta text-text-secondary/70 mt-1 whitespace-pre-line line-clamp-2">
+                    {ex.notes}
+                  </p>
+                )}
               </div>
-              <ChevronRight className="w-5 h-5 text-text-secondary" />
+              <ChevronRight className="w-5 h-5 text-text-secondary" strokeWidth={1.75} />
             </motion.button>
           ))}
         </div>
       </div>
 
-      {/* Start Workout Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto p-5 bg-gradient-to-t from-bg-app via-bg-app/95 to-transparent pb-[calc(20px+env(safe-area-inset-bottom))] z-20">
-        <Button variant="primary" fullWidth onClick={handleStartWorkout}>
+      {/* Start Workout Action Bar — VisionOS frosted glass bar */}
+      <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto p-4 pb-8 bg-black/80 backdrop-blur-2xl border-t border-white/10 z-20">
+        <Button variant="primary" fullWidth isLoading={isStarting} onClick={handleStartWorkout}>
           {strings.sessionDetail.startCta}
         </Button>
       </div>

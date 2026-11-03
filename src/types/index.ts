@@ -97,6 +97,10 @@ export interface WorkoutExerciseLog {
 
   startedAt?: number;
   completedAt?: number;
+
+  /** Cardio tracking state across reloads/backgrounding */
+  cardioStartedAt?: number;
+  cardioElapsedSeconds?: number;
 }
 
 export interface SetLog {
@@ -145,6 +149,7 @@ export interface AppSettings {
 export interface AppState {
   id: 'default';
   activeWorkoutId?: UUID;
+  activeProgramId?: UUID;
   timerState?: TimerState;
 }
 

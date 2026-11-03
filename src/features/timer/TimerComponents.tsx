@@ -1,9 +1,6 @@
 /* ============================================
-   REST TIMER — Persistent pill + focused sheet
-   Pill is globally visible during workout mode.
-   Tap opens the dedicated Rest Timer view with
-   stop / adjust controls. All math uses
-   endAt - Date.now() (anti-drift).
+   REST TIMER — Apple visionOS Design System
+   Monochrome Glass · 8px Grid · No Slop
    ============================================ */
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
@@ -17,9 +14,6 @@ import { strings } from '@/lib/strings';
 
 /* ============================================
    useRemainingSeconds — shared ticker
-   Returns seconds remaining, ticking every 250ms
-   based on endAt - Date.now(). Fires onExpired
-   exactly once per running timer.
    ============================================ */
 
 function useRemainingSeconds(onExpired?: () => void): number {
@@ -61,10 +55,7 @@ function useRemainingSeconds(onExpired?: () => void): number {
 }
 
 /* ============================================
-   TIMER COMPLETION FEEDBACK — beep + vibration
-   Feature-detected, never throws when unsupported.
-   Guarded so multiple hook instances / StrictMode
-   remounts never fire the feedback twice.
+   TIMER COMPLETION FEEDBACK
    ============================================ */
 
 let lastFeedbackAt = 0;
@@ -81,26 +72,21 @@ async function fireCompletionFeedback(): Promise<void> {
     await playTimerBeep(s.soundEnabled);
     vibrateTimerComplete(s.vibrationEnabled);
   } catch {
-    // Settings unavailable — visual feedback already applied
+    // Visual feedback already applied
   }
 }
 
 /* ============================================
-   REST TIMER LAYER — global pill + focused sheet
-   Rendered once inside AppShell so the remaining
-   time is visible from anywhere in workout mode.
+   REST TIMER LAYER — floating pill
    ============================================ */
 
 interface RestTimerLayerProps {
-  /** Position pill above the bottom navigation when it is shown */
   hasNav: boolean;
 }
 
 export const RestTimerLayer: React.FC<RestTimerLayerProps> = ({ hasNav }) => {
   const timer = useTimerStore((s) => s.timer);
   const [sheetOpen, setSheetOpen] = useState(false);
-  // Completed pill shows briefly (3s) then hides; the sheet (if open)
-  // keeps showing the completed state until dismissed by the user.
   const [showCompletedPill, setShowCompletedPill] = useState(false);
   const sheetOpenRef = useRef(false);
   sheetOpenRef.current = sheetOpen;
@@ -111,7 +97,6 @@ export const RestTimerLayer: React.FC<RestTimerLayerProps> = ({ hasNav }) => {
 
   const remaining = useRemainingSeconds(handleExpired);
 
-  // Show completed feedback when the timer finishes (live or while app was closed)
   useEffect(() => {
     if (timer?.status !== 'completed') {
       setShowCompletedPill(false);
@@ -120,7 +105,6 @@ export const RestTimerLayer: React.FC<RestTimerLayerProps> = ({ hasNav }) => {
     setShowCompletedPill(true);
     const t = setTimeout(() => {
       setShowCompletedPill(false);
-      // Clear the dormant completed state unless the user has the sheet open
       if (!sheetOpenRef.current) {
         void useTimerStore.getState().stopTimer();
       }
@@ -137,12 +121,11 @@ export const RestTimerLayer: React.FC<RestTimerLayerProps> = ({ hasNav }) => {
     (isCompletedStatus && (showCompletedPill || sheetOpen));
 
   const bottomOffset = hasNav
-    ? 'calc(80px + env(safe-area-inset-bottom))'
+    ? 'calc(88px + env(safe-area-inset-bottom))'
     : 'calc(24px + env(safe-area-inset-bottom))';
 
   const handleCloseSheet = () => {
     setSheetOpen(false);
-    // Dismissing a finished timer clears it entirely
     if (useTimerStore.getState().timer?.status === 'completed') {
       void useTimerStore.getState().stopTimer();
     }
@@ -150,24 +133,23 @@ export const RestTimerLayer: React.FC<RestTimerLayerProps> = ({ hasNav }) => {
 
   return (
     <>
-      {/* Persistent pill — fixed, visible from anywhere in workout mode */}
       {pillVisible && (
         <div
-          className="fixed left-0 right-0 z-30 flex justify-center pointer-events-none px-5"
+          className="fixed left-0 right-0 z-30 flex justify-center pointer-events-none px-4"
           style={{ bottom: bottomOffset }}
         >
           <AnimatePresence>
             <motion.button
               key={pillCompleted ? 'done' : 'running'}
-              initial={{ y: 80, opacity: 0, scale: 0.8 }}
+              initial={{ y: 40, opacity: 0, scale: 0.9 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: 80, opacity: 0, scale: 0.8 }}
-              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+              exit={{ y: 40, opacity: 0, scale: 0.9 }}
+              transition={{ type: 'spring', damping: 24, stiffness: 320 }}
               onClick={() => setSheetOpen(true)}
-              className={`pointer-events-auto flex items-center gap-2.5 px-5 min-h-[44px] rounded-pill border shadow-lg transition-colors ${
+              className={`pointer-events-auto flex items-center gap-2 px-4 h-12 rounded-full border shadow-2xl transition-transform active:scale-95 ${
                 pillCompleted
-                  ? 'bg-accent-primary border-accent-primary/50'
-                  : 'bg-bg-elevated border-border-default'
+                  ? 'bg-white text-black border-white'
+                  : 'glass-dock text-text-primary border-white/[0.14]'
               }`}
               aria-label={
                 pillCompleted
@@ -177,18 +159,18 @@ export const RestTimerLayer: React.FC<RestTimerLayerProps> = ({ hasNav }) => {
             >
               {!pillCompleted ? (
                 <>
-                  <Timer className="w-[18px] h-[18px] text-icon-accent" strokeWidth={2} aria-hidden />
-                  <span className="text-label-sm text-text-secondary uppercase tracking-wider">
+                  <Timer className="w-4 h-4 text-white" strokeWidth={1.75} aria-hidden />
+                  <span className="text-meta font-normal text-text-secondary">
                     {strings.timer.rest}
                   </span>
-                  <span className="text-[17px] font-bold text-text-primary tabular-nums">
+                  <span className="text-meta font-semibold text-white tabular-nums">
                     {formatTimerSeconds(remaining)}
                   </span>
                 </>
               ) : (
                 <>
-                  <Check className="w-[18px] h-[18px] text-bg-app" strokeWidth={2.5} aria-hidden />
-                  <span className="text-label-sm font-bold text-bg-app uppercase tracking-wider">
+                  <Check className="w-4 h-4 text-black stroke-[2.5]" aria-hidden />
+                  <span className="text-meta font-semibold text-black">
                     {strings.timer.restDone}
                   </span>
                 </>
@@ -198,8 +180,6 @@ export const RestTimerLayer: React.FC<RestTimerLayerProps> = ({ hasNav }) => {
         </div>
       )}
 
-      {/* Focused Rest Timer view — receives `remaining` from the layer so a
-          second 250ms ticker isn't mounted here too. */}
       <AnimatePresence>
         {sheetOpen && (
           <RestTimerSheet remaining={remaining} onClose={handleCloseSheet} />
@@ -210,13 +190,10 @@ export const RestTimerLayer: React.FC<RestTimerLayerProps> = ({ hasNav }) => {
 };
 
 /* ============================================
-   REST TIMER SHEET — dedicated focused view
-   Big time, progress, adjust (+30s/+60s),
-   presets, stop. Reached by tapping the pill.
+   REST TIMER SHEET — visionOS Focused Sheet
    ============================================ */
 
 interface RestTimerSheetProps {
-  /** Seconds remaining, computed once by RestTimerLayer (avoid a 2nd ticker). */
   remaining: number;
   onClose: () => void;
 }
@@ -250,70 +227,64 @@ const RestTimerSheet: React.FC<RestTimerSheetProps> = ({ remaining, onClose }) =
 
   return (
     <>
-      {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm"
+        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-2xl"
         onClick={onClose}
       />
 
-      {/* Sheet */}
       <motion.div
+        ref={sheetRef}
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
-        transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+        transition={{ type: 'spring', damping: 28, stiffness: 320 }}
         role="dialog"
         aria-modal="true"
         aria-label={strings.timer.rest}
         tabIndex={-1}
-        className="fixed bottom-0 left-0 right-0 z-50 max-w-[480px] mx-auto bg-bg-elevated rounded-t-modal border-t border-border-default focus:outline-none"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        className="fixed bottom-0 left-0 right-0 z-50 max-w-[480px] mx-auto bg-[#161618]/95 backdrop-blur-3xl rounded-t-modal border-t border-white/[0.12] focus:outline-none shadow-2xl p-6 pb-[calc(32px+env(safe-area-inset-bottom))]"
       >
-        {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full bg-border-default" />
-        </div>
+        {/* Grab Handle */}
+        <div className="w-9 h-1 rounded-full bg-white/20 mx-auto mb-6" />
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-2 pb-2">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Timer className="w-7 h-7 text-icon-accent" strokeWidth={2} aria-hidden />
-            <p className="text-label-sm text-accent-primary uppercase tracking-[1.4px]">
+            <Timer className="w-5 h-5 text-white" strokeWidth={1.75} aria-hidden />
+            <p className="text-heading font-semibold text-text-primary">
               {isCompleted ? strings.timer.restDone : strings.timer.rest}
             </p>
           </div>
           <button
             onClick={onClose}
             aria-label={strings.timer.dismiss}
-            className="w-11 h-11 -mr-2 flex items-center justify-center text-text-secondary hover:text-text-primary"
+            className="w-12 h-12 -mr-2 flex items-center justify-center text-text-secondary hover:text-text-primary rounded-full hover:bg-white/[0.06] transition-colors"
           >
-            <X className="w-5 h-5" strokeWidth={2} />
+            <X className="w-5 h-5" strokeWidth={1.75} />
           </button>
         </div>
 
-        {/* Big time */}
-        <div className="px-5 pt-4 pb-2 text-center">
+        {/* Big Time Display */}
+        <div className="py-6 text-center">
           <motion.p
             key={isCompleted ? 'done' : 'time'}
-            initial={{ scale: 0.92, opacity: 0 }}
+            initial={{ scale: 0.94, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className={`text-[72px] font-bold tabular-nums leading-none ${
-              isCompleted ? 'text-accent-primary' : 'text-text-primary'
+            className={`text-numeric-lg font-semibold tabular-nums leading-none ${
+              isCompleted ? 'text-white' : 'text-text-primary'
             }`}
             aria-live="polite"
           >
             {isCompleted ? '0:00' : formatTimerSeconds(remaining)}
           </motion.p>
 
-          {/* Progress bar */}
-          <div className="mt-5 h-1.5 bg-bg-surface rounded-full overflow-hidden">
+          {/* Minimalist Progress Bar */}
+          <div className="mt-6 h-1 bg-white/[0.08] rounded-full overflow-hidden">
             <motion.div
-              className={`h-full rounded-full ${
-                isCompleted ? 'bg-accent-primary' : 'bg-accent-primary'
-              }`}
+              className="h-full rounded-full bg-white"
               animate={{ width: `${progress * 100}%` }}
               transition={{ duration: 0.25, ease: 'linear' }}
             />
@@ -321,43 +292,43 @@ const RestTimerSheet: React.FC<RestTimerSheetProps> = ({ remaining, onClose }) =
         </div>
 
         {/* Controls */}
-        <div className="px-5 pt-5 pb-5 space-y-3">
+        <div className="space-y-4 pt-2">
           {isCompleted ? (
             <button
               onClick={onClose}
-              className="w-full h-[56px] rounded-btn bg-accent-primary text-bg-app text-[15px] font-semibold tracking-wide active:scale-[0.97] transition-transform"
+              className="w-full h-12 rounded-btn bg-white text-black text-[15px] font-semibold active:scale-[0.98] transition-transform"
             >
               {strings.timer.dismiss}
             </button>
           ) : (
             <>
-              {/* Adjust row */}
+              {/* Adjust Row */}
               <div className="flex gap-2">
                 <button
                   onClick={() => void handleExtend(30)}
-                  className="flex-1 h-[52px] rounded-btn bg-bg-surface border border-border-default text-text-primary text-[15px] font-semibold active:scale-[0.97] transition-transform"
+                  className="flex-1 h-12 rounded-btn bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] text-white text-[15px] font-semibold active:scale-[0.98] hover:bg-white/[0.12] transition-colors"
                   aria-label={strings.timer.add30}
                 >
                   +0:30
                 </button>
                 <button
                   onClick={() => void handleExtend(60)}
-                  className="flex-1 h-[52px] rounded-btn bg-bg-surface border border-border-default text-text-primary text-[15px] font-semibold active:scale-[0.97] transition-transform"
+                  className="flex-1 h-12 rounded-btn bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] text-white text-[15px] font-semibold active:scale-[0.98] hover:bg-white/[0.12] transition-colors"
                   aria-label={strings.timer.add60}
                 >
                   +1:00
                 </button>
                 <button
                   onClick={() => void handleStop()}
-                  className="flex-1 h-[52px] rounded-btn bg-danger/10 border border-danger/20 text-danger text-[15px] font-semibold active:scale-[0.97] transition-transform"
+                  className="flex-1 h-12 rounded-btn bg-danger/15 border border-danger/30 text-danger text-[15px] font-semibold active:scale-[0.98] hover:bg-danger/25 transition-colors"
                 >
                   {strings.timer.stop}
                 </button>
               </div>
 
-              {/* Preset restart row */}
+              {/* Preset Restart Row */}
               <div>
-                <p className="text-label-sm text-text-secondary uppercase tracking-wider mb-2">
+                <p className="text-label-sm text-text-secondary font-semibold mb-2">
                   {strings.timer.presets}
                 </p>
                 <div className="flex gap-2">
@@ -368,10 +339,10 @@ const RestTimerSheet: React.FC<RestTimerSheetProps> = ({ remaining, onClose }) =
                         key={s}
                         onClick={() => void handlePreset(s)}
                         aria-pressed={isActive}
-                        className={`flex-1 min-h-[44px] rounded-btn text-[14px] font-semibold border transition-all ${
+                        className={`flex-1 h-12 rounded-btn text-[14px] font-semibold border transition-all ${
                           isActive
-                            ? 'bg-accent-primary text-bg-app border-accent-primary'
-                            : 'bg-bg-surface text-text-secondary border-border-default'
+                            ? 'bg-white text-black border-white shadow-sm'
+                            : 'bg-white/[0.06] text-text-secondary border-white/[0.08] hover:bg-white/[0.10]'
                         }`}
                       >
                         {formatTimerSeconds(s)}
@@ -403,8 +374,6 @@ export const RestPresets: React.FC<RestPresetsProps> = ({
   onSelect,
   activeSeconds,
 }) => {
-  // Rest presets are mutually exclusive → radio semantics (not aria-pressed),
-  // so screen readers announce "selected, 1 of 4" instead of a toggle.
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
     e.preventDefault();
@@ -427,17 +396,17 @@ export const RestPresets: React.FC<RestPresetsProps> = ({
         return (
           <motion.button
             key={s}
-            whileTap={{ scale: 0.92 }}
+            whileTap={{ scale: 0.94 }}
             onClick={() => onSelect(s)}
             role="radio"
             aria-checked={isActive}
             tabIndex={isActive || (!activeSeconds && isPreferred) ? 0 : -1}
-            className={`flex-1 min-w-[60px] h-[44px] rounded-btn text-[14px] font-semibold border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary ${
+            className={`flex-1 min-w-[64px] h-12 rounded-btn text-[14px] font-semibold border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${
               isActive
-                ? 'bg-accent-primary text-bg-app border-accent-primary'
+                ? 'bg-white text-black border-white shadow-sm'
                 : isPreferred
-                ? 'bg-accent-primary/10 text-accent-primary border-accent-primary/30'
-                : 'bg-bg-elevated text-text-secondary border-border-default hover:border-text-secondary'
+                ? 'bg-white/[0.12] text-white border-white/[0.20]'
+                : 'bg-white/[0.05] text-text-secondary border-white/[0.08] hover:bg-white/[0.09]'
             }`}
           >
             {formatTimerSeconds(s)}

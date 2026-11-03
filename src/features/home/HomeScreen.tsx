@@ -1,19 +1,20 @@
 /* ============================================
-   HOME SCREEN
-   Shows today's workout, session selector, gym hours, last workout, weekly progress
+   HOME SCREEN — Apple visionOS Design System
+   Monochrome Glass · 8px Grid · No Slop
    ============================================ */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Dumbbell, TrendingUp, Settings, Clock, Sparkles } from 'lucide-react';
+import { ChevronRight, Dumbbell, TrendingUp, Settings, Clock, Sparkles, Flame, Check } from 'lucide-react';
 import { AppShell } from '@/components/layout';
-import { Button, ProgressBar, EmptyState, AppLogo, ScreenTitle, IconButton } from '@/components/ui';
+import { Button, ProgressBar, EmptyState, ScreenTitle, IconButton, GlassCard } from '@/components/ui';
 import { programRepo, workoutRepo, settingsRepo } from '@/db/repositories';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { getNextSessionId, getWorkoutMetrics } from '@/lib/selectors';
 import { getRepresentativeWeight } from '@/lib/selectors';
 import { getGymStatus, GYM_SCHEDULE } from '@/lib/gymSchedule';
+import { useTabSync } from '@/lib/tabSync';
 import {
   formatDuration,
   formatWeight,
@@ -31,6 +32,7 @@ export const HomeScreen: React.FC = () => {
   const [showFullGymHours, setShowFullGymHours] = useState(false);
   const [weeklyTarget, setWeeklyTarget] = useState(4);
   const [isLoading, setIsLoading] = useState(true);
+  const [isStarting, setIsStarting] = useState(false);
 
   const hour = new Date().getHours();
   const greeting =
@@ -39,29 +41,34 @@ export const HomeScreen: React.FC = () => {
   const gymStatus = getGymStatus();
   const todayDayOfWeek = new Date().getDay();
 
-  useEffect(() => {
-    const load = async () => {
-      setIsLoading(true);
-      await loadActiveWorkout();
-      const [prog, workouts, settings] = await Promise.all([
-        programRepo.getFirst(),
-        workoutRepo.getCompleted(),
-        settingsRepo.get(),
-      ]);
-      setProgram(prog ?? null);
-      setCompletedWorkouts(workouts);
-      setWeeklyTarget(settings.weeklyTarget ?? 4);
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    await loadActiveWorkout();
+    const [prog, workouts, settings] = await Promise.all([
+      programRepo.getActive(),
+      workoutRepo.getCompleted(),
+      settingsRepo.get(),
+    ]);
+    setProgram(prog ?? null);
+    setCompletedWorkouts(workouts);
+    setWeeklyTarget(settings.weeklyTarget ?? 4);
 
-      if (prog && prog.sessions.length > 0) {
-        const nextId = getNextSessionId(prog.sessions, workouts);
-        const resolvedNextId = nextId ?? prog.sessions[0].id;
-        setRecommendedSessionId(resolvedNextId);
-        setSelectedSessionId((prev) => prev ?? resolvedNextId);
-      }
-      setIsLoading(false);
-    };
-    void load();
+    if (prog && prog.sessions.length > 0) {
+      const nextId = getNextSessionId(prog.sessions, workouts);
+      const resolvedNextId = nextId ?? prog.sessions[0].id;
+      setRecommendedSessionId(resolvedNextId);
+      setSelectedSessionId((prev) => prev ?? resolvedNextId);
+    }
+    setIsLoading(false);
   }, [loadActiveWorkout]);
+
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
+
+  useTabSync(() => {
+    void loadData();
+  });
 
   const lastWorkout = completedWorkouts[0];
   const metrics = getWorkoutMetrics(completedWorkouts);
@@ -78,83 +85,78 @@ export const HomeScreen: React.FC = () => {
   const isRecommended = currentSession?.id === recommendedSessionId;
 
   const handleStart = async () => {
-    if (!program || !currentSession) return;
-    const workout = await useWorkoutStore.getState().startWorkout(program.id, {
-      id: currentSession.id,
-      name: currentSession.name,
-      exercises: currentSession.exercises,
-    });
-    navigate(`/workout/${workout.id}`);
+    if (!program || !currentSession || isStarting) return;
+    setIsStarting(true);
+    try {
+      const workout = await useWorkoutStore.getState().startWorkout(program.id, {
+        id: currentSession.id,
+        name: currentSession.name,
+        exercises: currentSession.exercises,
+      });
+      navigate(`/workout/${workout.id}`);
+    } catch (e) {
+      console.error('Failed to start workout:', e);
+    } finally {
+      setIsStarting(false);
+    }
   };
 
   const handleResume = () => {
-    if (activeWorkout) navigate(`/workout/${activeWorkout.id}`);
+    if (!activeWorkout) return;
+    navigate(`/workout/${activeWorkout.id}`);
   };
 
-  // Get strength exercises from last workout for progress display
-  const lastWorkoutProgress = lastWorkout?.exerciseLogs
-    .filter((e) => e.exerciseTypeSnapshot === 'strength' && e.status === 'completed' && e.setLogs.length > 0)
-    .slice(0, 2)
-    .map((e) => ({
+  const lastWorkoutProgress = React.useMemo(() => {
+    if (!lastWorkout) return [];
+    const strengthLogs = lastWorkout.exerciseLogs.filter(
+      (e) => e.status === 'completed' && e.setLogs.length > 0
+    );
+    return strengthLogs.slice(0, 3).map((e) => ({
       name: e.exerciseNameSnapshot,
       weight: getRepresentativeWeight(e),
-    })) ?? [];
-
-  if (isLoading) {
-    return (
-      <AppShell>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 rounded-full border-2 border-accent-primary border-t-transparent animate-spin" />
-        </div>
-      </AppShell>
-    );
-  }
+    }));
+  }, [lastWorkout]);
 
   return (
     <AppShell>
-      <div className="flex-1 overflow-y-auto pb-[calc(80px+env(safe-area-inset-bottom))]">
-        {/* Header: LogoDef + Greeting */}
-        <div className="pt-[calc(env(safe-area-inset-top)+16px)] px-5 pb-4">
+      <div className="flex-1 pb-24">
+        {/* Header Section */}
+        <div className="px-4 pt-4 pb-2">
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="flex flex-col gap-4"
+            className="flex items-center justify-between"
           >
-            <AppLogo width={156} />
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <ScreenTitle size="lg" className="tracking-[-0.42px]">
-                  {greeting}
-                </ScreenTitle>
-                <p className="text-body text-text-secondary mt-1">
-                  {strings.home.subtitle}
-                </p>
-              </div>
-              <IconButton
-                label={strings.home.settings}
-                onClick={() => navigate('/settings')}
-                className="-mr-2 -mt-1"
-              >
-                <Settings className="w-5 h-5" strokeWidth={2} />
-              </IconButton>
+            <div>
+              <p className="text-meta text-text-secondary font-normal">
+                {greeting}
+              </p>
+              <ScreenTitle size="lg" className="mt-1 font-semibold text-text-primary">
+                Workout Lab
+              </ScreenTitle>
             </div>
+            <IconButton
+              label={strings.home.settings}
+              onClick={() => navigate('/settings')}
+            >
+              <Settings className="w-5 h-5 text-text-secondary" strokeWidth={1.75} />
+            </IconButton>
           </motion.div>
         </div>
 
-        <div className="px-5 space-y-4">
+        <div className="px-4 space-y-4 mt-2">
           {/* Resume Active Workout Banner */}
           {activeWorkout && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
+              initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-accent-primary/10 border border-accent-primary/30 rounded-card p-4 flex items-center justify-between"
+              className="glass-panel bg-white/[0.08] border border-white/[0.16] rounded-card p-4 flex items-center justify-between"
             >
               <div>
-                <p className="text-label-sm text-accent-primary mb-0.5">
-                  ALLENAMENTO IN CORSO
+                <p className="text-label-sm text-text-secondary font-semibold mb-1">
+                  Allenamento in corso
                 </p>
-                <p className="text-heading text-text-primary">
+                <p className="text-heading font-semibold text-text-primary">
                   {activeWorkout.sessionNameSnapshot}
                 </p>
               </div>
@@ -170,20 +172,21 @@ export const HomeScreen: React.FC = () => {
 
           {/* Session Selector & Today's Workout Card */}
           {program && sortedSessions.length > 0 && !activeWorkout ? (
-            <div className="space-y-2.5">
-              {/* Session Selector Chips */}
+            <div className="space-y-2">
+              {/* Session Selector Chips Header */}
               <div className="flex items-center justify-between px-1">
-                <p className="text-label-sm text-text-secondary">
-                  SCEGLI LA SEDUTA DI OGGI
+                <p className="text-label-sm text-text-secondary font-semibold">
+                  Scegli la seduta
                 </p>
                 {isRecommended && (
-                  <span className="text-[11px] font-semibold text-accent-primary flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" /> Consigliata da rotazione
+                  <span className="text-[12px] font-semibold text-text-primary flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5 text-text-secondary" strokeWidth={1.75} /> Consigliata
                   </span>
                 )}
               </div>
 
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-5 px-5 scrollbar-none">
+              {/* Segmented Chips */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
                 {sortedSessions.map((session) => {
                   const isSelected = session.id === currentSession?.id;
                   const isRec = session.id === recommendedSessionId;
@@ -191,21 +194,21 @@ export const HomeScreen: React.FC = () => {
                   return (
                     <motion.button
                       key={session.id}
-                      whileTap={{ scale: 0.95 }}
+                      whileTap={{ scale: 0.96 }}
                       onClick={() => setSelectedSessionId(session.id)}
-                      className={`min-h-[44px] px-4 py-2 rounded-btn text-[14px] font-semibold transition-all whitespace-nowrap flex items-center gap-2 border ${
+                      className={`min-h-[48px] px-4 py-2 rounded-btn text-[14px] font-semibold transition-all whitespace-nowrap flex items-center gap-2 border ${
                         isSelected
-                          ? 'bg-accent-primary text-bg-app border-accent-primary shadow-sm'
-                          : 'bg-bg-surface text-text-secondary border-border-default hover:text-text-primary hover:border-text-secondary/40'
+                          ? 'bg-white text-black border-white shadow-sm'
+                          : 'bg-white/[0.05] text-text-secondary border-white/[0.08] hover:text-text-primary hover:bg-white/[0.08]'
                       }`}
                     >
                       <span>{session.name}</span>
                       {isRec && (
                         <span
-                          className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
                             isSelected
-                              ? 'bg-bg-app/20 text-bg-app'
-                              : 'bg-accent-primary/15 text-accent-primary'
+                              ? 'bg-black/15 text-black'
+                              : 'bg-white/10 text-white'
                           }`}
                         >
                           Auto
@@ -218,58 +221,50 @@ export const HomeScreen: React.FC = () => {
 
               {/* Selected Session Details Card */}
               {currentSession && (
-                <motion.div
-                  key={currentSession.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="bg-bg-surface rounded-card border border-border-default overflow-hidden"
-                >
-                  <div className="p-5 pb-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-label-sm text-text-secondary">
-                        {isRecommended ? 'IN PROGRAMMA OGGI' : 'SEDUTA SELEZIONATA'}
-                      </p>
-                      <span className="text-meta text-accent-primary font-semibold">
-                        {currentSession.exercises.length} esercizi
-                      </span>
-                    </div>
-
-                    <h2 className="screen-title text-[28px] leading-tight">
-                      {currentSession.name.toUpperCase()}
-                    </h2>
-
-                    <div className="mt-4 space-y-2.5">
-                      {currentSession.exercises.map((ex) => (
-                        <div key={ex.id} className="flex items-center gap-2.5 text-left">
-                          <div className="w-1.5 h-1.5 rounded-full bg-accent-primary/60 flex-shrink-0" />
-                          <span className="text-meta text-text-primary truncate">{ex.name}</span>
-                          {ex.type === 'strength' && ex.sets ? (
-                            <span className="text-meta text-text-secondary opacity-60 ml-auto whitespace-nowrap">
-                              {ex.sets} × {ex.targetReps}
-                              {ex.defaultWeight ? ` · ${ex.defaultWeight}kg` : ''}
-                            </span>
-                          ) : (
-                            <span className="text-meta text-text-secondary opacity-60 ml-auto whitespace-nowrap">
-                              {Math.round((ex.durationSeconds ?? 0) / 60)} min
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                <GlassCard className="mt-2 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-label-sm text-text-secondary font-semibold">
+                      {isRecommended ? 'In programma oggi' : 'Seduta selezionata'}
+                    </p>
+                    <span className="text-meta text-text-secondary font-normal">
+                      {currentSession.exercises.length} esercizi
+                    </span>
                   </div>
 
-                  <div className="px-5 pb-5 pt-1">
-                    <Button variant="primary" fullWidth onClick={handleStart}>
+                  <h2 className="text-title font-semibold text-text-primary leading-tight">
+                    {currentSession.name}
+                  </h2>
+
+                  <div className="space-y-2 pt-1 border-t border-white/[0.06]">
+                    {currentSession.exercises.map((ex) => (
+                      <div key={ex.id} className="flex items-center gap-2.5 text-left py-1">
+                        <div className="w-1.5 h-1.5 rounded-full bg-white/40 flex-shrink-0" />
+                        <span className="text-meta text-text-primary truncate font-normal">{ex.name}</span>
+                        {ex.type === 'strength' && ex.sets ? (
+                          <span className="text-meta text-text-secondary ml-auto whitespace-nowrap font-normal">
+                            {ex.sets} × {ex.targetReps}
+                            {ex.defaultWeight ? ` · ${ex.defaultWeight} kg` : ''}
+                          </span>
+                        ) : (
+                          <span className="text-meta text-text-secondary ml-auto whitespace-nowrap font-normal">
+                            {Math.round((ex.durationSeconds ?? 0) / 60)} min
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-2">
+                    <Button variant="primary" fullWidth isLoading={isStarting} onClick={handleStart}>
                       {strings.home.startWorkout}
                     </Button>
                   </div>
-                </motion.div>
+                </GlassCard>
               )}
             </div>
           ) : !activeWorkout && !isLoading ? (
             <EmptyState
-              icon={<Dumbbell className="w-8 h-8" />}
+              icon={<Dumbbell className="w-8 h-8 text-text-secondary" strokeWidth={1.75} />}
               title={strings.home.noSessionTitle}
               description={strings.home.noProgram}
               action={
@@ -281,31 +276,26 @@ export const HomeScreen: React.FC = () => {
           ) : null}
 
           {/* Gym Hours Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.08 }}
-            className="bg-bg-surface rounded-card border border-border-default p-5"
-          >
+          <GlassCard>
             <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-full bg-bg-elevated flex items-center justify-center text-text-primary">
-                  <Clock className="w-5 h-5 text-accent-primary" />
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-2xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-text-primary">
+                  <Clock className="w-5 h-5 text-text-primary" strokeWidth={1.75} />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="text-label-sm text-text-secondary uppercase">
-                      ORARI PALESTRA
+                    <p className="text-label-sm text-text-secondary font-semibold">
+                      Orari palestra
                     </p>
                     <span
                       className={`inline-block w-2 h-2 rounded-full ${
                         gymStatus.isOpen
-                          ? 'bg-accent-primary animate-pulse'
+                          ? 'bg-success'
                           : 'bg-text-secondary opacity-40'
                       }`}
                     />
                   </div>
-                  <h3 className="text-heading text-text-primary mt-0.5">
+                  <h3 className="text-heading font-semibold text-text-primary mt-0.5">
                     {gymStatus.statusText}
                     <span className="text-meta text-text-secondary font-normal ml-2">
                       ({gymStatus.detailText})
@@ -317,7 +307,7 @@ export const HomeScreen: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowFullGymHours((v) => !v)}
-                className="text-meta text-accent-primary font-semibold hover:underline min-h-[44px] flex items-center px-1"
+                className="text-meta text-text-primary font-semibold hover:underline min-h-[48px] flex items-center px-2"
               >
                 {showFullGymHours ? 'Chiudi' : 'Tutti gli orari'}
               </button>
@@ -334,28 +324,28 @@ export const HomeScreen: React.FC = () => {
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="mt-4 pt-3 border-t border-border-default space-y-2 overflow-hidden"
+                  className="mt-4 pt-4 border-t border-white/[0.06] space-y-2 overflow-hidden"
                 >
                   {GYM_SCHEDULE.map((item) => {
                     const isToday = item.days.includes(todayDayOfWeek);
                     return (
                       <div
                         key={item.dayLabel}
-                        className={`flex items-center justify-between text-meta py-1 px-2.5 rounded-btn ${
+                        className={`flex items-center justify-between text-meta py-2 px-4 rounded-btn ${
                           isToday
-                            ? 'bg-accent-primary/10 text-accent-primary font-semibold'
+                            ? 'bg-white/[0.08] text-white font-semibold'
                             : 'text-text-secondary'
                         }`}
                       >
                         <span className="flex items-center gap-2">
                           {item.dayLabel}
                           {isToday && (
-                            <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.2 rounded-full bg-accent-primary text-bg-app font-bold">
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white text-black font-semibold">
                               Oggi
                             </span>
                           )}
                         </span>
-                        <span className={isToday ? 'text-accent-primary' : 'text-text-primary'}>
+                        <span className={isToday ? 'text-white' : 'text-text-primary'}>
                           {item.hoursFormatted}
                         </span>
                       </div>
@@ -364,29 +354,33 @@ export const HomeScreen: React.FC = () => {
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
+          </GlassCard>
 
           {/* Last Workout */}
           {lastWorkout ? (
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.12 }}
-              className="bg-bg-surface rounded-card border border-border-default p-5"
-            >
-              <p className="text-label-sm text-text-secondary mb-3">
-                {strings.home.lastWorkout}
-              </p>
+            <GlassCard>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-label-sm text-text-secondary font-semibold">
+                  {strings.home.lastWorkout}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate('/history')}
+                  className="min-h-[48px] -my-2 px-2 flex items-center text-label-sm text-text-primary font-semibold hover:underline"
+                >
+                  Vedi tutti ({completedWorkouts.length})
+                </button>
+              </div>
               <button
                 className="w-full text-left"
                 onClick={() => navigate(`/workout/${lastWorkout.id}`)}
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="text-heading text-text-primary">
+                    <h3 className="text-heading font-semibold text-text-primary">
                       {lastWorkout.sessionNameSnapshot}
                     </h3>
-                    <p className="text-meta text-text-secondary mt-0.5">
+                    <p className="text-meta text-text-secondary mt-0.5 font-normal">
                       {lastWorkout.completedAt
                         ? formatDuration(lastWorkout.completedAt - lastWorkout.startedAt)
                         : '—'}
@@ -394,18 +388,18 @@ export const HomeScreen: React.FC = () => {
                       {lastWorkout.exerciseLogs.filter((e) => e.status === 'completed').length} esercizi
                     </p>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-text-secondary mt-0.5" />
+                  <ChevronRight className="w-5 h-5 text-text-secondary mt-0.5" strokeWidth={1.75} />
                 </div>
 
                 {lastWorkoutProgress.length > 0 && (
-                  <div className="mt-3 space-y-1.5">
+                  <div className="mt-4 space-y-2 pt-2 border-t border-white/[0.06]">
                     {lastWorkoutProgress.map((ex) => (
                       <div key={ex.name} className="flex items-center gap-2">
-                        <TrendingUp className="w-3.5 h-3.5 text-accent-primary" />
-                        <span className="text-meta text-text-secondary">
+                        <TrendingUp className="w-3.5 h-3.5 text-text-secondary" strokeWidth={1.75} />
+                        <span className="text-meta text-text-secondary font-normal">
                           {ex.name}
                         </span>
-                        <span className="text-meta text-accent-primary font-semibold ml-auto">
+                        <span className="text-meta text-text-primary font-semibold ml-auto">
                           {formatWeight(ex.weight)}
                         </span>
                       </div>
@@ -413,62 +407,60 @@ export const HomeScreen: React.FC = () => {
                   </div>
                 )}
               </button>
-            </motion.div>
+            </GlassCard>
           ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.12 }}
-              className="bg-bg-surface rounded-card border border-border-default p-5"
-            >
-              <p className="text-label-sm text-text-secondary mb-2">
+            <GlassCard>
+              <p className="text-label-sm text-text-secondary font-semibold mb-2">
                 {strings.home.lastWorkout}
               </p>
-              <p className="text-meta text-text-secondary">
+              <p className="text-meta text-text-secondary font-normal">
                 {strings.home.noWorkoutHistory}
               </p>
-            </motion.div>
+            </GlassCard>
           )}
 
           {/* Weekly Progress */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.16 }}
-            className="bg-bg-surface rounded-card border border-border-default p-5"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-label-sm text-text-secondary">
+          <GlassCard>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-label-sm text-text-secondary font-semibold">
                 {strings.home.thisWeek}
               </p>
               <p className="text-meta text-text-primary font-semibold">
                 {metrics.thisWeekCount} / {weekTarget} workout
               </p>
             </div>
-            <ProgressBar value={metrics.thisWeekCount / weekTarget} />
-            <div className="flex gap-2 mt-4">
-              {Array.from({ length: weekTarget }, (_, i) => (
-                <div
-                  key={i}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-[18px] ${
-                    i < metrics.thisWeekCount
-                      ? 'text-accent-primary'
-                      : 'text-text-secondary opacity-30'
-                  }`}
-                >
-                  ●
-                </div>
-              ))}
+            <ProgressBar value={weekTarget > 0 ? metrics.thisWeekCount / weekTarget : 0} />
+            <div className="flex items-center justify-around gap-2 mt-4">
+              {Array.from({ length: weekTarget }, (_, i) => {
+                const isDone = i < metrics.thisWeekCount;
+                return (
+                  <div
+                    key={i}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
+                      isDone
+                        ? 'bg-white text-black border-white'
+                        : 'bg-white/[0.05] border-white/[0.08] text-text-secondary'
+                    }`}
+                  >
+                    {isDone ? (
+                      <Check className="w-4 h-4 stroke-[2.5]" />
+                    ) : (
+                      <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
+                    )}
+                  </div>
+                );
+              })}
             </div>
             {metrics.currentStreak > 0 && (
-              <p className="text-meta text-text-secondary mt-3">
-                🔥 Streak:{' '}
+              <p className="text-meta text-text-secondary mt-4 flex items-center gap-1.5 font-normal">
+                <Flame className="w-4 h-4 text-text-primary" strokeWidth={1.75} />
+                Streak:{' '}
                 <span className="text-text-primary font-semibold">
-                  {metrics.currentStreak} giorni
+                  {metrics.currentStreak} {metrics.currentStreak === 1 ? 'giorno' : 'giorni'}
                 </span>
               </p>
             )}
-          </motion.div>
+          </GlassCard>
         </div>
       </div>
     </AppShell>

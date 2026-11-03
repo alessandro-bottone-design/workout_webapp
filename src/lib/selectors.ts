@@ -266,7 +266,13 @@ export function getWorkoutsOnDay(workouts: Workout[], dayTimestamp: number): Wor
  */
 export function getCurrentProgramWeek(startDate?: string): number {
   if (!startDate) return 1;
-  const start = new Date(startDate).getTime();
+  // Date-only strings ("YYYY-MM-DD") are parsed as UTC by the Date
+  // constructor; force local midnight so the week never shifts by timezone.
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(startDate)
+    ? `${startDate}T00:00:00`
+    : startDate;
+  const start = new Date(normalized).getTime();
+  if (!Number.isFinite(start)) return 1;
   const now = Date.now();
   const weeks = Math.floor((now - start) / (7 * 24 * 60 * 60 * 1000));
   return Math.max(1, Math.min(weeks + 1, 999));

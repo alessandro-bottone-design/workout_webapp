@@ -1,6 +1,6 @@
 /* ============================================
-   EXERCISE FOCUS SCREEN — Most important screen
-   Set logging, reps stepper, weight display, rest
+   EXERCISE FOCUS SCREEN — visionOS Style
+   Monochrome Glass · 8px Grid · No Slop
    ============================================ */
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
@@ -8,11 +8,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ChevronLeft } from 'lucide-react';
 import { AppShell } from '@/components/layout';
-import { Button, NumericStepper, IconButton } from '@/components/ui';
+import { Button, NumericStepper, IconButton, EmptyState, GlassCard } from '@/components/ui';
 import { RestPresets } from '@/features/timer/TimerComponents';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { useTimerStore } from '@/features/timer/timerStore';
-import { workoutRepo, programRepo, settingsRepo } from '@/db/repositories';
+import { workoutRepo, programRepo } from '@/db/repositories';
 import { formatTimerSeconds, formatWeight, formatWeightValue } from '@/lib/formatters';
 import { strings } from '@/lib/strings';
 import type { WorkoutExerciseLog } from '@/types';
@@ -25,8 +25,14 @@ export const ExerciseFocusScreen: React.FC = () => {
     exerciseId: string;
   }>();
   const navigate = useNavigate();
-  const { activeWorkout, resumeWorkout, completeSet, startExercise, completeExercise } =
-    useWorkoutStore();
+  const {
+    activeWorkout,
+    resumeWorkout,
+    completeSet,
+    startExercise,
+    completeExercise,
+    updateExerciseLog,
+  } = useWorkoutStore();
   const { timer, startTimer } = useTimerStore();
 
   const [exerciseLog, setExerciseLog] = useState<WorkoutExerciseLog | null>(null);
@@ -38,183 +44,274 @@ export const ExerciseFocusScreen: React.FC = () => {
   const [isCompletingSet, setIsCompletingSet] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [preferredRest, setPreferredRest] = useState(90);
-  // Cardio-only state: countdown toward the planned duration + tracked elapsed.
+  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'missing'>('loading');
   const [cardioElapsed, setCardioElapsed] = useState(0);
   const [cardioRunning, setCardioRunning] = useState(false);
-  // Guards one-time initialization per exercise so that completing a set
-  // (which updates the workout) never overwrites the user's current input.
   const initForExerciseRef = useRef<string | null>(null);
 
   const workout = activeWorkout;
 
-  // Fallback: hydrate the workout from DB if the store is empty
-  // (e.g. deep-link / reload directly on this route).
   useEffect(() => {
-    if (!workoutId) return;
-    if (activeWorkout?.id === workoutId) return;
+    if (!workoutId) {
+      setLoadState('missing');
+      return;
+    }
+    if (activeWorkout?.id === workoutId) {
+      setLoadState('ready');
+      return;
+    }
     let cancelled = false;
     void workoutRepo.getById(workoutId).then((w) => {
-      if (cancelled || !w) return;
-      if (w.status === 'active') resumeWorkout(w);
+      if (cancelled) return;
+      if (!w) {
+        setLoadState('missing');
+        return;
+      }
+      if (w.status !== 'active') {
+        navigate(`/workout/${w.id}`, { replace: true });
+        return;
+      }
+      resumeWorkout(w);
+      setLoadState('ready');
     });
     return () => {
       cancelled = true;
     };
-  }, [workoutId, activeWorkout?.id, resumeWorkout]);
+  }, [workoutId, activeWorkout?.id, resumeWorkout, navigate]);
 
   useEffect(() => {
     if (!workout || !exerciseId) return;
-    // Already initialized for this exercise — do not reset user input
     if (initForExerciseRef.current === exerciseId) return;
 
     const log = workout.exerciseLogs.find((e) => e.id === exerciseId);
-    if (!log) return;
+    if (!log) {
+      setLoadState('missing');
+      return;
+    }
 
     initForExerciseRef.current = exerciseId;
     setExerciseLog(log);
 
-    // If exercise is pending, mark it as active
     if (log.status === 'pending') {
       void startExercise(log.id);
     }
 
-    // One-time load: previous performance + program template defaults
     const loadInitial = async () => {
-      const [lastPerf, program, settings] = await Promise.all([
-        workoutRepo.getLastPerformanceForExercise(log.exerciseTemplateId),
-        programRepo.getFirst(),
-        settingsRepo.get(),
-      ]);
-
-      const template = program?.sessions
-        .flatMap((s) => s.exercises)
-        .find((e) => e.id === log.exerciseTemplateId);
-
-      setPreferredRest(template?.restSeconds ?? settings.defaultRestSeconds);
-
-      // "ULTIMA VOLTA" card: previous completed session performance
-      const lastSet =
-        lastPerf && lastPerf.setLogs.length > 0
-          ? lastPerf.setLogs[lastPerf.setLogs.length - 1]
-          : null;
-      if (lastSet) {
-        setLastWeight(lastSet.weight);
-        setLastReps(lastSet.reps);
-      } else {
-        setLastWeight(null);
-        setLastReps(null);
+      if (log.exerciseTypeSnapshot === 'cardio') {
+        if (log.cardioStartedAt) {
+          const base = log.cardioElapsedSeconds ?? 0;
+          const delta = Math.max(0, Math.floor((Date.now() - log.cardioStartedAt) / 1000));
+          setCardioElapsed(base + delta);
+          setCardioRunning(true);
+        } else {
+          setCardioElapsed(log.cardioElapsedSeconds ?? 0);
+          setCardioRunning(false);
+        }
       }
 
-      // Input prefill priority:
-      // 1) this session's last completed set (survives reload / re-entry)
-      // 2) previous session's last set
-      // 3) program template defaults
-      const currentSet =
-        log.setLogs.length > 0 ? log.setLogs[log.setLogs.length - 1] : null;
-      if (currentSet) {
-        setWeight(currentSet.weight);
-        setReps(currentSet.reps);
-      } else if (lastSet) {
+      const prevPerfMap = await workoutRepo.getPreviousPerformances(
+        [log.exerciseTemplateId],
+        workout.startedAt
+      );
+      const prevLog = prevPerfMap.get(log.exerciseTemplateId);
+
+      if (prevLog && prevLog.setLogs.length > 0) {
+        const lastSet = prevLog.setLogs[prevLog.setLogs.length - 1];
+        setLastWeight(lastSet.weight);
+        setLastReps(lastSet.reps);
         setWeight(lastSet.weight);
         setReps(lastSet.reps);
       } else {
-        setWeight(template?.defaultWeight ?? 0);
-        setReps(template?.targetReps ?? log.targetRepsSnapshot ?? 8);
+        const prog = await programRepo.getActive();
+        const exTemplate = prog?.sessions
+          .flatMap((s) => s.exercises)
+          .find((e) => e.id === log.exerciseTemplateId);
+
+        if (exTemplate) {
+          setWeight(exTemplate.defaultWeight ?? 0);
+          setReps(exTemplate.targetReps ?? 8);
+          if (exTemplate.restSeconds) {
+            setPreferredRest(exTemplate.restSeconds);
+          }
+        }
       }
     };
     void loadInitial();
   }, [workout, exerciseId, startExercise]);
 
-  // Sync with store updates (never touches weight/reps input)
   useEffect(() => {
     if (!workout || !exerciseId) return;
-    const log = workout.exerciseLogs.find((e) => e.id === exerciseId);
-    if (log) setExerciseLog(log);
-  }, [workout, exerciseId]);
-
-  // Reset the one-time guard when leaving the screen
-  useEffect(() => {
-    return () => {
-      initForExerciseRef.current = null;
-    };
-  }, [exerciseId]);
-
-  const isCardio = exerciseLog?.exerciseTypeSnapshot === 'cardio';
-  const plannedDuration = exerciseLog?.plannedDurationSeconds ?? 0;
-
-  // Cardio countdown ticker — only runs while the user has started the bout.
-  useEffect(() => {
-    if (!cardioRunning) return;
-    const id = setInterval(() => setCardioElapsed((e) => e + 1), 1000);
-    return () => clearInterval(id);
-  }, [cardioRunning]);
-
-  const handleCompleteCardio = useCallback(async () => {
-    if (!exerciseLog) return;
-    setIsCompletingSet(true);
-    await completeSet(exerciseLog.id, {
-      setNumber: 1,
-      weight: 0,
-      reps: 0,
-      completedAt: Date.now(),
-      durationSeconds: cardioElapsed,
-    });
-    await completeExercise(exerciseLog.id);
-    setShowSuccess(true);
-    setIsCompletingSet(false);
-  }, [exerciseLog, completeSet, completeExercise, cardioElapsed]);
+    const currentLog = workout.exerciseLogs.find((e) => e.id === exerciseId);
+    if (currentLog) {
+      setExerciseLog(currentLog);
+      if (currentLog.status === 'completed' && !showSuccess) {
+        setShowSuccess(true);
+      }
+    }
+  }, [workout, exerciseId, showSuccess]);
 
   const handleCompleteSet = useCallback(async () => {
-    if (!exerciseLog || !workout) return;
+    if (!workout || !exerciseLog || isCompletingSet) return;
     setIsCompletingSet(true);
 
-    const completedSets = exerciseLog.setLogs.length;
-    const isLastSet = completedSets + 1 >= exerciseLog.plannedSetsSnapshot;
+    const setIndex = exerciseLog.setLogs.length;
+    const plannedSets = exerciseLog.plannedSetsSnapshot;
 
-    await completeSet(exerciseLog.id, {
-      setNumber: completedSets + 1,
-      weight,
-      reps,
-      completedAt: Date.now(),
-    });
+    try {
+      await completeSet(exerciseLog.id, {
+        setNumber: setIndex + 1,
+        reps,
+        weight,
+        completedAt: Date.now(),
+      });
+      const isLastSet = setIndex + 1 >= plannedSets;
 
-    if (isLastSet) {
-      // Complete the exercise
-      await completeExercise(exerciseLog.id);
-      setShowSuccess(true);
-    } else if (preferredRest > 0) {
-      // Auto-start the rest timer between sets (3.4). The pill rendered by
-      // RestTimerLayer takes over from here; a preset tap can still override.
-      await startTimer(preferredRest, exerciseLog.id, workout.id);
+      if (!isLastSet) {
+        const restDuration = preferredRest;
+        await startTimer(restDuration, exerciseLog.id, workout.id);
+      } else {
+        await completeExercise(exerciseLog.id);
+        setShowSuccess(true);
+      }
+    } catch (e) {
+      console.error('Failed to complete set:', e);
+    } finally {
+      setIsCompletingSet(false);
     }
+  }, [
+    workout,
+    exerciseLog,
+    isCompletingSet,
+    reps,
+    weight,
+    completeSet,
+    preferredRest,
+    startTimer,
+    completeExercise,
+  ]);
 
-    setIsCompletingSet(false);
-  }, [exerciseLog, workout, completeSet, completeExercise, weight, reps, preferredRest, startTimer]);
-
-  const handleStartTimer = async (seconds: number) => {
-    await startTimer(seconds, exerciseLog?.id, workout?.id);
+  const handleToggleCardio = async () => {
+    if (!exerciseLog || !workout) return;
+    const now = Date.now();
+    if (cardioRunning) {
+      const delta = exerciseLog.cardioStartedAt
+        ? Math.max(0, Math.floor((now - exerciseLog.cardioStartedAt) / 1000))
+        : 0;
+      const total = (exerciseLog.cardioElapsedSeconds ?? 0) + delta;
+      setCardioElapsed(total);
+      setCardioRunning(false);
+      await updateExerciseLog({
+        ...exerciseLog,
+        cardioElapsedSeconds: total,
+        cardioStartedAt: undefined,
+      });
+    } else {
+      setCardioRunning(true);
+      await updateExerciseLog({
+        ...exerciseLog,
+        cardioStartedAt: now,
+      });
+    }
   };
 
-  if (!exerciseLog || !workout) {
+  const handleResetCardio = async () => {
+    if (!exerciseLog || !workout) return;
+    setCardioElapsed(0);
+    setCardioRunning(false);
+    await updateExerciseLog({
+      ...exerciseLog,
+      cardioElapsedSeconds: 0,
+      cardioStartedAt: undefined,
+    });
+  };
+
+  const handleCompleteCardio = async () => {
+    if (!exerciseLog || !workout || isCompletingSet) return;
+    setIsCompletingSet(true);
+    try {
+      let finalSeconds = cardioElapsed;
+      if (cardioRunning && exerciseLog.cardioStartedAt) {
+        const delta = Math.max(0, Math.floor((Date.now() - exerciseLog.cardioStartedAt) / 1000));
+        finalSeconds += delta;
+      }
+      await completeSet(exerciseLog.id, {
+        setNumber: 1,
+        reps: 1,
+        weight: 0,
+        durationSeconds: finalSeconds,
+        completedAt: Date.now(),
+      });
+      await completeExercise(exerciseLog.id);
+      setShowSuccess(true);
+    } finally {
+      setIsCompletingSet(false);
+    }
+  };
+
+  const handleStartTimer = async (seconds: number) => {
+    if (!workout || !exerciseLog) return;
+    setPreferredRest(seconds);
+    await startTimer(seconds, exerciseLog.id, workout.id);
+  };
+
+  const handleContinueAfterSuccess = () => {
+    if (!workout || !exerciseLog) return;
+    const sorted = [...workout.exerciseLogs].sort((a, b) => a.order - b.order);
+    const currentIndex = sorted.findIndex((e) => e.id === exerciseLog.id);
+    const nextExercise = sorted.slice(currentIndex + 1).find((e) => e.status !== 'completed');
+
+    if (nextExercise) {
+      navigate(`/workout/${workout.id}/exercise/${nextExercise.id}`, { replace: true });
+    } else {
+      navigate(`/workout/${workout.id}`, { replace: true });
+    }
+  };
+
+  const handleAddExtraSet = () => {
+    if (!exerciseLog) return;
+    setShowSuccess(false);
+  };
+
+  if (loadState === 'missing') {
     return (
       <AppShell showNav={false}>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 rounded-full border-2 border-accent-primary border-t-transparent animate-spin" />
+        <div className="flex-1 flex items-center justify-center px-4">
+          <EmptyState
+            title={strings.errors.workoutNotFound}
+            description={strings.errors.workoutNotFoundDetail}
+            action={
+              <Button variant="secondary" onClick={() => navigate('/', { replace: true })}>
+                {strings.errors.goHome}
+              </Button>
+            }
+          />
         </div>
       </AppShell>
     );
   }
 
-  // Determine if exercise is complete
-  if (showSuccess || exerciseLog.status === 'completed') {
+  if (loadState === 'loading' || !workout || !exerciseLog) {
+    return (
+      <AppShell showNav={false}>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full border-2 border-white border-t-transparent animate-spin" />
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (showSuccess) {
     return (
       <ExerciseCompletedScreen
         exerciseLog={exerciseLog}
-        onContinue={() => navigate(`/workout/${workout.id}`)}
+        onContinue={handleContinueAfterSuccess}
+        onAddExtraSet={handleAddExtraSet}
       />
     );
   }
 
+  const isCardio = exerciseLog.exerciseTypeSnapshot === 'cardio';
+  const plannedDuration = exerciseLog.plannedDurationSeconds ?? 0;
   const sortedLogs = [...workout.exerciseLogs].sort((a, b) => a.order - b.order);
   const exerciseIndex = sortedLogs.findIndex((e) => e.id === exerciseId);
   const completedSets = exerciseLog.setLogs.length;
@@ -225,56 +322,61 @@ export const ExerciseFocusScreen: React.FC = () => {
     <AppShell showNav={false}>
       <div className="flex-1 overflow-y-auto pb-[calc(96px+env(safe-area-inset-bottom))]">
         {/* Header */}
-        <div className="pt-[calc(env(safe-area-inset-top)+8px)] px-5">
+        <div className="pt-[calc(env(safe-area-inset-top)+8px)] px-4">
           <div className="flex items-center justify-between h-14">
             <IconButton
               label={strings.workout.backToOverview}
               onClick={() => navigate(`/workout/${workout.id}`)}
-              className="-ml-1.5 w-auto min-w-[44px] gap-1 rounded-none"
+              className="-ml-2 w-auto min-w-[48px] gap-1 px-2 rounded-2xl"
             >
-              <ChevronLeft className="w-5 h-5" strokeWidth={2} />
-              <span className="text-meta text-text-secondary">{workout.sessionNameSnapshot}</span>
+              <ChevronLeft className="w-5 h-5 text-text-primary" strokeWidth={1.75} />
+              <span className="text-meta text-text-secondary font-normal">{workout.sessionNameSnapshot}</span>
             </IconButton>
-            <span className="text-meta text-text-secondary">
+            <span className="text-meta text-text-secondary font-normal">
               {exerciseIndex + 1} / {sortedLogs.length}
             </span>
           </div>
         </div>
 
         {/* Exercise Name */}
-        <div className="px-5 pt-2 pb-6">
+        <div className="px-4 pt-2 pb-4">
           <motion.h1
             key={exerciseLog.id}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="screen-title text-[26px] leading-[1.15] uppercase tracking-[-0.42px]"
+            className="text-title font-semibold text-text-primary leading-tight"
           >
             {exerciseLog.exerciseNameSnapshot}
           </motion.h1>
-          <p className="text-body text-text-secondary mt-1">
-            {strings.workout.seriesLabel(currentSetNum, plannedSets)}
+          <p className="text-body text-text-secondary mt-1 font-normal">
+            {isCardio ? strings.sessionDetail.cardio : strings.workout.seriesLabel(currentSetNum, plannedSets)}
           </p>
+          {exerciseLog.notesSnapshot && (
+            <p className="text-meta text-text-secondary mt-4 whitespace-pre-line rounded-card border border-white/[0.08] bg-white/[0.04] p-4 font-normal">
+              {exerciseLog.notesSnapshot}
+            </p>
+          )}
         </div>
 
         {/* Last Performance */}
         {(lastWeight !== null || lastReps !== null) && (
-          <div className="px-5 mb-5">
-            <div className="bg-bg-elevated rounded-card p-4 border border-border-default">
-              <p className="text-label-sm text-text-secondary mb-1.5">
+          <div className="px-4 mb-4">
+            <GlassCard>
+              <p className="text-label-sm text-text-secondary mb-1 font-semibold">
                 {strings.workout.lastTime}
               </p>
-              <p className="text-heading text-text-primary">
+              <p className="text-heading font-semibold text-text-primary">
                 {lastWeight !== null ? formatWeight(lastWeight) : '—'}
                 {lastReps !== null ? ` × ${lastReps}` : ''}
               </p>
-            </div>
+            </GlassCard>
           </div>
         )}
 
         {/* Reps Stepper */}
         {!isCardio && (
-          <div className="px-5 mb-6">
-            <div className="bg-bg-surface rounded-card border border-border-default p-5">
+          <div className="px-4 mb-4">
+            <GlassCard className="p-6">
               <NumericStepper
                 value={reps}
                 onChange={setReps}
@@ -282,19 +384,19 @@ export const ExerciseFocusScreen: React.FC = () => {
                 max={99}
                 label={strings.workout.reps}
               />
-            </div>
+            </GlassCard>
           </div>
         )}
 
         {/* Weight Display */}
         {!isCardio && (
-          <div className="px-5 mb-6">
-            <div className="bg-bg-surface rounded-card border border-border-default p-5">
-              <p className="text-label-sm text-text-secondary mb-3">
+          <div className="px-4 mb-4">
+            <GlassCard className="p-4">
+              <p className="text-label-sm text-text-secondary mb-2 font-semibold">
                 {strings.workout.weight}
               </p>
               <div className="flex items-center justify-between">
-                <span className="text-[40px] font-bold text-text-primary tabular-nums">
+                <span className="text-display font-semibold text-text-primary tabular-nums">
                   {weight === 0 ? 'BW' : formatWeightValue(weight)}
                   {weight > 0 && (
                     <span className="text-[20px] font-normal text-text-secondary ml-1">
@@ -304,24 +406,24 @@ export const ExerciseFocusScreen: React.FC = () => {
                 </span>
                 <button
                   onClick={() => setShowWeightEditor(true)}
-                  className="text-accent-primary text-meta font-semibold min-h-[44px] px-4 rounded-btn bg-accent-primary/10 hover:bg-accent-primary/20 transition-colors"
+                  className="text-text-primary text-meta font-semibold min-h-[48px] px-4 rounded-btn bg-white/[0.08] hover:bg-white/[0.14] border border-white/[0.10] transition-colors"
                 >
                   {strings.workout.edit}
                 </button>
               </div>
-            </div>
+            </GlassCard>
           </div>
         )}
 
         {/* Complete Set CTA */}
         {isCardio ? (
-          <div className="px-5 mb-6">
-            <div className="bg-bg-surface rounded-card border border-border-default p-5">
-              <p className="text-label-sm text-text-secondary mb-3">
+          <div className="px-4 mb-4">
+            <GlassCard className="p-6">
+              <p className="text-label-sm text-text-secondary mb-4 font-semibold text-center">
                 {strings.workout.duration}
               </p>
               <div className="text-center mb-4">
-                <span className="text-[48px] font-bold text-text-primary tabular-nums">
+                <span className="text-numeric-lg font-semibold text-text-primary tabular-nums">
                   {formatTimerSeconds(cardioElapsed)}
                 </span>
                 {plannedDuration > 0 && (
@@ -334,7 +436,7 @@ export const ExerciseFocusScreen: React.FC = () => {
                 <Button
                   variant="secondary"
                   className="flex-1"
-                  onClick={() => setCardioRunning((r) => !r)}
+                  onClick={handleToggleCardio}
                 >
                   {cardioRunning
                     ? strings.workout.pause
@@ -343,10 +445,7 @@ export const ExerciseFocusScreen: React.FC = () => {
                 <Button
                   variant="ghost"
                   className="flex-1"
-                  onClick={() => {
-                    setCardioRunning(false);
-                    setCardioElapsed(0);
-                  }}
+                  onClick={handleResetCardio}
                 >
                   {strings.workout.reset}
                 </Button>
@@ -359,10 +458,10 @@ export const ExerciseFocusScreen: React.FC = () => {
               >
                 {strings.workout.cardioComplete}
               </Button>
-            </div>
+            </GlassCard>
           </div>
         ) : (
-          <div className="px-5 mb-6">
+          <div className="px-4 mb-4">
             <Button
               variant="primary"
               fullWidth
@@ -375,37 +474,49 @@ export const ExerciseFocusScreen: React.FC = () => {
         )}
 
         {/* Sets Overview */}
-        <div className="px-5 mb-6">
-          <div className="flex gap-3 flex-wrap">
-            {Array.from({ length: plannedSets }, (_, i) => {
+        <div className="px-4 mb-4">
+          <div className="flex items-center justify-between mb-2 px-1">
+            <p className="text-label-sm text-text-secondary font-semibold">Serie</p>
+            {!isCardio && (
+              <button
+                type="button"
+                onClick={handleAddExtraSet}
+                className="min-h-[48px] -my-2 px-2 flex items-center text-label-sm text-text-primary font-semibold hover:underline"
+              >
+                + Aggiungi serie
+              </button>
+            )}
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {Array.from({ length: Math.max(plannedSets, completedSets) }, (_, i) => {
               const setLog = exerciseLog.setLogs[i];
               const isCurrent = i === completedSets;
               return (
                 <div
                   key={i}
-                  className={`flex-1 min-w-[70px] p-3 rounded-card border text-center ${
+                  className={`flex-1 min-w-[72px] p-4 rounded-card border text-center transition-all ${
                     setLog
-                      ? 'bg-accent-primary/10 border-accent-primary/30'
+                      ? 'bg-white text-black border-white'
                       : isCurrent
-                      ? 'bg-bg-elevated border-accent-primary/50'
-                      : 'bg-bg-surface border-border-default opacity-40'
+                      ? 'bg-white/[0.12] border-white/[0.24] text-white'
+                      : 'bg-white/[0.04] border-white/[0.06] text-text-secondary'
                   }`}
                 >
                   <div className="flex items-center justify-center mb-1">
                     {setLog ? (
-                      <Check className="w-4 h-4 text-accent-primary" />
+                      <Check className="w-4 h-4 stroke-[2.5]" />
                     ) : isCurrent ? (
-                      <div className="w-2 h-2 rounded-full bg-accent-primary" />
+                      <div className="w-2 h-2 rounded-full bg-white" />
                     ) : (
-                      <div className="w-2 h-2 rounded-full bg-border-default" />
+                      <div className="w-2 h-2 rounded-full bg-white/20" />
                     )}
                   </div>
-                  <p className="text-label-sm text-text-secondary">
+                  <p className={`text-label-sm font-semibold ${setLog ? 'text-black' : 'text-text-secondary'}`}>
                     Serie {i + 1}
                   </p>
                   {setLog && (
-                    <p className="text-meta text-text-primary mt-0.5">
-                      {setLog.reps} × {formatWeightValue(setLog.weight)}kg
+                    <p className="text-meta font-semibold mt-0.5 tabular-nums text-black">
+                      {setLog.reps} × {formatWeightValue(setLog.weight)} kg
                     </p>
                   )}
                 </div>
@@ -415,8 +526,8 @@ export const ExerciseFocusScreen: React.FC = () => {
         </div>
 
         {/* Rest Presets */}
-        <div className="px-5 mb-4">
-          <p className="text-label-sm text-text-secondary mb-3">
+        <div className="px-4 mb-4">
+          <p className="text-label-sm text-text-secondary font-semibold mb-2">
             {strings.workout.restPresets}
           </p>
           <RestPresets
@@ -427,8 +538,6 @@ export const ExerciseFocusScreen: React.FC = () => {
             }
           />
         </div>
-
-        {/* Timer pill is rendered globally by RestTimerLayer (fixed above safe area) */}
       </div>
 
       {/* Weight Editor Sheet */}

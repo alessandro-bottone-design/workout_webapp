@@ -1,8 +1,7 @@
 /* ============================================
    EXERCISE HISTORY SCREEN
    Per-exercise weight chart + set history.
-   Split out of ProgressScreen so recharts only
-   loads in this route's chunk, not the parent's.
+   Apple visionOS Glass Design System (No AI slop)
    ============================================ */
 
 import React, { useEffect, useState } from 'react';
@@ -18,7 +17,7 @@ import {
   CartesianGrid,
 } from 'recharts';
 import { AppShell, ScreenHeader } from '@/components/layout';
-import { EmptyState, SectionHeader } from '@/components/ui';
+import { EmptyState, SectionHeader, GlassCard } from '@/components/ui';
 import { workoutRepo, programRepo } from '@/db/repositories';
 import { getExercisePerformances, detectExerciseStall } from '@/lib/selectors';
 import { formatDateShort, formatWeight } from '@/lib/formatters';
@@ -40,7 +39,6 @@ export const ExerciseHistoryScreen: React.FC = () => {
       ]);
       setWorkouts(all);
 
-      // Get exercise name from program
       if (prog && exerciseId) {
         const ex = prog.sessions
           .flatMap((s) => s.exercises)
@@ -69,7 +67,7 @@ export const ExerciseHistoryScreen: React.FC = () => {
       <AppShell showNav={false}>
         <ScreenHeader title={strings.exerciseHistory.sectionTitle} showBack />
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 rounded-full border-2 border-accent-primary border-t-transparent animate-spin" />
+          <div className="w-8 h-8 rounded-full border-2 border-white/30 border-t-white animate-spin" />
         </div>
       </AppShell>
     );
@@ -78,26 +76,26 @@ export const ExerciseHistoryScreen: React.FC = () => {
   return (
     <AppShell showNav={false}>
       <ScreenHeader
-        title={exerciseName.toUpperCase() || 'ESERCIZIO'}
+        title={exerciseName || 'Esercizio'}
         showBack
       />
 
-      <div className="flex-1 overflow-y-auto pb-[calc(40px+env(safe-area-inset-bottom))]">
-        <div className="px-5 pt-4 space-y-5">
+      <div className="flex-1 overflow-y-auto pb-24">
+        <div className="px-4 pt-4 space-y-4">
           {/* Latest performance */}
           {latestPerf && (
-            <div className="bg-bg-surface rounded-card border border-border-default p-5">
+            <GlassCard className="p-4">
               <p className="text-label-sm text-text-secondary mb-1">
                 {strings.exerciseHistory.last}
               </p>
-              <p className="text-[32px] font-bold text-text-primary">
+              <p className="text-[32px] font-semibold text-text-primary tracking-tight">
                 {formatWeight(latestPerf.representativeWeight)}
               </p>
               <p className="text-meta text-text-secondary mt-1">
                 {latestPerf.sets.length} serie ·{' '}
                 {latestPerf.sets[0]?.reps} rep
               </p>
-            </div>
+            </GlassCard>
           )}
 
           {/* Stall warning */}
@@ -105,9 +103,9 @@ export const ExerciseHistoryScreen: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-warning/10 border border-warning/30 rounded-card p-4"
+              className="bg-warning/10 border border-warning/25 rounded-2xl p-4 backdrop-blur-xl"
             >
-              <p className="text-label-sm text-warning mb-1">
+              <p className="text-label-sm text-warning mb-1 font-semibold">
                 {strings.progress.stall}
               </p>
               <p className="text-meta text-text-primary">
@@ -121,12 +119,10 @@ export const ExerciseHistoryScreen: React.FC = () => {
 
           {/* Weight chart */}
           {chartData.length > 1 ? (
-            <div className="bg-bg-surface rounded-card border border-border-default p-5">
-              <p className="text-label-sm text-text-secondary mb-4">
+            <GlassCard className="p-4">
+              <p className="text-label-sm text-text-secondary mb-4 font-semibold">
                 {strings.exerciseHistory.chart}
               </p>
-              {/* Recharts SVGs are not announced by screen readers; describe
-                  the trend in text so the data is still conveyed. */}
               <div
                 role="img"
                 aria-label={`${exerciseName || 'Esercizio'}: andamento del peso da ${formatWeight(
@@ -138,53 +134,54 @@ export const ExerciseHistoryScreen: React.FC = () => {
                 }.`}
               >
                 <ResponsiveContainer width="100%" height={180}>
-                <LineChart data={chartData} margin={{ top: 4, right: 4, bottom: 4, left: -20 }}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="#2C2C2E"
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fill: '#8E8E93', fontSize: 11 }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    tick={{ fill: '#8E8E93', fontSize: 11 }}
-                    axisLine={false}
-                    tickLine={false}
-                    domain={['auto', 'auto']}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      background: '#1C1C1E',
-                      border: '1px solid #2C2C2E',
-                      borderRadius: 10,
-                      color: '#F5F5F7',
-                      fontSize: 13,
-                    }}
-                    formatter={(value: number) => [formatWeight(value), 'Peso']}
-                    labelStyle={{ color: '#8E8E93' }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="weight"
-                    stroke="#C8FF3D"
-                    strokeWidth={2}
-                    dot={{ fill: '#C8FF3D', r: 3, strokeWidth: 0 }}
-                    activeDot={{ r: 5, fill: '#C8FF3D' }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+                  <LineChart data={chartData} margin={{ top: 8, right: 8, bottom: 4, left: -20 }}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="rgba(255, 255, 255, 0.08)"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fill: '#8E8E93', fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fill: '#8E8E93', fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                      domain={['auto', 'auto']}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: 'rgba(28, 28, 30, 0.95)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: 12,
+                        backdropFilter: 'blur(20px)',
+                        color: '#FFFFFF',
+                        fontSize: 13,
+                      }}
+                      formatter={(value: number) => [formatWeight(value), 'Peso']}
+                      labelStyle={{ color: '#8E8E93' }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="weight"
+                      stroke="#FFFFFF"
+                      strokeWidth={2}
+                      dot={{ fill: '#FFFFFF', r: 3, strokeWidth: 0 }}
+                      activeDot={{ r: 5, fill: '#FFFFFF', stroke: '#000000', strokeWidth: 2 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
-            </div>
+            </GlassCard>
           ) : chartData.length === 1 ? (
-            <div className="bg-bg-surface rounded-card border border-border-default p-5 text-center">
+            <GlassCard className="p-4 text-center">
               <p className="text-meta text-text-secondary">
                 {strings.exerciseHistory.chartEmpty}
               </p>
-            </div>
+            </GlassCard>
           ) : (
             <EmptyState
               title={strings.exerciseHistory.noData}
@@ -194,18 +191,18 @@ export const ExerciseHistoryScreen: React.FC = () => {
 
           {/* Historical entries */}
           {perfs.length > 0 && (
-            <div>
+            <div className="pt-2">
               <SectionHeader title={strings.exerciseHistory.sectionTitle} />
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {[...perfs].reverse().map((perf) => (
-                  <div
+                  <GlassCard
                     key={perf.workoutDate}
-                    className="bg-bg-surface rounded-card border border-border-default p-4"
+                    className="p-4"
                   >
                     <p className="text-meta text-text-secondary mb-2">
                       {formatDateShort(perf.workoutDate)}
                     </p>
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       {perf.sets.map((s, i) => (
                         <div
                           key={i}
@@ -214,13 +211,13 @@ export const ExerciseHistoryScreen: React.FC = () => {
                           <span className="text-meta text-text-secondary">
                             Serie {i + 1}
                           </span>
-                          <span className="text-meta text-text-primary font-semibold">
+                          <span className="text-meta text-text-primary font-semibold tabular-nums">
                             {formatWeight(s.weight)} × {s.reps}
                           </span>
                         </div>
                       ))}
                     </div>
-                  </div>
+                  </GlassCard>
                 ))}
               </div>
             </div>

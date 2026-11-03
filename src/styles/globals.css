@@ -1,40 +1,53 @@
 /* ============================================
-   WORKOUT APP — GLOBAL STYLES
-   Design System: Dark Mode Only
+   WORKOUT APP — APPLE VISIONOS DESIGN SYSTEM
+   Neutral Monochrome · 8px Grid · No Slop
    ============================================ */
+
+@import 'lenis/dist/lenis.css';
 
 /* CSS Custom Properties (Design Tokens) */
 :root {
-  /* Colors */
-  --color-bg-app: #09090A;
-  --color-bg-surface: #141416;
-  --color-bg-elevated: #1C1C1E;
+  color-scheme: dark;
+
+  /* Colors — Apple Monochrome Neutral */
+  --color-bg-app: #0A0A0C;
+  --color-bg-surface: #161618;
+  --color-bg-elevated: #202024;
+  --color-bg-glass: rgba(255, 255, 255, 0.05);
+  --color-bg-glass-elevated: rgba(255, 255, 255, 0.09);
+  --color-bg-glass-active: rgba(255, 255, 255, 0.14);
+
   --color-text-primary: #F5F5F7;
-  --color-text-secondary: #8E8E93;
+  --color-text-secondary: #98989D;
+  --color-text-tertiary: #636366;
+
   --color-border-default: #2C2C2E;
-  --color-accent-primary: #C8FF3D;
+  --color-border-glass: rgba(255, 255, 255, 0.08);
+  --color-border-glass-strong: rgba(255, 255, 255, 0.16);
+
+  --color-accent-primary: #FFFFFF;
   --color-icon-primary: #F5F5F7;
-  --color-icon-secondary: #8E8E93;
-  --color-icon-accent: #C8FF3D;
-  --color-icon-on-accent: #09090A;
+  --color-icon-secondary: #98989D;
+  --color-icon-accent: #FFFFFF;
+  --color-icon-on-accent: #0A0A0C;
+
   --color-danger: #FF453A;
   --color-warning: #FFD60A;
-  --font-display: 'Syne', sans-serif;
+  --color-success: #30D158;
 
-  /* Radius */
-  --radius-sm: 10px;
-  --radius-button: 14px;
-  --radius-card: 20px;
-  --radius-modal: 28px;
-  --radius-full: 999px;
+  /* Radius — Apple Continuous Squircles */
+  --radius-sm: 8px;
+  --radius-button: 16px;
+  --radius-card: 24px;
+  --radius-modal: 32px;
+  --radius-full: 9999px;
 
-  /* Spacing */
-  --space-screen-x: 20px;
-
-  /* Transitions */
-  --transition-fast: 180ms ease-out;
-  --transition-normal: 250ms ease-out;
-  --transition-slow: 350ms ease-out;
+  /* Spacing — Multiples of 8 */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-screen-x: 16px;
 
   /* Safe Areas */
   --safe-top: env(safe-area-inset-top, 0px);
@@ -51,22 +64,19 @@
 }
 
 html {
-  /* Prevent font scaling on iOS rotation */
   -webkit-text-size-adjust: 100%;
-  /* Smooth scrolling for native feel */
-  scroll-behavior: smooth;
+  background-color: var(--color-bg-app);
 }
 
 body {
   min-height: 100dvh;
   background-color: var(--color-bg-app);
   color: var(--color-text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
   font-size: 16px;
+  font-weight: 400;
   line-height: 1.5;
-  /* Prevent text selection during training interactions */
   -webkit-tap-highlight-color: transparent;
-  /* Disable pull-to-refresh on iOS PWA */
   overscroll-behavior-y: none;
 }
 
@@ -76,12 +86,12 @@ body {
   flex-direction: column;
 }
 
-/* Prevent zoom on input focus (iOS) - requires 16px+ font-size */
+/* Form controls */
 input, select, textarea {
+  font-family: inherit;
   font-size: 16px;
 }
 
-/* Remove default button styles */
 button {
   border: none;
   background: none;
@@ -89,31 +99,26 @@ button {
   font-family: inherit;
 }
 
-/* Remove list styles */
 ul, ol {
   list-style: none;
 }
 
-/* Smooth transitions */
 a {
   color: inherit;
   text-decoration: none;
 }
 
-/* Focus visible (keyboard navigation) */
 :focus-visible {
-  outline: 2px solid var(--color-accent-primary);
+  outline: 2px solid var(--color-text-primary);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
-/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 0;
   background: transparent;
 }
 
-/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -122,56 +127,42 @@ a {
   }
 }
 
-/* Typography utilities */
-.font-display {
-  font-family: var(--font-display);
-}
-
+/* Typography tokens — Maximum 2 weights (400 and 600), NO UPPERCASE */
 .screen-title {
-  font-family: var(--font-display);
-  font-weight: 800;
+  font-family: inherit;
+  font-weight: 600;
   letter-spacing: -0.015em;
-  line-height: 1.15;
+  line-height: 1.25;
   color: var(--color-text-primary);
 }
 
-/* Icon tokens (24×24, stroke 2px default via lucide) */
-.icon-primary {
-  color: var(--color-icon-primary);
-}
-.icon-secondary {
-  color: var(--color-icon-secondary);
-}
-.icon-accent {
-  color: var(--color-icon-accent);
-}
-
 .text-display {
-  font-size: 40px;
-  font-weight: 700;
-  line-height: 1.1;
-}
-
-.text-title {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 32px;
+  font-weight: 600;
   line-height: 1.2;
 }
 
-.text-heading {
-  font-size: 20px;
+.text-title {
+  font-size: 24px;
   font-weight: 600;
-  line-height: 1.3;
+  line-height: 1.25;
+}
+
+.text-heading {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .text-body {
   font-size: 16px;
+  font-weight: 400;
   line-height: 1.5;
 }
 
 .text-meta {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1.4;
 }
 
@@ -179,18 +170,16 @@ a {
   font-size: 12px;
   font-weight: 600;
   line-height: 1.3;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 .text-numeric-lg {
-  font-size: 64px;
-  font-weight: 700;
+  font-size: 56px;
+  font-weight: 600;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
-/* Screen layout helpers */
+/* Layout containers */
 .screen {
   min-height: 100dvh;
   background-color: var(--color-bg-app);
@@ -201,44 +190,50 @@ a {
 .screen-content {
   flex: 1;
   padding: 0 var(--space-screen-x);
-  padding-bottom: calc(80px + var(--safe-bottom));
+  padding-bottom: calc(96px + var(--safe-bottom));
   overflow-y: auto;
 }
 
 .screen-content-workout {
   flex: 1;
   padding: 0 var(--space-screen-x);
-  padding-bottom: calc(24px + var(--safe-bottom));
+  padding-bottom: calc(32px + var(--safe-bottom));
   overflow-y: auto;
 }
 
-/* Card */
+/* visionOS Materials & Surfaces */
 .card {
-  background-color: var(--color-bg-surface);
+  background-color: var(--color-bg-glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border-radius: var(--radius-card);
-  border: 1px solid var(--color-border-default);
-  padding: 20px;
+  border: 1px solid var(--color-border-glass);
+  padding: 16px;
 }
 
 .card-elevated {
-  background-color: var(--color-bg-elevated);
+  background-color: var(--color-bg-glass-elevated);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border-radius: var(--radius-card);
-  border: 1px solid var(--color-border-default);
-  padding: 20px;
+  border: 1px solid var(--color-border-glass-strong);
+  padding: 16px;
 }
 
-/* Bottom nav height */
-.bottom-nav {
-  height: calc(64px + var(--safe-bottom));
-  padding-bottom: var(--safe-bottom);
+.glass-panel {
+  background-color: var(--color-bg-glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--color-border-glass);
 }
 
-/* Utility for timer numbers */
+.glass-dock {
+  background-color: rgba(22, 22, 24, 0.85);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid var(--color-border-glass);
+}
+
 .tabular-nums {
   font-variant-numeric: tabular-nums;
-}
-
-/* Accent glow for active states */
-.accent-glow {
-  box-shadow: 0 0 20px rgba(200, 255, 61, 0.2);
 }

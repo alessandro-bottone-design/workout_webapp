@@ -1,12 +1,13 @@
 /* ============================================
    EDIT EXERCISE SCREEN
    Form to edit all exercise fields
+   Apple visionOS Glass Design System (No AI slop)
    ============================================ */
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { AppShell, ScreenHeader } from '@/components/layout';
-import { Button, ConfirmDialog } from '@/components/ui';
+import { Button, ConfirmDialog, EmptyState } from '@/components/ui';
 import { programRepo } from '@/db/repositories';
 import { generateId } from '@/lib/ids';
 import { parseWeight } from '@/lib/formatters';
@@ -25,8 +26,8 @@ interface FormState {
 }
 
 const inputClass =
-  'w-full bg-bg-elevated border border-border-default rounded-btn px-4 h-[52px] text-text-primary text-body focus:border-accent-primary focus:outline-none transition-colors placeholder:text-text-secondary/50';
-const labelClass = 'text-label-sm text-text-secondary mb-2 block';
+  'w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 h-12 text-text-primary text-body focus:border-white/40 focus:ring-1 focus:ring-white/20 focus:outline-none transition-all placeholder:text-text-secondary/50';
+const labelClass = 'text-label-sm text-text-secondary mb-2 block font-semibold';
 
 export const EditExerciseScreen: React.FC = () => {
   const { exerciseId } = useParams<{ exerciseId: string }>();
@@ -55,17 +56,22 @@ export const EditExerciseScreen: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
+  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'missing'>('loading');
 
   useEffect(() => {
+    let cancelled = false;
+
     const load = async () => {
-      const pId = state?.programId;
-      const sId = state?.sessionId;
-      setProgramId(pId ?? null);
-      setSessionId(sId ?? null);
+      setLoadState('loading');
+      let pId = state?.programId ?? null;
+      let sId = state?.sessionId ?? null;
+      setProgramId(pId);
+      setSessionId(sId);
 
       // If new exercise passed via state
       if (state?.newExercise && state.isNew) {
         const ex = state.newExercise;
+        if (cancelled) return;
         setForm({
           name: ex.name === 'Nuovo esercizio' ? '' : ex.name,
           type: ex.type,
@@ -76,30 +82,63 @@ export const EditExerciseScreen: React.FC = () => {
           durationMinutes: String(Math.round((ex.durationSeconds ?? 600) / 60)),
           notes: ex.notes ?? '',
         });
+        setLoadState('ready');
         return;
       }
 
+      if (!exerciseId) {
+        if (!cancelled) setLoadState('missing');
+        return;
+      }
+
+      // Deep link / page reload: location.state is lost, so resolve the
+      // program and session that own this exercise from the database.
+      if (!pId || !sId) {
+        const programs = await programRepo.getAll();
+        for (const p of programs) {
+          const session = p.sessions.find((s) => s.exercises.some((e) => e.id === exerciseId));
+          if (session) {
+            pId = p.id;
+            sId = session.id;
+            break;
+          }
+        }
+        if (!pId || !sId) {
+          if (!cancelled) setLoadState('missing');
+          return;
+        }
+        if (cancelled) return;
+        setProgramId(pId);
+        setSessionId(sId);
+      }
+
       // Load from DB
-      if (!pId || !sId || !exerciseId) return;
       const prog = await programRepo.getById(pId);
-      if (!prog) return;
-      const session = prog.sessions.find((s) => s.id === sId);
-      if (!session) return;
-      const ex = session.exercises.find((e) => e.id === exerciseId);
-      if (!ex) return;
+      const session = prog?.sessions.find((s) => s.id === sId);
+      const ex = session?.exercises.find((e) => e.id === exerciseId);
+      if (cancelled) return;
+      if (!ex) {
+        setLoadState('missing');
+        return;
+      }
 
       setForm({
         name: ex.name,
         type: ex.type,
         sets: String(ex.sets ?? 3),
         targetReps: String(ex.targetReps ?? 8),
-        defaultWeight: String(ex.defaultWeight ?? 0),
+        defaultWeight: String(ex.defaultWeight ?? 0).replace('.', ','),
         restSeconds: String(ex.restSeconds ?? 90),
         durationMinutes: String(Math.round((ex.durationSeconds ?? 600) / 60)),
         notes: ex.notes ?? '',
       });
+      setLoadState('ready');
     };
     void load();
+
+    return () => {
+      cancelled = true;
+    };
   }, [exerciseId, state]);
 
   const set = (key: keyof FormState) => (value: string) =>
@@ -109,10 +148,17 @@ export const EditExerciseScreen: React.FC = () => {
     const errs: Partial<Record<keyof FormState, string>> = {};
     if (!form.name.trim()) errs.name = 'Il nome è obbligatorio';
     if (form.type === 'strength') {
-      if (parseInt(form.sets) < 1) errs.sets = 'Minimo 1 serie';
-      if (parseInt(form.targetReps) < 1) errs.targetReps = 'Minimo 1 ripetizione';
+      const sets = Number.parseInt(form.sets, 10);
+      const reps = Number.parseInt(form.targetReps, 10);
+      if (!Number.isFinite(sets) || sets < 1) errs.sets = 'Minimo 1 serie';
+      if (!Number.isFinite(reps) || reps < 1) errs.targetReps = 'Minimo 1 ripetizione';
       if (Number.isNaN(parseFloat(form.defaultWeight.replace(',', '.'))))
         errs.defaultWeight = 'Peso non valido';
+    } else {
+      const minutes = Number.parseInt(form.durationMinutes, 10);
+      if (!Number.isFinite(minutes) || minutes < 1) {
+        errs.durationMinutes = 'Minimo 1 minuto';
+      }
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -126,7 +172,7 @@ export const EditExerciseScreen: React.FC = () => {
       id: exerciseId ?? generateId(),
       name: form.name.trim(),
       type: form.type,
-      order: 0, // repository preserves existing order / appends new exercises
+      order: 0,
       sets: form.type === 'strength' ? parseInt(form.sets) || 3 : undefined,
       targetReps: form.type === 'strength' ? parseInt(form.targetReps) || 8 : undefined,
       defaultWeight:
@@ -151,16 +197,46 @@ export const EditExerciseScreen: React.FC = () => {
   const restMinutes = Math.floor(parseInt(form.restSeconds || '0') / 60);
   const restSecs = parseInt(form.restSeconds || '0') % 60;
 
+  if (loadState === 'loading') {
+    return (
+      <AppShell showNav={false}>
+        <ScreenHeader title={strings.editExercise.title} showBack titleSize="lg" />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (loadState === 'missing') {
+    return (
+      <AppShell showNav={false}>
+        <ScreenHeader title={strings.editExercise.title} showBack titleSize="lg" />
+        <div className="flex-1 flex items-center justify-center px-4">
+          <EmptyState
+            title={strings.editExercise.notFoundTitle}
+            description={strings.editExercise.notFoundDetail}
+            action={
+              <Button variant="secondary" onClick={() => navigate(-1)}>
+                {strings.actions.back}
+              </Button>
+            }
+          />
+        </div>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell showNav={false}>
       <ScreenHeader
-        title={form.name.toUpperCase() || 'ESERCIZIO'}
+        title={form.name || 'Esercizio'}
         showBack
         titleSize="lg"
       />
 
-      <div className="flex-1 overflow-y-auto pb-[calc(120px+env(safe-area-inset-bottom))]">
-        <div className="px-5 pt-4 space-y-5">
+      <div className="flex-1 overflow-y-auto pb-32">
+        <div className="px-4 pt-4 space-y-4">
           {/* Name */}
           <div>
             <label htmlFor="ex-name" className={labelClass}>
@@ -187,10 +263,10 @@ export const EditExerciseScreen: React.FC = () => {
                 <button
                   key={t}
                   onClick={() => set('type')(t)}
-                  className={`h-[52px] rounded-btn border text-[15px] font-semibold transition-all ${
+                  className={`h-12 rounded-xl border text-[15px] font-semibold transition-all ${
                     form.type === t
-                      ? 'bg-accent-primary text-bg-app border-accent-primary'
-                      : 'bg-bg-elevated text-text-secondary border-border-default'
+                      ? 'bg-white text-black border-white'
+                      : 'bg-white/[0.04] text-text-secondary border-white/10 hover:text-text-primary'
                   }`}
                 >
                   {t === 'strength' ? 'Forza' : 'Cardio'}
@@ -201,7 +277,7 @@ export const EditExerciseScreen: React.FC = () => {
 
           {form.type === 'strength' ? (
             <>
-              {/* Sets */}
+              {/* Sets & Reps */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="ex-sets" className={labelClass}>
@@ -215,8 +291,11 @@ export const EditExerciseScreen: React.FC = () => {
                     max={20}
                     value={form.sets}
                     onChange={(e) => set('sets')(e.target.value)}
-                    className={inputClass}
+                    className={`${inputClass} ${errors.sets ? 'border-danger' : ''}`}
                   />
+                  {errors.sets && (
+                    <p className="text-meta text-danger mt-1">{errors.sets}</p>
+                  )}
                 </div>
                 <div>
                   <label htmlFor="ex-reps" className={labelClass}>
@@ -230,8 +309,11 @@ export const EditExerciseScreen: React.FC = () => {
                     max={100}
                     value={form.targetReps}
                     onChange={(e) => set('targetReps')(e.target.value)}
-                    className={inputClass}
+                    className={`${inputClass} ${errors.targetReps ? 'border-danger' : ''}`}
                   />
+                  {errors.targetReps && (
+                    <p className="text-meta text-danger mt-1">{errors.targetReps}</p>
+                  )}
                 </div>
               </div>
 
@@ -268,10 +350,10 @@ export const EditExerciseScreen: React.FC = () => {
                     <button
                       key={s}
                       onClick={() => set('restSeconds')(String(s))}
-                      className={`h-[44px] rounded-btn text-meta font-semibold border transition-all ${
+                      className={`h-12 rounded-xl text-meta font-semibold border transition-all ${
                         parseInt(form.restSeconds) === s
-                          ? 'bg-accent-primary text-bg-app border-accent-primary'
-                          : 'bg-bg-elevated text-text-secondary border-border-default'
+                          ? 'bg-white text-black border-white'
+                          : 'bg-white/[0.04] text-text-secondary border-white/10 hover:text-text-primary'
                       }`}
                     >
                       {s === 60 ? '1:00' : s === 90 ? '1:30' : s === 120 ? '2:00' : '2:30'}
@@ -299,6 +381,9 @@ export const EditExerciseScreen: React.FC = () => {
               <p className="text-meta text-text-secondary mt-1">
                 = {(parseInt(form.durationMinutes || '1') || 1) * 60} secondi
               </p>
+              {errors.durationMinutes && (
+                <p className="text-meta text-danger mt-1">{errors.durationMinutes}</p>
+              )}
             </div>
           )}
 
@@ -313,7 +398,7 @@ export const EditExerciseScreen: React.FC = () => {
               onChange={(e) => set('notes')(e.target.value)}
               placeholder="Note, cues tecnici..."
               rows={3}
-              className="w-full bg-bg-elevated border border-border-default rounded-card px-4 py-3 text-text-primary text-body focus:border-accent-primary focus:outline-none transition-colors placeholder:text-text-secondary/50 resize-none"
+              className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-4 text-text-primary text-body focus:border-white/40 focus:ring-1 focus:ring-white/20 focus:outline-none transition-all placeholder:text-text-secondary/50 resize-none"
             />
           </div>
 
@@ -321,7 +406,7 @@ export const EditExerciseScreen: React.FC = () => {
           {exerciseId && !state?.isNew && (
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="w-full min-h-[44px] text-center text-danger text-meta font-semibold py-3"
+              className="w-full min-h-[48px] text-center text-danger text-meta font-semibold py-4 hover:underline"
             >
               {strings.editExercise.delete}
             </button>
@@ -330,7 +415,7 @@ export const EditExerciseScreen: React.FC = () => {
       </div>
 
       {/* Save Button */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-4 bg-bg-app border-t border-border-default">
+      <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto px-4 pb-8 pt-4 bg-black/80 backdrop-blur-2xl border-t border-white/10 z-20">
         <Button variant="primary" fullWidth isLoading={isSaving} onClick={handleSave}>
           {strings.editExercise.save}
         </Button>

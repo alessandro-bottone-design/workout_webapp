@@ -5,6 +5,7 @@
 
 import { db } from './database';
 import { generateId } from '@/lib/ids';
+import { notifyTabSync } from '@/lib/tabSync';
 import type {
   Program,
   SessionTemplate,
@@ -31,12 +32,26 @@ export const programRepo = {
     return db.programs.orderBy('createdAt').first();
   },
 
+  async getActive(): Promise<Program | undefined> {
+    const appState = await appStateRepo.get();
+    if (appState.activeProgramId) {
+      const prog = await db.programs.get(appState.activeProgramId);
+      if (prog) return prog;
+    }
+    return db.programs.orderBy('createdAt').first();
+  },
+
+  async setActive(programId: UUID): Promise<void> {
+    await appStateRepo.setActiveProgram(programId);
+  },
+
   async getById(id: UUID): Promise<Program | undefined> {
     return db.programs.get(id);
   },
 
   async update(program: Program): Promise<void> {
     await db.programs.put(program);
+    notifyTabSync();
   },
 
   async updateSession(programId: UUID, session: SessionTemplate): Promise<void> {
@@ -48,6 +63,7 @@ export const programRepo = {
       program.sessions[idx] = session;
       await db.programs.put(program);
     });
+    notifyTabSync();
   },
 
   async addSession(programId: UUID, session: SessionTemplate): Promise<void> {
@@ -57,6 +73,7 @@ export const programRepo = {
       program.sessions.push(session);
       await db.programs.put(program);
     });
+    notifyTabSync();
   },
 
   async deleteSession(programId: UUID, sessionId: UUID): Promise<void> {
@@ -66,6 +83,7 @@ export const programRepo = {
       program.sessions = program.sessions.filter((s) => s.id !== sessionId);
       await db.programs.put(program);
     });
+    notifyTabSync();
   },
 
   async updateExercise(
@@ -88,6 +106,7 @@ export const programRepo = {
       }
       await db.programs.put(program);
     });
+    notifyTabSync();
   },
 
   async deleteExercise(
@@ -103,6 +122,7 @@ export const programRepo = {
       session.exercises = session.exercises.filter((e) => e.id !== exerciseId);
       await db.programs.put(program);
     });
+    notifyTabSync();
   },
 
   async create(name: string, durationWeeks: number): Promise<Program> {
@@ -114,11 +134,13 @@ export const programRepo = {
       sessions: [],
     };
     await db.programs.add(program);
+    notifyTabSync();
     return program;
   },
 
   async delete(id: UUID): Promise<void> {
     await db.programs.delete(id);
+    notifyTabSync();
   },
 };
 
@@ -154,11 +176,13 @@ export const workoutRepo = {
 
   async create(workout: Workout): Promise<Workout> {
     await db.workouts.add(workout);
+    notifyTabSync();
     return workout;
   },
 
   async update(workout: Workout): Promise<void> {
     await db.workouts.put(workout);
+    notifyTabSync();
   },
 
   async updateExerciseLog(
@@ -173,6 +197,7 @@ export const workoutRepo = {
       workout.exerciseLogs[idx] = exerciseLog;
       await db.workouts.put(workout);
     });
+    notifyTabSync();
   },
 
   async addSetLog(
@@ -188,6 +213,7 @@ export const workoutRepo = {
       exLog.setLogs.push(setLog);
       await db.workouts.put(workout);
     });
+    notifyTabSync();
   },
 
   async complete(workoutId: UUID): Promise<void> {
@@ -196,6 +222,7 @@ export const workoutRepo = {
     workout.status = 'completed';
     workout.completedAt = Date.now();
     await db.workouts.put(workout);
+    notifyTabSync();
   },
 
   async cancel(workoutId: UUID): Promise<void> {
@@ -204,6 +231,23 @@ export const workoutRepo = {
     workout.status = 'cancelled';
     workout.completedAt = Date.now();
     await db.workouts.put(workout);
+    notifyTabSync();
+  },
+
+  /**
+   * Cancels every workout still marked "active". There must be at most one
+   * active workout at a time; leftovers from previous entry points or a
+   * crashed session would otherwise stay "active" forever and never appear
+   * in history.
+   */
+  async cancelAllActive(): Promise<void> {
+    await db.workouts
+      .where('status')
+      .equals('active')
+      .modify((workout) => {
+        workout.status = 'cancelled';
+        workout.completedAt = workout.completedAt ?? Date.now();
+      });
   },
 
   /** Get the last completed workout for a specific exercise template */
@@ -280,6 +324,7 @@ export const workoutRepo = {
 
   async deleteAll(): Promise<void> {
     await db.workouts.clear();
+    notifyTabSync();
   },
 };
 
@@ -296,24 +341,31 @@ export const settingsRepo = {
         defaultRestSeconds: 90,
         soundEnabled: true,
         vibrationEnabled: true,
+        weeklyTarget: 4,
       };
     }
     return settings;
   },
 
   async update(settings: Partial<AppSettings>): Promise<void> {
-    const current = await db.settings.get('default');
-    if (current) {
-      await db.settings.put({ ...current, ...settings });
-    } else {
-      await db.settings.put({
-        id: 'default',
-        defaultRestSeconds: 90,
-        soundEnabled: true,
-        vibrationEnabled: true,
-        ...settings,
-      });
-    }
+    // Read-modify-write inside a transaction: two quick updates (e.g. rapidly
+    // tapping the weekly target) must not overwrite each other.
+    await db.transaction('rw', db.settings, async () => {
+      const current = await db.settings.get('default');
+      if (current) {
+        await db.settings.put({ ...current, ...settings });
+      } else {
+        await db.settings.put({
+          id: 'default',
+          defaultRestSeconds: 90,
+          soundEnabled: true,
+          vibrationEnabled: true,
+          weeklyTarget: 4,
+          ...settings,
+        });
+      }
+    });
+    notifyTabSync();
   },
 };
 
@@ -328,17 +380,34 @@ export const appStateRepo = {
   },
 
   async setActiveWorkout(workoutId: UUID | undefined): Promise<void> {
-    const state = await this.get();
-    await db.appState.put({ ...state, activeWorkoutId: workoutId });
+    // Transactions serialize read-modify-write updates, so a timer update
+    // firing at the same time cannot clobber the active-workout pointer
+    // (and vice versa).
+    await db.transaction('rw', db.appState, async () => {
+      const state = (await db.appState.get('default')) ?? { id: 'default' };
+      await db.appState.put({ ...state, activeWorkoutId: workoutId });
+    });
+    notifyTabSync();
+  },
+
+  async setActiveProgram(programId: UUID | undefined): Promise<void> {
+    await db.transaction('rw', db.appState, async () => {
+      const state = (await db.appState.get('default')) ?? { id: 'default' };
+      await db.appState.put({ ...state, activeProgramId: programId });
+    });
+    notifyTabSync();
   },
 
   async setTimerState(timerState: TimerState | undefined): Promise<void> {
-    const state = await this.get();
-    await db.appState.put({ ...state, timerState });
+    await db.transaction('rw', db.appState, async () => {
+      const state = (await db.appState.get('default')) ?? { id: 'default' };
+      await db.appState.put({ ...state, timerState });
+    });
   },
 
   async clear(): Promise<void> {
     await db.appState.put({ id: 'default' });
+    notifyTabSync();
   },
 };
 
@@ -353,4 +422,5 @@ export async function resetAllData(): Promise<void> {
     await db.settings.clear();
     await db.appState.clear();
   });
+  notifyTabSync();
 }

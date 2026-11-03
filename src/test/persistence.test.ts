@@ -221,6 +221,29 @@ describe('workout completion', () => {
     const state = await appStateRepo.get()
     expect(state.activeWorkoutId).toBeUndefined()
   })
+
+  it('cancels a previous active workout instead of orphaning it', async () => {
+    const program = await seedProgram(makeSession([makeExercise()]))
+
+    const first = await useWorkoutStore
+      .getState()
+      .startWorkout(program.id, program.sessions[0])
+    const second = await useWorkoutStore
+      .getState()
+      .startWorkout(program.id, program.sessions[0])
+
+    expect(second.id).not.toBe(first.id)
+
+    const storedFirst = await workoutRepo.getById(first.id)
+    expect(storedFirst?.status).toBe('cancelled')
+    expect(storedFirst?.completedAt).toBeDefined()
+
+    const storedSecond = await workoutRepo.getById(second.id)
+    expect(storedSecond?.status).toBe('active')
+
+    const state = await appStateRepo.get()
+    expect(state.activeWorkoutId).toBe(second.id)
+  })
 })
 
 /* ============================================

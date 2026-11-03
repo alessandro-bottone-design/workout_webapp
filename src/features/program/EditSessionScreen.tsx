@@ -1,6 +1,7 @@
 /* ============================================
    EDIT SESSION SCREEN
    Drag-to-reorder, add, delete exercises
+   Apple visionOS Glass Design System (No AI slop)
    ============================================ */
 
 import React, { useEffect, useState } from 'react';
@@ -46,17 +47,17 @@ const SortableExItem: React.FC<{
   };
 
   return (
-    <div ref={setNodeRef} style={style}>
-      <div className="flex items-center gap-3 p-4 rounded-card border border-border-default bg-bg-surface mb-2">
+    <div ref={setNodeRef} style={style} className="mb-2">
+      <div className="flex items-center gap-4 p-4 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xl">
         <button
           {...attributes}
           {...listeners}
           aria-label={strings.editSession.reorder}
-          className="touch-none w-11 h-11 -ml-2 flex items-center justify-center text-text-secondary opacity-40 hover:opacity-100 cursor-grab active:cursor-grabbing"
+          className="touch-none w-12 h-12 -ml-2 flex items-center justify-center text-text-secondary opacity-40 hover:opacity-100 cursor-grab active:cursor-grabbing"
         >
-          <GripVertical className="w-5 h-5" />
+          <GripVertical className="w-5 h-5" strokeWidth={1.75} />
         </button>
-        <button className="flex-1 text-left min-h-[44px] flex flex-col justify-center" onClick={onEdit}>
+        <button className="flex-1 text-left min-h-[48px] flex flex-col justify-center" onClick={onEdit}>
           <p className="text-[15px] font-semibold text-text-primary">
             {exercise.name}
           </p>
@@ -69,9 +70,9 @@ const SortableExItem: React.FC<{
         <button
           onClick={onDelete}
           aria-label={`Elimina ${exercise.name}`}
-          className="w-11 h-11 flex items-center justify-center text-text-secondary hover:text-danger transition-colors rounded-full"
+          className="w-12 h-12 flex items-center justify-center text-text-secondary hover:text-danger transition-colors rounded-full"
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-4 h-4" strokeWidth={1.75} />
         </button>
       </div>
     </div>
@@ -101,11 +102,6 @@ export const EditSessionScreen: React.FC = () => {
     void load();
   }, [sessionId]);
 
-  /**
-   * All mutations auto-save so the DB is always in sync with what's shown.
-   * This is required because "add exercise" navigates away — any local-only
-   * reorder/delete would otherwise be silently lost.
-   */
   const persistSession = async (updated: SessionTemplate) => {
     if (!program) return;
     setSession(updated);
@@ -132,8 +128,6 @@ export const EditSessionScreen: React.FC = () => {
 
   const handleAddExercise = async () => {
     if (!session || !program) return;
-    // Persist any pending reorder/delete before navigating away, so nothing
-    // is lost. The new exercise itself is saved by EditExerciseScreen.
     try {
       await programRepo.updateSession(program.id, session);
     } catch (e) {
@@ -176,7 +170,7 @@ export const EditSessionScreen: React.FC = () => {
       <AppShell showNav={false}>
         <ScreenHeader title={strings.editSession.title} showBack titleSize="sm" />
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 rounded-full border-2 border-accent-primary border-t-transparent animate-spin" />
+          <div className="w-8 h-8 rounded-full border-2 border-white/30 border-t-white animate-spin" />
         </div>
       </AppShell>
     );
@@ -187,12 +181,12 @@ export const EditSessionScreen: React.FC = () => {
   return (
     <AppShell showNav={false}>
       <ScreenHeader
-        title={`MODIFICA ${session.name.toUpperCase()}`}
+        title={`Modifica ${session.name}`}
         showBack
       />
 
-      <div className="flex-1 overflow-y-auto pb-[calc(120px+env(safe-area-inset-bottom))]">
-        <div className="px-5 pt-4">
+      <div className="flex-1 overflow-y-auto pb-32">
+        <div className="px-4 pt-4">
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -220,9 +214,9 @@ export const EditSessionScreen: React.FC = () => {
           {/* Add Exercise */}
           <button
             onClick={handleAddExercise}
-            className="w-full flex items-center justify-center gap-2 p-4 rounded-card border border-dashed border-border-default text-text-secondary hover:text-text-primary hover:border-text-secondary/50 transition-colors mt-2"
+            className="w-full flex items-center justify-center gap-2 p-4 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] text-text-secondary hover:text-text-primary hover:border-white/30 hover:bg-white/[0.04] transition-all mt-2 h-14"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-5 h-5" strokeWidth={1.75} />
             <span className="text-meta font-semibold">
               {strings.program.addExercise}
             </span>
@@ -231,7 +225,7 @@ export const EditSessionScreen: React.FC = () => {
       </div>
 
       {/* Done Button — edits auto-save, this just returns to the session */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto px-5 pb-[calc(16px+env(safe-area-inset-bottom))] pt-4 bg-bg-app border-t border-border-default">
+      <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto px-4 pb-8 pt-4 bg-black/80 backdrop-blur-2xl border-t border-white/10 z-20">
         <Button variant="primary" fullWidth onClick={() => navigate(-1)}>
           {strings.actions.done}
         </Button>
