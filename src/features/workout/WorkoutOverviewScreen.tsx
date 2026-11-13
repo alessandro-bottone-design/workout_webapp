@@ -23,14 +23,14 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Check, ChevronRight, GripVertical, X } from 'lucide-react';
-import { AppShell, ScreenHeader } from '@/components/layout';
-import { Button, ProgressBar, ConfirmDialog, IconButton, EmptyState, GlassCard } from '@/components/ui';
-import { useWorkoutStore } from '@/stores/workoutStore';
-import { useTimerStore } from '@/features/timer/timerStore';
-import { workoutRepo } from '@/db/repositories';
-import { formatDuration, formatWeightValue } from '@/lib/formatters';
-import { strings } from '@/lib/strings';
-import type { WorkoutExerciseLog, Workout } from '@/types';
+import { AppShell, ScreenHeader } from '@shared/components/layout';
+import { Button, ProgressBar, ConfirmDialog, IconButton, EmptyState, GlassCard } from '@shared/components/ui';
+import { useWorkoutStore } from '@features/workout/workoutStore';
+import { useTimerStore } from '@features/timer/timerStore';
+import { workoutRepo } from '@shared/db/repositories';
+import { formatDuration, formatWeightValue } from '@shared/lib/formatters';
+import { strings } from '@shared/lib/strings';
+import type { WorkoutExerciseLog, Workout } from '@shared/types';
 
 /* ============================================
    SORTABLE EXERCISE ROW

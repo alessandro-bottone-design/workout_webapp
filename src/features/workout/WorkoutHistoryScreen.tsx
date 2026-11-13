@@ -7,12 +7,12 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronRight, Clock, Dumbbell } from 'lucide-react';
-import { AppShell, ScreenHeader } from '@/components/layout';
-import { EmptyState, Button, GlassCard } from '@/components/ui';
-import { workoutRepo } from '@/db/repositories';
-import { formatDuration, formatDate } from '@/lib/formatters';
-import { useTabSync } from '@/lib/tabSync';
-import type { Workout } from '@/types';
+import { AppShell, ScreenHeader } from '@shared/components/layout';
+import { EmptyState, Button, GlassCard } from '@shared/components/ui';
+import { workoutRepo } from '@shared/db/repositories';
+import { formatDuration, formatDate } from '@shared/lib/formatters';
+import { useTabSync } from '@shared/lib/tabSync';
+import type { Workout } from '@shared/types';
 
 export const WorkoutHistoryScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -53,7 +53,7 @@ export const WorkoutHistoryScreen: React.FC = () => {
         onBack={() => navigate('/')}
       />
 
-      <div className="flex-1 overflow-y-auto pb-[calc(96px+env(safe-area-inset-bottom))]">
+      <div className="flex-1 overflow-y-auto pb-nav">
         <div className="px-4 pt-4 space-y-4">
           {workouts.length === 0 ? (
             <div className="py-16">

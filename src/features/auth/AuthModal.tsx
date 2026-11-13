@@ -6,9 +6,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, User as UserIcon, AlertCircle, CheckCircle } from 'lucide-react';
-import { Button, GlassCard } from '@/components/ui';
-import { useAuthStore } from '@/stores/authStore';
-import { syncAll } from '@/lib/sync';
+import { Button, GlassCard } from '@shared/components/ui';
+import { useAuthStore } from '@features/auth/authStore';
+import { syncAll } from '@features/sync/sync';
 
 interface AuthModalProps {
   isOpen: boolean;

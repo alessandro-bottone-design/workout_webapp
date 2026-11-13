@@ -8,12 +8,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronRight, Pencil } from 'lucide-react';
-import { AppShell, ScreenHeader } from '@/components/layout';
-import { Button, IconButton } from '@/components/ui';
-import { programRepo } from '@/db/repositories';
-import { useWorkoutStore } from '@/stores/workoutStore';
-import { strings } from '@/lib/strings';
-import type { SessionTemplate } from '@/types';
+import { AppShell, ScreenHeader } from '@shared/components/layout';
+import { Button, IconButton } from '@shared/components/ui';
+import { programRepo } from '@shared/db/repositories';
+import { useWorkoutStore } from '@features/workout/workoutStore';
+import { strings } from '@shared/lib/strings';
+import type { SessionTemplate } from '@shared/types';
 
 export const SessionDetailScreen: React.FC = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -116,7 +116,7 @@ export const SessionDetailScreen: React.FC = () => {
       </div>
 
       {/* Start Workout Action Bar — VisionOS frosted glass bar */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto p-4 pb-8 bg-black/80 backdrop-blur-2xl border-t border-white/10 z-20">
+      <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto px-4 pt-4 pb-[max(24px,calc(12px+var(--safe-bottom)))] bg-black/80 backdrop-blur-2xl border-t border-white/10 z-20">
         <Button variant="primary" fullWidth isLoading={isStarting} onClick={handleStartWorkout}>
           {strings.sessionDetail.startCta}
         </Button>

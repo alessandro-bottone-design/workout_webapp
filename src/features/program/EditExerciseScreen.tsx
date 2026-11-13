@@ -6,13 +6,13 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { AppShell, ScreenHeader } from '@/components/layout';
-import { Button, ConfirmDialog, EmptyState } from '@/components/ui';
-import { programRepo } from '@/db/repositories';
-import { generateId } from '@/lib/ids';
-import { parseWeight } from '@/lib/formatters';
-import { strings } from '@/lib/strings';
-import type { ExerciseTemplate, ExerciseType } from '@/types';
+import { AppShell, ScreenHeader } from '@shared/components/layout';
+import { Button, ConfirmDialog, EmptyState } from '@shared/components/ui';
+import { programRepo } from '@shared/db/repositories';
+import { generateId } from '@shared/lib/ids';
+import { parseWeight } from '@shared/lib/formatters';
+import { strings } from '@shared/lib/strings';
+import type { ExerciseTemplate, ExerciseType } from '@shared/types';
 
 interface FormState {
   name: string;
@@ -415,7 +415,7 @@ export const EditExerciseScreen: React.FC = () => {
       </div>
 
       {/* Save Button */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto px-4 pb-8 pt-4 bg-black/80 backdrop-blur-2xl border-t border-white/10 z-20">
+      <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto px-4 pb-[max(24px,calc(12px+var(--safe-bottom)))] pt-4 bg-black/80 backdrop-blur-2xl border-t border-white/10 z-20">
         <Button variant="primary" fullWidth isLoading={isSaving} onClick={handleSave}>
           {strings.editExercise.save}
         </Button>

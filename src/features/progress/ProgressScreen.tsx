@@ -8,19 +8,19 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Minus, ChevronRight } from 'lucide-react';
-import { AppShell, ScreenHeader } from '@/components/layout';
-import { MetricCard, EmptyState, SectionHeader } from '@/components/ui';
-import { workoutRepo, programRepo } from '@/db/repositories';
+import { AppShell, ScreenHeader } from '@shared/components/layout';
+import { MetricCard, EmptyState, SectionHeader } from '@shared/components/ui';
+import { workoutRepo, programRepo } from '@shared/db/repositories';
 import {
   getWorkoutMetrics,
   getExercisePerformances,
   getExerciseTrend,
   detectExerciseStall,
-} from '@/lib/selectors';
-import { formatDuration, formatWeight } from '@/lib/formatters';
-import { useTabSync } from '@/lib/tabSync';
-import { strings } from '@/lib/strings';
-import type { Workout, Program } from '@/types';
+} from '@shared/lib/selectors';
+import { formatDuration, formatWeight } from '@shared/lib/formatters';
+import { useTabSync } from '@shared/lib/tabSync';
+import { strings } from '@shared/lib/strings';
+import type { Workout, Program } from '@shared/types';
 
 export const ProgressScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -87,7 +87,7 @@ export const ProgressScreen: React.FC = () => {
     <AppShell>
       <ScreenHeader title={strings.progress.title} variant="display" titleSize="xl" />
 
-      <div className="flex-1 overflow-y-auto pb-24">
+      <div className="flex-1 overflow-y-auto pb-nav">
         <div className="px-4 pt-4 space-y-4">
           {/* Key Metrics Grid */}
           <div className="grid grid-cols-2 gap-4">

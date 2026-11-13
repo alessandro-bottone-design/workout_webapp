@@ -8,13 +8,13 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronRight, Pencil, Plus, RotateCcw } from 'lucide-react';
-import { AppShell, ScreenHeader } from '@/components/layout';
-import { Button, EmptyState, IconButton, GlassCard } from '@/components/ui';
-import { programRepo, workoutRepo } from '@/db/repositories';
-import { getNextSessionId, getCurrentProgramWeek } from '@/lib/selectors';
-import { useTabSync } from '@/lib/tabSync';
-import { strings } from '@/lib/strings';
-import type { Program, Workout } from '@/types';
+import { AppShell, ScreenHeader } from '@shared/components/layout';
+import { Button, EmptyState, IconButton, GlassCard } from '@shared/components/ui';
+import { programRepo, workoutRepo } from '@shared/db/repositories';
+import { getNextSessionId, getCurrentProgramWeek } from '@shared/lib/selectors';
+import { useTabSync } from '@shared/lib/tabSync';
+import { strings } from '@shared/lib/strings';
+import type { Program, Workout } from '@shared/types';
 
 export const ProgramScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -124,7 +124,7 @@ export const ProgramScreen: React.FC = () => {
         }
       />
 
-      <div className="flex-1 overflow-y-auto pb-24">
+      <div className="flex-1 overflow-y-auto pb-nav">
         <div className="px-4 space-y-4 pt-4">
           {/* Multi-Program Switcher */}
           {allPrograms.length > 1 && (
@@ -135,7 +135,7 @@ export const ProgramScreen: React.FC = () => {
                   <button
                     key={p.id}
                     onClick={() => handleSwitchProgram(p.id)}
-                    className={`h-10 px-4 rounded-full text-meta whitespace-nowrap transition-colors border flex items-center ${
+                    className={`min-h-[44px] h-11 px-4 rounded-full text-meta whitespace-nowrap transition-colors border flex items-center ${
                       isActive
                         ? 'bg-white text-black border-white font-semibold'
                         : 'bg-white/[0.06] text-text-secondary border-white/10 hover:text-text-primary'
@@ -148,7 +148,7 @@ export const ProgramScreen: React.FC = () => {
               <button
                 onClick={handleCreateProgram}
                 aria-label="Crea nuova scheda"
-                className="h-10 px-4 rounded-full text-meta whitespace-nowrap bg-white/[0.04] text-text-primary border border-white/10 hover:bg-white/10 flex items-center gap-1 font-semibold"
+                className="min-h-[44px] h-11 px-4 rounded-full text-meta whitespace-nowrap bg-white/[0.04] text-text-primary border border-white/10 hover:bg-white/10 flex items-center gap-1 font-semibold"
               >
                 <Plus className="w-4 h-4" strokeWidth={1.75} />
                 Nuova
@@ -169,7 +169,7 @@ export const ProgramScreen: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleCreateProgram}
-                  className="h-10 px-4 text-meta text-white/80 hover:text-white font-semibold flex items-center gap-1 rounded-full bg-white/[0.06] border border-white/10 hover:bg-white/10 transition-colors"
+                  className="min-h-[44px] h-11 px-4 text-meta text-white/80 hover:text-white font-semibold flex items-center gap-1 rounded-full bg-white/[0.06] border border-white/10 hover:bg-white/10 transition-colors"
                 >
                   <Plus className="w-4 h-4" strokeWidth={1.75} />
                   Nuova
@@ -205,7 +205,7 @@ export const ProgramScreen: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleRestartProgram}
-                  className="h-10 px-4 rounded-full bg-white text-black font-semibold text-meta flex items-center gap-2 hover:bg-white/90 transition-opacity flex-shrink-0"
+                  className="min-h-[44px] h-11 px-4 rounded-full bg-white text-black font-semibold text-meta flex items-center gap-2 hover:bg-white/90 transition-opacity flex-shrink-0"
                 >
                   <RotateCcw className="w-4 h-4" strokeWidth={1.75} />
                   Ricomincia

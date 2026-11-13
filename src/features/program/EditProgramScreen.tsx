@@ -9,12 +9,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, ArrowUp, ArrowDown, ChevronRight, Check } from 'lucide-react';
-import { AppShell, ScreenHeader } from '@/components/layout';
-import { Button, ConfirmDialog, NumericStepper, EmptyState, GlassCard } from '@/components/ui';
-import { programRepo } from '@/db/repositories';
-import { generateId } from '@/lib/ids';
-import { strings } from '@/lib/strings';
-import type { Program, SessionTemplate } from '@/types';
+import { AppShell, ScreenHeader } from '@shared/components/layout';
+import { Button, ConfirmDialog, NumericStepper, EmptyState, GlassCard } from '@shared/components/ui';
+import { programRepo } from '@shared/db/repositories';
+import { generateId } from '@shared/lib/ids';
+import { strings } from '@shared/lib/strings';
+import type { Program, SessionTemplate } from '@shared/types';
 
 export const EditProgramScreen: React.FC = () => {
   const { programId } = useParams<{ programId: string }>();
@@ -209,7 +209,7 @@ export const EditProgramScreen: React.FC = () => {
                       value={sess.name}
                       onChange={(e) => handleRenameSession(sess.id, e.target.value)}
                       aria-label={`Nome seduta ${idx + 1}`}
-                      className="flex-1 bg-transparent border-b border-transparent hover:border-white/10 focus:border-white/40 text-[15px] font-semibold text-text-primary px-2 py-1 focus:outline-none transition-colors"
+                      className="flex-1 bg-transparent border-b border-transparent hover:border-white/10 focus:border-white/40 text-body font-semibold text-text-primary px-2 py-1 focus:outline-none transition-colors"
                     />
 
                     {/* Move up / down */}
@@ -275,7 +275,7 @@ export const EditProgramScreen: React.FC = () => {
       </div>
 
       {/* Save Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto p-4 pb-8 bg-black/80 backdrop-blur-2xl border-t border-white/10 z-20">
+      <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto px-4 pt-4 pb-[max(24px,calc(12px+var(--safe-bottom)))] bg-black/80 backdrop-blur-2xl border-t border-white/10 z-20">
         <Button variant="primary" fullWidth isLoading={isSaving} onClick={handleSave}>
           <Check className="w-4 h-4 mr-2" strokeWidth={1.75} />
           Salva modifiche

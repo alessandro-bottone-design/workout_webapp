@@ -8,43 +8,43 @@ import { AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 
 // Eager load workout path for speed
-import { HomeScreen } from '@/features/home/HomeScreen';
-import { WorkoutOverviewScreen } from '@/features/workout/WorkoutOverviewScreen';
-import { ExerciseFocusScreen } from '@/features/workout/ExerciseFocusScreen';
-import { WorkoutCompletedScreen } from '@/features/workout/WorkoutCompletedScreen';
+import { HomeScreen } from '@features/home/HomeScreen';
+import { WorkoutOverviewScreen } from '@features/workout/WorkoutOverviewScreen';
+import { ExerciseFocusScreen } from '@features/workout/ExerciseFocusScreen';
+import { WorkoutCompletedScreen } from '@features/workout/WorkoutCompletedScreen';
 
 // Lazy load secondary screens
 const ProgramScreen = lazy(() =>
-  import('@/features/program/ProgramScreen').then((m) => ({ default: m.ProgramScreen }))
+  import('@features/program/ProgramScreen').then((m) => ({ default: m.ProgramScreen }))
 );
 const EditProgramScreen = lazy(() =>
-  import('@/features/program/EditProgramScreen').then((m) => ({ default: m.EditProgramScreen }))
+  import('@features/program/EditProgramScreen').then((m) => ({ default: m.EditProgramScreen }))
 );
 const SessionDetailScreen = lazy(() =>
-  import('@/features/program/SessionDetailScreen').then((m) => ({ default: m.SessionDetailScreen }))
+  import('@features/program/SessionDetailScreen').then((m) => ({ default: m.SessionDetailScreen }))
 );
 const EditSessionScreen = lazy(() =>
-  import('@/features/program/EditSessionScreen').then((m) => ({ default: m.EditSessionScreen }))
+  import('@features/program/EditSessionScreen').then((m) => ({ default: m.EditSessionScreen }))
 );
 const EditExerciseScreen = lazy(() =>
-  import('@/features/program/EditExerciseScreen').then((m) => ({ default: m.EditExerciseScreen }))
+  import('@features/program/EditExerciseScreen').then((m) => ({ default: m.EditExerciseScreen }))
 );
 const ProgressScreen = lazy(() =>
-  import('@/features/progress/ProgressScreen').then((m) => ({ default: m.ProgressScreen }))
+  import('@features/progress/ProgressScreen').then((m) => ({ default: m.ProgressScreen }))
 );
 const ExerciseHistoryScreen = lazy(() =>
-  import('@/features/progress/ExerciseHistoryScreen').then((m) => ({
+  import('@features/progress/ExerciseHistoryScreen').then((m) => ({
     default: m.ExerciseHistoryScreen,
   }))
 );
 const CalendarScreen = lazy(() =>
-  import('@/features/calendar/CalendarScreen').then((m) => ({ default: m.CalendarScreen }))
+  import('@features/calendar/CalendarScreen').then((m) => ({ default: m.CalendarScreen }))
 );
 const SettingsScreen = lazy(() =>
-  import('@/features/settings/SettingsScreen').then((m) => ({ default: m.SettingsScreen }))
+  import('@features/settings/SettingsScreen').then((m) => ({ default: m.SettingsScreen }))
 );
 const WorkoutHistoryScreen = lazy(() =>
-  import('@/features/workout/WorkoutHistoryScreen').then((m) => ({ default: m.WorkoutHistoryScreen }))
+  import('@features/workout/WorkoutHistoryScreen').then((m) => ({ default: m.WorkoutHistoryScreen }))
 );
 
 const PageLoader = () => (

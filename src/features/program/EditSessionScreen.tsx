@@ -24,12 +24,12 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Trash2, Plus } from 'lucide-react';
-import { AppShell, ScreenHeader } from '@/components/layout';
-import { Button, ConfirmDialog } from '@/components/ui';
-import { programRepo } from '@/db/repositories';
-import { generateId } from '@/lib/ids';
-import { strings } from '@/lib/strings';
-import type { SessionTemplate, ExerciseTemplate, Program } from '@/types';
+import { AppShell, ScreenHeader } from '@shared/components/layout';
+import { Button, ConfirmDialog } from '@shared/components/ui';
+import { programRepo } from '@shared/db/repositories';
+import { generateId } from '@shared/lib/ids';
+import { strings } from '@shared/lib/strings';
+import type { SessionTemplate, ExerciseTemplate, Program } from '@shared/types';
 
 const SortableExItem: React.FC<{
   exercise: ExerciseTemplate;
@@ -225,7 +225,7 @@ export const EditSessionScreen: React.FC = () => {
       </div>
 
       {/* Done Button — edits auto-save, this just returns to the session */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto px-4 pb-8 pt-4 bg-black/80 backdrop-blur-2xl border-t border-white/10 z-20">
+      <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto px-4 pb-[max(24px,calc(12px+var(--safe-bottom)))] pt-4 bg-black/80 backdrop-blur-2xl border-t border-white/10 z-20">
         <Button variant="primary" fullWidth onClick={() => navigate(-1)}>
           {strings.actions.done}
         </Button>

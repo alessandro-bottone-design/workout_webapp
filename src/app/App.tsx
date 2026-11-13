@@ -8,12 +8,13 @@ import { BrowserRouter } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
 import Lenis from 'lenis';
 import { AppRouter } from './router';
-import { seedDatabase } from '@/db/seed';
-import { useTimerStore, unlockAudio } from '@/features/timer/timerStore';
-import { useWorkoutStore } from '@/stores/workoutStore';
-import { useAuthStore } from '@/stores/authStore';
-import { syncAll } from '@/lib/sync';
-import { strings } from '@/lib/strings';
+import { seedDatabase } from '@shared/db/seed';
+import { useTimerStore, unlockAudio } from '@features/timer/timerStore';
+import { useWorkoutStore } from '@features/workout/workoutStore';
+import { useAuthStore } from '@features/auth/authStore';
+import { useGoogleCalendarStore } from '@features/calendar/googleCalendarStore';
+import { syncAll } from '@features/sync/sync';
+import { strings } from '@shared/lib/strings';
 
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -87,6 +88,8 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
           useAuthStore.getState().initAuth(),
         ]);
         setReady(true);
+
+        void useGoogleCalendarStore.getState().bootstrap();
 
         // If user is already authenticated on app launch, trigger cloud sync
         const currentUser = useAuthStore.getState().user;

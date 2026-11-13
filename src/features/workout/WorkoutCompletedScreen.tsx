@@ -6,15 +6,16 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Check, ArrowRight } from 'lucide-react';
-import { AppShell } from '@/components/layout';
-import { Button, GlassCard } from '@/components/ui';
-import { workoutRepo } from '@/db/repositories';
-import { getRepresentativeWeight } from '@/lib/selectors';
-import { formatDuration, formatWeight } from '@/lib/formatters';
-import { strings } from '@/lib/strings';
-import { useTimerStore } from '@/features/timer/timerStore';
-import type { Workout } from '@/types';
+import { Check, ArrowRight, CalendarPlus } from 'lucide-react';
+import { AppShell } from '@shared/components/layout';
+import { Button, GlassCard } from '@shared/components/ui';
+import { workoutRepo } from '@shared/db/repositories';
+import { getRepresentativeWeight } from '@shared/lib/selectors';
+import { formatDuration, formatWeight } from '@shared/lib/formatters';
+import { openGoogleCalendarEvent } from '@features/calendar/googleCalendar';
+import { strings } from '@shared/lib/strings';
+import { useTimerStore } from '@features/timer/timerStore';
+import type { Workout } from '@shared/types';
 
 export const WorkoutCompletedScreen: React.FC = () => {
   const { workoutId } = useParams<{ workoutId: string }>();
@@ -89,9 +90,32 @@ export const WorkoutCompletedScreen: React.FC = () => {
     .filter((p) => p.prev !== undefined && p.current !== p.prev)
     .slice(0, 4);
 
+  const handleAddToCalendar = () => {
+    if (!workout) return;
+    const end = workout.completedAt ?? Date.now();
+    const start = Math.min(workout.startedAt, end - 60_000);
+    const details = completedExLogs
+      .map((ex) => {
+        if (ex.exerciseTypeSnapshot === 'cardio') {
+          const mins = Math.round((ex.setLogs[0]?.durationSeconds ?? 0) / 60);
+          return `• ${ex.exerciseNameSnapshot}${mins > 0 ? ` (${mins} min)` : ''}`;
+        }
+        const maxW = getRepresentativeWeight(ex);
+        return `• ${ex.exerciseNameSnapshot} (${ex.setLogs.length} serie${maxW > 0 ? ` · ${formatWeight(maxW)}` : ''})`;
+      })
+      .join('\n');
+
+    openGoogleCalendarEvent({
+      title: `Workout · ${workout.sessionNameSnapshot}`,
+      start,
+      end,
+      details: details || undefined,
+    });
+  };
+
   return (
     <AppShell showNav={false}>
-      <div className="flex-1 flex flex-col items-start justify-center px-4 pb-[calc(32px+env(safe-area-inset-bottom))]">
+      <div className="flex-1 flex flex-col items-start justify-center px-4 pt-[calc(var(--safe-top)+16px)] pb-[calc(32px+env(safe-area-inset-bottom))]">
         {/* Success Icon */}
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
@@ -190,8 +214,12 @@ export const WorkoutCompletedScreen: React.FC = () => {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="w-full mt-auto"
+          className="w-full mt-auto space-y-2"
         >
+          <Button variant="secondary" fullWidth onClick={handleAddToCalendar}>
+            <CalendarPlus className="w-4 h-4 mr-2" strokeWidth={1.75} />
+            Salva su Google Calendar
+          </Button>
           <Button variant="primary" fullWidth onClick={handleFinish}>
             {strings.workoutComplete.end}
           </Button>

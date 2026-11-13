@@ -5,22 +5,44 @@
    ============================================ */
 
 import React, { useEffect, useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, RefreshCw, Download, Upload, Check, AlertCircle, User, LogOut, Cloud, Sparkles } from 'lucide-react';
-import { AppShell, ScreenHeader } from '@/components/layout';
-import { Button, Toggle, ConfirmDialog, GlassCard } from '@/components/ui';
-import { settingsRepo, resetAllData } from '@/db/repositories';
-import { seedDatabase, restoreDefaultProgram } from '@/db/seed';
-import { seedProgressData } from '@/db/progressData';
-import { downloadBackupFile, importBackupData } from '@/lib/backup';
-import { useTimerStore } from '@/features/timer/timerStore';
-import { useWorkoutStore } from '@/stores/workoutStore';
-import { useAuthStore } from '@/stores/authStore';
-import { AuthModal } from '@/features/auth/AuthModal';
-import { syncAll, subscribeSyncStatus, type SyncStatus } from '@/lib/sync';
-import { GYM_SCHEDULE, getGymStatus } from '@/lib/gymSchedule';
-import { strings } from '@/lib/strings';
-import type { AppSettings } from '@/types';
+import {
+  Clock,
+  RefreshCw,
+  Download,
+  Upload,
+  Check,
+  AlertCircle,
+  User,
+  LogOut,
+  Cloud,
+  Sparkles,
+  CalendarDays,
+  ChevronDown,
+  ExternalLink,
+} from 'lucide-react';
+import { AppShell, ScreenHeader } from '@shared/components/layout';
+import { Button, Toggle, ConfirmDialog, GlassCard } from '@shared/components/ui';
+import { settingsRepo, resetAllData } from '@shared/db/repositories';
+import { seedDatabase, restoreDefaultProgram } from '@shared/db/seed';
+import { seedProgressData } from '@shared/db/progressData';
+import { downloadBackupFile, importBackupData } from '@shared/lib/backup';
+import { useTimerStore } from '@features/timer/timerStore';
+import { useWorkoutStore } from '@features/workout/workoutStore';
+import { useAuthStore } from '@features/auth/authStore';
+import { useGoogleCalendarStore } from '@features/calendar/googleCalendarStore';
+import { maskIcalUrl, isPrivateIcalUrl } from '@features/calendar/googleCalendar';
+import { AuthModal } from '@features/auth/AuthModal';
+import {
+  syncAll,
+  subscribeSyncStatus,
+  clearCloudGoogleIcalUrl,
+  type SyncStatus,
+} from '@features/sync/sync';
+import { GYM_SCHEDULE, getGymStatus } from '@shared/lib/gymSchedule';
+import { strings } from '@shared/lib/strings';
+import type { AppSettings } from '@shared/types';
 
 const REST_OPTIONS = [
   { label: '1:00', value: 60 },
@@ -49,6 +71,30 @@ export const SettingsScreen: React.FC = () => {
   const [restoreDone, setRestoreDone] = useState(false);
   const [screenshotDataLoaded, setScreenshotDataLoaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const googleCardRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+
+  // Google Calendar iCal State
+  const {
+    icalUrl: googleIcalUrl,
+    connectionMode: googleConnectionMode,
+    serverConfigured: isGoogleServerConfigured,
+    isConnected: isGoogleConnected,
+    calendarName: googleCalendarName,
+    events: googleEvents,
+    lastSyncedAt: googleLastSyncedAt,
+    isSyncing: isGoogleSyncing,
+    error: googleError,
+    bootstrap: bootstrapGoogle,
+    connect: connectGoogle,
+    refresh: refreshGoogle,
+    disconnect: disconnectGoogle,
+    clearError: clearGoogleError,
+  } = useGoogleCalendarStore();
+  const [icalInput, setIcalInput] = useState('');
+  const [showIcalHelp, setShowIcalHelp] = useState(false);
+  const [showCustomIcalForm, setShowCustomIcalForm] = useState(false);
+  const [googleConnectedToast, setGoogleConnectedToast] = useState(false);
 
   // Supabase Auth & Sync State
   const { user, signOut } = useAuthStore();
@@ -65,11 +111,56 @@ export const SettingsScreen: React.FC = () => {
 
   useEffect(() => {
     void settingsRepo.get().then(setSettings);
-  }, []);
+    void bootstrapGoogle();
+  }, [bootstrapGoogle]);
 
   useEffect(() => {
     return subscribeSyncStatus(setSyncStatus);
   }, []);
+
+  useEffect(() => {
+    if (location.hash === '#google-calendar' && googleCardRef.current) {
+      const id = setTimeout(() => {
+        googleCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 150);
+      return () => clearTimeout(id);
+    }
+  }, [location.hash]);
+
+  useEffect(() => {
+    if (!googleConnectedToast) return;
+    const id = setTimeout(() => setGoogleConnectedToast(false), 3000);
+    return () => clearTimeout(id);
+  }, [googleConnectedToast]);
+
+  const handleConnectGoogle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const res = await connectGoogle(icalInput);
+    if (res.success) {
+      setIcalInput('');
+      setShowIcalHelp(false);
+      setShowCustomIcalForm(false);
+      setGoogleConnectedToast(true);
+      const fresh = await settingsRepo.get();
+      setSettings(fresh);
+      if (user) {
+        void syncAll(user.id);
+      }
+    }
+  };
+
+  const handleDisconnectGoogle = async () => {
+    disconnectGoogle();
+    setShowCustomIcalForm(false);
+    const fresh = await settingsRepo.get();
+    setSettings(fresh);
+    if (user) {
+      void clearCloudGoogleIcalUrl(user.id);
+    }
+    if (isGoogleServerConfigured) {
+      void bootstrapGoogle();
+    }
+  };
 
   const handleManualSync = async () => {
     if (!user) return;
@@ -187,7 +278,7 @@ export const SettingsScreen: React.FC = () => {
     <AppShell>
       <ScreenHeader title={strings.settings.title} variant="display" titleSize="lg" />
 
-      <div className="flex-1 overflow-y-auto pb-24">
+      <div className="flex-1 overflow-y-auto pb-nav">
         <div className="px-4 pt-4 space-y-4">
           {/* Account & Cloud Sync Section */}
           <div>
@@ -233,7 +324,7 @@ export const SettingsScreen: React.FC = () => {
                       type="button"
                       onClick={handleManualSync}
                       disabled={syncStatus.isSyncing}
-                      className="h-8 px-4 rounded-lg bg-white/10 hover:bg-white/20 text-white text-meta font-semibold flex items-center gap-2 transition-colors disabled:opacity-50"
+                      className="min-h-[44px] px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white text-meta font-semibold flex items-center gap-2 transition-colors disabled:opacity-50 flex-shrink-0"
                     >
                       <RefreshCw className={`w-4 h-4 ${syncStatus.isSyncing ? 'animate-spin' : ''}`} strokeWidth={1.75} />
                       Sincronizza
@@ -439,8 +530,211 @@ export const SettingsScreen: React.FC = () => {
           </div>
 
           {/* Integrations */}
-          <div>
-            <p className="text-label-sm text-text-secondary mb-4 px-1 font-semibold">Integrazioni</p>
+          <div id="google-calendar" ref={googleCardRef} className="space-y-3">
+            <div className="flex items-center justify-between px-1 gap-2">
+              <p className="text-label-sm text-text-secondary font-semibold">Integrazioni</p>
+              {isGoogleConnected && (
+                <span className="text-label-sm font-semibold text-white/80 px-2 py-0.5 rounded-full bg-white/10 border border-white/15">
+                  {googleConnectionMode === 'server-default' || user
+                    ? 'Collegato permanentemente'
+                    : 'Collegato'}
+                </span>
+              )}
+            </div>
+
+            <GlassCard className="p-4 space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-white flex-shrink-0">
+                  <CalendarDays className="w-5 h-5" strokeWidth={1.75} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-body font-semibold text-text-primary">
+                    Google Calendar
+                  </h3>
+                  <p className="text-meta text-text-secondary mt-0.5">
+                    {googleConnectionMode === 'server-default'
+                      ? googleCalendarName || 'Calendario predefinito configurato sul server'
+                      : googleIcalUrl
+                      ? googleCalendarName || maskIcalUrl(googleIcalUrl)
+                      : 'Mostra i tuoi impegni nel calendario dell’app per pianificare gli allenamenti.'}
+                  </p>
+                </div>
+              </div>
+
+              {isGoogleConnected && (
+                <>
+                  <div className="p-4 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-meta text-text-primary font-semibold truncate">
+                        {googleEvents.length} eventi in calendario
+                      </p>
+                      <p className="text-[12px] text-text-secondary mt-0.5">
+                        {isGoogleSyncing
+                          ? 'Aggiornamento in corso…'
+                          : googleLastSyncedAt
+                          ? `Aggiornato alle ${new Date(googleLastSyncedAt).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}`
+                          : 'Pronto'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void refreshGoogle({ force: true })}
+                      disabled={isGoogleSyncing}
+                      className="min-h-[44px] px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white text-meta font-semibold flex items-center gap-2 transition-colors disabled:opacity-50 flex-shrink-0"
+                    >
+                      <RefreshCw
+                        className={`w-4 h-4 ${isGoogleSyncing ? 'animate-spin' : ''}`}
+                        strokeWidth={1.75}
+                      />
+                      Aggiorna
+                    </button>
+                  </div>
+
+                  {googleConnectionMode === 'user-ical' && googleIcalUrl && !isPrivateIcalUrl(googleIcalUrl) && (
+                    <p className="text-[12px] text-text-secondary px-1">
+                      Nota: stai usando l&apos;indirizzo pubblico; se mancano eventi privati usa l&apos;indirizzo segreto in formato iCal.
+                    </p>
+                  )}
+
+                  {googleConnectionMode === 'server-default' && (
+                    <p className="text-[12px] text-text-secondary px-1">
+                      {user
+                        ? 'Attivo tramite configurazione server e sincronizzato con il tuo account cloud.'
+                        : 'Attivo permanentemente tramite configurazione server.'}
+                    </p>
+                  )}
+
+                  {googleError && (
+                    <p className="text-meta text-danger flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 flex-shrink-0" strokeWidth={1.75} />
+                      <span>{googleError}</span>
+                    </p>
+                  )}
+
+                  {googleConnectionMode === 'server-default' ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowCustomIcalForm((v) => !v)}
+                      aria-expanded={showCustomIcalForm}
+                      className="w-full min-h-[44px] flex items-center justify-between text-meta text-text-secondary hover:text-text-primary px-1 transition-colors"
+                    >
+                      <span>Usa un indirizzo iCal personale</span>
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform ${showCustomIcalForm ? 'rotate-180' : ''}`}
+                        strokeWidth={1.75}
+                      />
+                    </button>
+                  ) : (
+                    <Button
+                      variant="secondary"
+                      fullWidth
+                      onClick={() => void handleDisconnectGoogle()}
+                      className="text-danger hover:text-danger"
+                    >
+                      {isGoogleServerConfigured
+                        ? 'Rimuovi URL personale'
+                        : 'Scollega Google Calendar'}
+                    </Button>
+                  )}
+                </>
+              )}
+
+              {(!isGoogleConnected || (googleConnectionMode === 'server-default' && showCustomIcalForm)) && (
+                <form onSubmit={(e) => void handleConnectGoogle(e)} className="space-y-3">
+                  <div>
+                    <label
+                      htmlFor="google-ical-url"
+                      className="text-label-sm text-text-secondary font-semibold mb-2 block"
+                    >
+                      Indirizzo segreto in formato iCal
+                    </label>
+                    <input
+                      id="google-ical-url"
+                      type="url"
+                      inputMode="url"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      value={icalInput}
+                      onChange={(e) => {
+                        setIcalInput(e.target.value);
+                        if (googleError) clearGoogleError();
+                      }}
+                      placeholder="https://calendar.google.com/calendar/ical/.../basic.ics"
+                      className="w-full h-12 bg-white/[0.04] border border-white/10 rounded-xl px-4 text-body text-text-primary focus:outline-none focus:border-white/40 focus:ring-1 focus:ring-white/20 transition-all placeholder:text-text-secondary/50"
+                    />
+                  </div>
+
+                  {!isGoogleConnected && googleError && (
+                    <p className="text-meta text-danger flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" strokeWidth={1.75} />
+                      <span>{googleError}</span>
+                    </p>
+                  )}
+
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    fullWidth
+                    isLoading={isGoogleSyncing}
+                    disabled={!icalInput.trim() || isGoogleSyncing}
+                  >
+                    {googleConnectionMode === 'server-default'
+                      ? 'Sostituisci con calendario personale'
+                      : 'Collega calendario'}
+                  </Button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowIcalHelp((v) => !v)}
+                    aria-expanded={showIcalHelp}
+                    className="w-full min-h-[44px] flex items-center justify-between text-meta text-text-secondary hover:text-text-primary px-1 transition-colors"
+                  >
+                    <span>Come trovare l&apos;indirizzo iCal</span>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${showIcalHelp ? 'rotate-180' : ''}`}
+                      strokeWidth={1.75}
+                    />
+                  </button>
+
+                  <AnimatePresence>
+                    {showIcalHelp && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2 text-meta text-text-secondary">
+                          <p>
+                            1. Apri Google Calendar dal browser (sul telefono usa la vista desktop o fallo da PC).
+                          </p>
+                          <p>
+                            2. Vai su <strong className="text-text-primary font-semibold">Impostazioni</strong> → seleziona il tuo calendario nella colonna a sinistra.
+                          </p>
+                          <p>
+                            3. Scorri fino a <strong className="text-text-primary font-semibold">Integra calendario</strong> e copia l&apos;<strong className="text-text-primary font-semibold">Indirizzo segreto in formato iCal</strong>.
+                          </p>
+                          <a
+                            href="https://calendar.google.com/calendar/u/0/r/settings"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-white font-semibold min-h-[44px] hover:underline"
+                          >
+                            Apri Impostazioni Google Calendar
+                            <ExternalLink className="w-3.5 h-3.5" strokeWidth={1.75} />
+                          </a>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </form>
+              )}
+            </GlassCard>
+
             <GlassCard className="overflow-hidden">
               <div className={rowClass}>
                 <span className="text-body text-text-primary">
@@ -578,13 +872,25 @@ export const SettingsScreen: React.FC = () => {
 
           {/* Toasts — Floating visionOS glass pills */}
           <AnimatePresence>
+            {googleConnectedToast && (
+              <motion.div
+                role="status"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 16 }}
+                className="fixed bottom-above-nav left-4 right-4 mx-auto w-fit max-w-[calc(100%-32px)] bg-white/10 backdrop-blur-2xl border border-white/20 rounded-full px-6 py-4 text-meta text-text-primary shadow-2xl flex items-center gap-2 z-50 whitespace-nowrap"
+              >
+                <Check className="w-4 h-4 text-white" strokeWidth={1.75} />
+                Google Calendar collegato
+              </motion.div>
+            )}
             {resetDone && (
               <motion.div
                 role="status"
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 16 }}
-                className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-full px-6 py-4 text-meta text-text-primary shadow-2xl flex items-center gap-2 z-50"
+                className="fixed bottom-above-nav left-4 right-4 mx-auto w-fit max-w-[calc(100%-32px)] bg-white/10 backdrop-blur-2xl border border-white/20 rounded-full px-6 py-4 text-meta text-text-primary shadow-2xl flex items-center gap-2 z-50"
               >
                 <Check className="w-4 h-4 text-white" strokeWidth={1.75} />
                 {strings.settings.resetDone}
@@ -596,7 +902,7 @@ export const SettingsScreen: React.FC = () => {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 16 }}
-                className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-full px-6 py-4 text-meta text-text-primary shadow-2xl flex items-center gap-2 z-50"
+                className="fixed bottom-above-nav left-4 right-4 mx-auto w-fit max-w-[calc(100%-32px)] bg-white/10 backdrop-blur-2xl border border-white/20 rounded-full px-6 py-4 text-meta text-text-primary shadow-2xl flex items-center gap-2 z-50"
               >
                 <Check className="w-4 h-4 text-white" strokeWidth={1.75} />
                 {strings.settings.restoreDone}
@@ -608,7 +914,7 @@ export const SettingsScreen: React.FC = () => {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 16 }}
-                className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-full px-6 py-4 text-meta text-text-primary shadow-2xl flex items-center gap-2 z-50"
+                className="fixed bottom-above-nav left-4 right-4 mx-auto w-fit max-w-[calc(100%-32px)] bg-white/10 backdrop-blur-2xl border border-white/20 rounded-full px-6 py-4 text-meta text-text-primary shadow-2xl flex items-center gap-2 z-50"
               >
                 <Check className="w-4 h-4 text-white" strokeWidth={1.75} />
                 Storico e 9 workout caricati con successo
@@ -620,7 +926,7 @@ export const SettingsScreen: React.FC = () => {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 16 }}
-                className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-full px-6 py-4 text-meta text-text-primary shadow-2xl flex items-center gap-2 z-50"
+                className="fixed bottom-above-nav left-4 right-4 mx-auto w-fit max-w-[calc(100%-32px)] bg-white/10 backdrop-blur-2xl border border-white/20 rounded-full px-6 py-4 text-meta text-text-primary shadow-2xl flex items-center gap-2 z-50"
               >
                 <Check className="w-4 h-4 text-white" strokeWidth={1.75} />
                 {importSummary}
@@ -632,7 +938,7 @@ export const SettingsScreen: React.FC = () => {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 16 }}
-                className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-red-950/80 backdrop-blur-2xl border border-red-500/40 rounded-full px-6 py-4 text-meta text-white shadow-2xl flex items-center gap-2 z-50"
+                className="fixed bottom-above-nav left-4 right-4 mx-auto w-fit max-w-[calc(100%-32px)] bg-red-950/80 backdrop-blur-2xl border border-red-500/40 rounded-full px-6 py-4 text-meta text-white shadow-2xl flex items-center gap-2 z-50"
               >
                 <AlertCircle className="w-4 h-4 text-red-400" strokeWidth={1.75} />
                 {errorMessage}

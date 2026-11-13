@@ -5,9 +5,9 @@
    ============================================ */
 
 import { create } from 'zustand';
-import type { TimerState } from '@/types';
-import { appStateRepo } from '@/db/repositories';
-import { settingsRepo } from '@/db/repositories';
+import type { TimerState } from '@shared/types';
+import { appStateRepo } from '@shared/db/repositories';
+import { settingsRepo } from '@shared/db/repositories';
 
 interface TimerStore {
   timer: TimerState | null;

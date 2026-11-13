@@ -7,10 +7,10 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Timer, Check } from 'lucide-react';
 import { useTimerStore, playTimerBeep, vibrateTimerComplete } from './timerStore';
-import { settingsRepo } from '@/db/repositories';
-import { useDialogA11y } from '@/lib/useDialogA11y';
-import { formatTimerSeconds } from '@/lib/formatters';
-import { strings } from '@/lib/strings';
+import { settingsRepo } from '@shared/db/repositories';
+import { useDialogA11y } from '@shared/lib/useDialogA11y';
+import { formatTimerSeconds } from '@shared/lib/formatters';
+import { strings } from '@shared/lib/strings';
 
 /* ============================================
    useRemainingSeconds — shared ticker
@@ -121,7 +121,7 @@ export const RestTimerLayer: React.FC<RestTimerLayerProps> = ({ hasNav }) => {
     (isCompletedStatus && (showCompletedPill || sheetOpen));
 
   const bottomOffset = hasNav
-    ? 'calc(88px + env(safe-area-inset-bottom))'
+    ? 'calc(var(--nav-offset) + var(--nav-height) + 12px)'
     : 'calc(24px + env(safe-area-inset-bottom))';
 
   const handleCloseSheet = () => {

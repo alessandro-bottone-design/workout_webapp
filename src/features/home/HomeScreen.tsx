@@ -6,21 +6,23 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Dumbbell, TrendingUp, Settings, Clock, Sparkles, Flame, Check } from 'lucide-react';
-import { AppShell } from '@/components/layout';
-import { Button, ProgressBar, EmptyState, ScreenTitle, IconButton, GlassCard } from '@/components/ui';
-import { programRepo, workoutRepo, settingsRepo } from '@/db/repositories';
-import { useWorkoutStore } from '@/stores/workoutStore';
-import { getNextSessionId, getWorkoutMetrics } from '@/lib/selectors';
-import { getRepresentativeWeight } from '@/lib/selectors';
-import { getGymStatus, GYM_SCHEDULE } from '@/lib/gymSchedule';
-import { useTabSync } from '@/lib/tabSync';
+import { ChevronRight, Dumbbell, TrendingUp, Settings, Clock, Sparkles, Flame, Check, CalendarPlus } from 'lucide-react';
+import { AppShell } from '@shared/components/layout';
+import { Button, ProgressBar, EmptyState, ScreenTitle, IconButton, GlassCard } from '@shared/components/ui';
+import { programRepo, workoutRepo, settingsRepo } from '@shared/db/repositories';
+import { useWorkoutStore } from '@features/workout/workoutStore';
+import { PlanWorkoutSheet } from '@features/calendar/PlanWorkoutSheet';
+import { getNextSessionId, getWorkoutMetrics } from '@shared/lib/selectors';
+import { getRepresentativeWeight } from '@shared/lib/selectors';
+import { getGymStatus, GYM_SCHEDULE } from '@shared/lib/gymSchedule';
+import { useTabSync } from '@shared/lib/tabSync';
 import {
   formatDuration,
   formatWeight,
-} from '@/lib/formatters';
-import { strings } from '@/lib/strings';
-import type { Program, SessionTemplate, Workout } from '@/types';
+  startOfDay,
+} from '@shared/lib/formatters';
+import { strings } from '@shared/lib/strings';
+import type { Program, SessionTemplate, Workout } from '@shared/types';
 
 export const HomeScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -30,6 +32,7 @@ export const HomeScreen: React.FC = () => {
   const [recommendedSessionId, setRecommendedSessionId] = useState<string | null>(null);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [showFullGymHours, setShowFullGymHours] = useState(false);
+  const [showPlanSheet, setShowPlanSheet] = useState(false);
   const [weeklyTarget, setWeeklyTarget] = useState(4);
   const [isLoading, setIsLoading] = useState(true);
   const [isStarting, setIsStarting] = useState(false);
@@ -119,9 +122,9 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <AppShell>
-      <div className="flex-1 pb-24">
+      <div className="flex-1 pb-nav">
         {/* Header Section */}
-        <div className="px-4 pt-4 pb-2">
+        <div className="px-4 pt-[calc(var(--safe-top)+16px)] pb-2">
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -254,10 +257,19 @@ export const HomeScreen: React.FC = () => {
                     ))}
                   </div>
 
-                  <div className="pt-2">
-                    <Button variant="primary" fullWidth isLoading={isStarting} onClick={handleStart}>
+                  <div className="pt-2 flex items-center gap-2">
+                    <Button variant="primary" className="flex-1" isLoading={isStarting} onClick={handleStart}>
                       {strings.home.startWorkout}
                     </Button>
+                    <button
+                      type="button"
+                      onClick={() => setShowPlanSheet(true)}
+                      aria-label="Pianifica su Google Calendar"
+                      title="Pianifica su Google Calendar"
+                      className="w-12 h-12 rounded-btn bg-white/[0.08] border border-white/[0.12] hover:bg-white/[0.14] flex items-center justify-center text-white flex-shrink-0 transition-colors active:scale-95"
+                    >
+                      <CalendarPlus className="w-5 h-5" strokeWidth={1.75} />
+                    </button>
                   </div>
                 </GlassCard>
               )}
@@ -277,27 +289,27 @@ export const HomeScreen: React.FC = () => {
 
           {/* Gym Hours Card */}
           <GlassCard>
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-2xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-text-primary">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-10 h-10 rounded-2xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-text-primary flex-shrink-0">
                   <Clock className="w-5 h-5 text-text-primary" strokeWidth={1.75} />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="text-label-sm text-text-secondary font-semibold">
                       Orari palestra
                     </p>
                     <span
-                      className={`inline-block w-2 h-2 rounded-full ${
+                      className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${
                         gymStatus.isOpen
                           ? 'bg-success'
                           : 'bg-text-secondary opacity-40'
                       }`}
                     />
                   </div>
-                  <h3 className="text-heading font-semibold text-text-primary mt-0.5">
-                    {gymStatus.statusText}
-                    <span className="text-meta text-text-secondary font-normal ml-2">
+                  <h3 className="text-heading font-semibold text-text-primary mt-0.5 leading-snug flex flex-wrap items-baseline gap-x-1.5">
+                    <span className="whitespace-nowrap">{gymStatus.statusText}</span>
+                    <span className="text-meta text-text-secondary font-normal whitespace-nowrap">
                       ({gymStatus.detailText})
                     </span>
                   </h3>
@@ -307,7 +319,7 @@ export const HomeScreen: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowFullGymHours((v) => !v)}
-                className="text-meta text-text-primary font-semibold hover:underline min-h-[48px] flex items-center px-2"
+                className="text-meta text-text-primary font-semibold hover:underline min-h-[48px] flex items-center px-2 flex-shrink-0 whitespace-nowrap"
               >
                 {showFullGymHours ? 'Chiudi' : 'Tutti gli orari'}
               </button>
@@ -394,12 +406,12 @@ export const HomeScreen: React.FC = () => {
                 {lastWorkoutProgress.length > 0 && (
                   <div className="mt-4 space-y-2 pt-2 border-t border-white/[0.06]">
                     {lastWorkoutProgress.map((ex) => (
-                      <div key={ex.name} className="flex items-center gap-2">
-                        <TrendingUp className="w-3.5 h-3.5 text-text-secondary" strokeWidth={1.75} />
-                        <span className="text-meta text-text-secondary font-normal">
+                      <div key={ex.name} className="flex items-center gap-2 min-w-0">
+                        <TrendingUp className="w-3.5 h-3.5 text-text-secondary flex-shrink-0" strokeWidth={1.75} />
+                        <span className="text-meta text-text-secondary font-normal truncate min-w-0">
                           {ex.name}
                         </span>
-                        <span className="text-meta text-text-primary font-semibold ml-auto">
+                        <span className="text-meta text-text-primary font-semibold ml-auto whitespace-nowrap flex-shrink-0">
                           {formatWeight(ex.weight)}
                         </span>
                       </div>
@@ -463,6 +475,17 @@ export const HomeScreen: React.FC = () => {
           </GlassCard>
         </div>
       </div>
+
+      <AnimatePresence>
+        {showPlanSheet && (
+          <PlanWorkoutSheet
+            initialDayMs={startOfDay(Date.now())}
+            sessions={sortedSessions}
+            defaultSessionId={currentSession?.id}
+            onClose={() => setShowPlanSheet(false)}
+          />
+        )}
+      </AnimatePresence>
     </AppShell>
   );
 };

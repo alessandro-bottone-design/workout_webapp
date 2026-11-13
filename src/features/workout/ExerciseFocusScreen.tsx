@@ -7,15 +7,15 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ChevronLeft } from 'lucide-react';
-import { AppShell } from '@/components/layout';
-import { Button, NumericStepper, IconButton, EmptyState, GlassCard } from '@/components/ui';
-import { RestPresets } from '@/features/timer/TimerComponents';
-import { useWorkoutStore } from '@/stores/workoutStore';
-import { useTimerStore } from '@/features/timer/timerStore';
-import { workoutRepo, programRepo } from '@/db/repositories';
-import { formatTimerSeconds, formatWeight, formatWeightValue } from '@/lib/formatters';
-import { strings } from '@/lib/strings';
-import type { WorkoutExerciseLog } from '@/types';
+import { AppShell } from '@shared/components/layout';
+import { Button, NumericStepper, IconButton, EmptyState, GlassCard } from '@shared/components/ui';
+import { RestPresets } from '@features/timer/TimerComponents';
+import { useWorkoutStore } from '@features/workout/workoutStore';
+import { useTimerStore } from '@features/timer/timerStore';
+import { workoutRepo, programRepo } from '@shared/db/repositories';
+import { formatTimerSeconds, formatWeight, formatWeightValue } from '@shared/lib/formatters';
+import { strings } from '@shared/lib/strings';
+import type { WorkoutExerciseLog } from '@shared/types';
 import { WeightEditorSheet } from './WeightEditorSheet';
 import { ExerciseCompletedScreen } from './ExerciseCompletedScreen';
 
@@ -109,31 +109,43 @@ export const ExerciseFocusScreen: React.FC = () => {
         }
       }
 
-      const prevPerfMap = await workoutRepo.getPreviousPerformances(
-        [log.exerciseTemplateId],
-        workout.startedAt
-      );
+      const [prevPerfMap, prog] = await Promise.all([
+        workoutRepo.getPreviousPerformances(
+          [log.exerciseTemplateId],
+          workout.startedAt
+        ),
+        programRepo.getActive(),
+      ]);
+
+      const exTemplate = prog?.sessions
+        .flatMap((s) => s.exercises)
+        .find((e) => e.id === log.exerciseTemplateId);
+
+      if (exTemplate?.restSeconds) {
+        setPreferredRest(exTemplate.restSeconds);
+      }
+
       const prevLog = prevPerfMap.get(log.exerciseTemplateId);
-
       if (prevLog && prevLog.setLogs.length > 0) {
-        const lastSet = prevLog.setLogs[prevLog.setLogs.length - 1];
-        setLastWeight(lastSet.weight);
-        setLastReps(lastSet.reps);
-        setWeight(lastSet.weight);
-        setReps(lastSet.reps);
-      } else {
-        const prog = await programRepo.getActive();
-        const exTemplate = prog?.sessions
-          .flatMap((s) => s.exercises)
-          .find((e) => e.id === log.exerciseTemplateId);
+        const lastPrevSet = prevLog.setLogs[prevLog.setLogs.length - 1];
+        setLastWeight(lastPrevSet.weight);
+        setLastReps(lastPrevSet.reps);
+      }
 
-        if (exTemplate) {
-          setWeight(exTemplate.defaultWeight ?? 0);
-          setReps(exTemplate.targetReps ?? 8);
-          if (exTemplate.restSeconds) {
-            setPreferredRest(exTemplate.restSeconds);
-          }
-        }
+      if (log.setLogs.length > 0) {
+        const currentLastSet = log.setLogs[log.setLogs.length - 1];
+        setWeight(currentLastSet.weight);
+        setReps(currentLastSet.reps);
+      } else if (prevLog && prevLog.setLogs.length > 0) {
+        const lastPrevSet = prevLog.setLogs[prevLog.setLogs.length - 1];
+        setWeight(lastPrevSet.weight);
+        setReps(lastPrevSet.reps);
+      } else if (exTemplate) {
+        setWeight(exTemplate.defaultWeight ?? 0);
+        setReps(exTemplate.targetReps ?? 8);
+      } else {
+        setWeight(log.plannedWeightSnapshot ?? 0);
+        setReps(log.targetRepsSnapshot ?? 8);
       }
     };
     void loadInitial();

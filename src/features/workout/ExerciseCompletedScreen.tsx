@@ -6,11 +6,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
-import { AppShell } from '@/components/layout';
-import { Button } from '@/components/ui';
-import { formatWeight, formatDuration } from '@/lib/formatters';
-import { strings } from '@/lib/strings';
-import type { WorkoutExerciseLog } from '@/types';
+import { AppShell } from '@shared/components/layout';
+import { Button } from '@shared/components/ui';
+import { formatWeight, formatDuration } from '@shared/lib/formatters';
+import { strings } from '@shared/lib/strings';
+import type { WorkoutExerciseLog } from '@shared/types';
 
 interface ExerciseCompletedProps {
   exerciseLog: WorkoutExerciseLog;
@@ -28,7 +28,7 @@ export const ExerciseCompletedScreen: React.FC<ExerciseCompletedProps> = ({
 
   return (
     <AppShell showNav={false}>
-      <div className="flex-1 flex flex-col items-start justify-center px-4 pb-[calc(32px+env(safe-area-inset-bottom))]">
+      <div className="flex-1 flex flex-col items-start justify-center px-4 pt-[calc(var(--safe-top)+16px)] pb-[calc(32px+env(safe-area-inset-bottom))]">
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}

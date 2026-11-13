@@ -1,24 +1,32 @@
 # Database e Sincronizzazione Cloud — WorkoutApp
 
-Questo documento descrive l'architettura dei dati di WorkoutApp: il database locale IndexedDB, lo schema PostgreSQL su Supabase, le politiche di sicurezza Row Level Security (RLS) e l'algoritmo di sincronizzazione local-first.
+Questo documento descrive lo storage locale **IndexedDB (Dexie.js)**, lo schema **PostgreSQL su Supabase**, le policy **Row Level Security (RLS)**, il trigger di provisioning utente, il motore bidirezionale `syncAll` e il formato di backup JSON.
 
 ---
 
 ## 1. Schema del Database Locale (IndexedDB / Dexie.js)
 
-Il database locale si chiama `WorkoutAppDB` (versione 1) ed è accessibile via [src/db/database.ts](file:///Volumes/SSD_ALE/LavoriPersonali/WorkoutApp/src/db/database.ts).
+Il database locale `WorkoutAppDB` (versione `1`) è definito in [`src/shared/db/database.ts`](../src/shared/db/database.ts) e incapsulato dai repository transazionali in [`src/shared/db/repositories.ts`](../src/shared/db/repositories.ts).
 
-### Tabelle Locali
-- `programs`: Contiene le schede di allenamento, con sessioni ed esercizi nidificati in formato strutturato. Chiavi: `id, createdAt`.
-- `workouts`: Registro cronologico di ogni sessione svolta (attiva, completata, annullata) con relative serie e carichi. Chiavi: `id, programId, sessionTemplateId, status, startedAt, completedAt`.
-- `settings`: Tabella singleton (chiave: `'default'`) per le preferenze dell'app (tempo di recupero, feedback sonoro, vibrazione, target settimanale).
-- `appState`: Tabella singleton (chiave: `'default'`) per preservare lo stato del timer attivo e del workout in corso anche dopo un riavvio o crash dell'app.
+| Tabella Dexie | Chiave Primaria & Indici | Ruolo |
+|---------------|--------------------------|-------|
+| `programs` | `id, createdAt` | Schede di allenamento con `sessions` ed `exercises` annidati, `durationWeeks`, `startDate`, `sheetRevision` |
+| `workouts` | `id, programId, sessionTemplateId, status, startedAt, completedAt` | Registro delle sedute (`active`, `completed`, `cancelled`) con snapshot nomi/parametri ed `exerciseLogs` |
+| `settings` | `id` (singleton `'default'`) | Preferenze (`defaultRestSeconds`, `soundEnabled`, `vibrationEnabled`, `weeklyTarget`, `googleIcalUrl`) |
+| `appState` | `id` (singleton `'default'`) | Stato effimero persistito tra reload (`activeWorkoutId`, `activeProgramId`, `timerState`) |
+
+### Note sui Repository e Coerenza Transazionale
+- Le mutazioni su `settings`, `appState`, `programs` e `workouts` utilizzano `db.transaction('rw', ...)` per evitare race condition (es. update concorrenti di timer e workout attivo).
+- Quasi tutte le scritture chiamano `notifyTabSync()` ([`src/shared/lib/tabSync.ts`](../src/shared/lib/tabSync.ts)) per mantenere sincronizzate più schede aperte dello stesso browser.
+- Il seeding automatico (`seedDatabase()` in [`src/shared/db/seed.ts`](../src/shared/db/seed.ts)) aggiorna le schede predefinite incrementando `sheetRevision` (attualmente `CURRENT_SHEET_REVISION = 2`) preservando UUID esistenti, sessioni aggiunte dall'utente e pesi progrediti.
 
 ---
 
 ## 2. Schema PostgreSQL Cloud (Supabase)
 
-Il backend cloud risiede su PostgreSQL 17 in hosting su Supabase, definito nella migrazione [supabase/migrations/20261103000000_create_workout_schema.sql](file:///Volumes/SSD_ALE/LavoriPersonali/WorkoutApp/supabase/migrations/20261103000000_create_workout_schema.sql).
+Lo schema cloud è definito dalle due migrazioni SQL presenti in `supabase/migrations/`:
+1. [`supabase/migrations/20261103000000_create_workout_schema.sql`](../supabase/migrations/20261103000000_create_workout_schema.sql) — Tabelle core, indici, policy RLS e trigger `on_auth_user_created`.
+2. [`supabase/migrations/20261113000000_add_google_calendar_to_settings.sql`](../supabase/migrations/20261113000000_add_google_calendar_to_settings.sql) — Aggiunta colonna `google_ical_url` a `public.user_settings` e hardening permessi di `handle_new_user()`.
 
 ```mermaid
 erDiagram
@@ -42,6 +50,7 @@ erDiagram
         boolean sound_enabled
         boolean vibration_enabled
         int weekly_target
+        text google_ical_url
         timestamptz created_at
         timestamptz updated_at
     }
@@ -72,92 +81,88 @@ erDiagram
     }
 ```
 
+### Indici PostgreSQL
+- `public.programs`:
+  - `idx_programs_user_id` su `(user_id)`
+  - `idx_programs_updated_at` su `(updated_at DESC)`
+- `public.workouts`:
+  - `idx_workouts_user_id` su `(user_id)`
+  - `idx_workouts_started_at` su `(started_at DESC)`
+  - `idx_workouts_status` su `(status)` (`CHECK (status IN ('active', 'completed', 'cancelled'))`)
+  - `idx_workouts_updated_at` su `(updated_at DESC)`
+
 ---
 
-## 3. Politiche di Sicurezza Row Level Security (RLS)
+## 3. Sicurezza: Row Level Security (RLS) & Trigger Hardened
 
-Tutte le tabelle pubbliche hanno la Row Level Security abilitata. Nessun utente non autenticato può accedere o modificare i dati.
+Tutte le tabelle nel schema `public` (`profiles`, `user_settings`, `programs`, `workouts`) hanno **RLS abilitata**.
 
-Le policy applicate seguono i più rigidi standard di sicurezza Supabase:
-- **`TO authenticated`**: le richieste anonime vengono respinte a monte.
-- **Subselect per `auth.uid()`**:
+### Regole delle Policy RLS
+- Tutte le policy sono ristrette al ruolo **`TO authenticated`**: le richieste anonime vengono rifiutate a livello di database.
+- La verifica di proprietà usa il subselect `(select auth.uid())` (es. `USING ((select auth.uid()) = user_id)`) in modo che PostgreSQL valuti l'UUID dell'utente una sola volta per statement anziché per ogni riga:
+  - `profiles`: `SELECT`, `UPDATE` su `id`.
+  - `user_settings`: `SELECT`, `INSERT`, `UPDATE` su `user_id`.
+  - `programs`: `SELECT`, `INSERT`, `UPDATE`, `DELETE` su `user_id`.
+  - `workouts`: `SELECT`, `INSERT`, `UPDATE`, `DELETE` su `user_id`.
+
+### Trigger `handle_new_user()`
+Alla creazione di un utente in `auth.users` (`AFTER INSERT`), il trigger `on_auth_user_created` esegue `public.handle_new_user()`:
+- Dichiarata con `SECURITY DEFINER` e `SET search_path = public, auth` per prevenire attacchi di *search_path hijacking*.
+- Inserisce in modo idempotente (`ON CONFLICT ... DO NOTHING`) la riga iniziale in `public.profiles` e in `public.user_settings`.
+- La seconda migrazione applica esplicitamente l'hardening dei privilegi:
   ```sql
-  CREATE POLICY "Users can read own workouts"
-    ON public.workouts
-    FOR SELECT
-    TO authenticated
-    USING ((select auth.uid()) = user_id);
+  REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
   ```
-  L'utilizzo di `(select auth.uid()) = user_id` al posto di `auth.uid() = user_id` consente all'ottimizzatore di Postgres di valutare la funzione una sola volta per query anziché per ogni riga, massimizzando le performance degli indici.
+  impedendo l'invocazione diretta della funzione via RPC da client pubblici o autenticati.
 
 ---
 
-## 4. Trigger di Provisioning Automatico (`handle_new_user`)
+## 4. Engine di Sincronizzazione Bidirezionale (`src/features/sync/sync.ts`)
 
-Quando un nuovo utente completa la registrazione in `auth.users`, un trigger con privilegi `SECURITY DEFINER` e `search_path` protetto crea all'istante il suo profilo e le sue impostazioni:
+La funzione principale `syncAll(userId)` coordina la sincronizzazione tra `Dexie` (`WorkoutAppDB`) e `Supabase`:
 
-```sql
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public, auth
-AS $$
-BEGIN
-  INSERT INTO public.profiles (id, email, display_name, avatar_url)
-  VALUES (
-    NEW.id,
-    NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
-    NEW.raw_user_meta_data->>'avatar_url'
-  )
-  ON CONFLICT (id) DO NOTHING;
+- Se `isSupabaseConfigured()` è `false`, `userId` è assente o una sincronizzazione è già in corso (`syncStatus.isSyncing`), `syncAll` termina senza errori.
+- Lo stato (`isSyncing`, `lastSyncedAt`, `error`) viene propagato ai componenti UI iscritti tramite `subscribeSyncStatus()`.
 
-  INSERT INTO public.user_settings (user_id)
-  VALUES (NEW.id)
-  ON CONFLICT (user_id) DO NOTHING;
+### Fase 1: Push (`pushLocalToCloud`)
+1. **Schede (`programs`)**: esegue `upsert` su `programs` (`onConflict: 'id'`) mappando `startDate` (`YYYY-MM-DD`) e `sessions` JSONB.
+2. **Allenamenti (`workouts`)**: esegue `upsert` su `workouts` (`onConflict: 'id'`) con `started_at`, `completed_at`, `status` e `exercise_logs` JSONB.
+3. **Impostazioni (`user_settings`) & Calendario Permanente**:
+   - Legge `googleIcalUrl` da `db.settings.get('default')` o da `useGoogleCalendarStore.getState().icalUrl`.
+   - Include `google_ical_url` nel payload `upsert` (`onConflict: 'user_id'`) **solo se localmente è presente un URL non vuoto**: in questo modo un nuovo dispositivo con impostazioni locali vuote non sovrascrive mai l'URL Google Calendar già salvato nel cloud.
 
-  RETURN NEW;
-END;
-$$;
-```
+### Fase 2: Pull (`pullCloudToLocal`)
+1. **Schede & Allenamenti**: scarica tutti i record dell'utente e li scrive in transazione su `db.programs` e `db.workouts` tramite `put()`.
+2. **Impostazioni & Ripristino Google Calendar**:
+   - Scarica `user_settings` con `.maybeSingle()`.
+   - Esegue il merge conservativo tra `localIcalUrl` e `cloudSettings.google_ical_url` (`mergedIcalUrl = localIcalUrl ?? cloudIcalUrl`) e aggiorna `db.settings`.
+   - Se nel cloud è presente un `cloudIcalUrl` valido e lo store locale `useGoogleCalendarStore` non ha un `icalUrl` impostato, invoca automaticamente `useGoogleCalendarStore.getState().restoreUserIcalUrl(cloudIcalUrl)`, ripristinando e aggiornando gli eventi su qualsiasi nuovo dispositivo dopo il login.
+
+### Disconnessione Esplicita del Calendario
+Quando l'utente scollega volontariamente il proprio iCal personale dalle Impostazioni, viene invocata anche `clearCloudGoogleIcalUrl(userId)` che aggiorna `user_settings.google_ical_url = null` su Supabase.
+
+Al termine del ciclo `push -> pull`, `syncAll` aggiorna `lastSyncedAt` e invoca `notifyTabSync()`.
 
 ---
 
-## 5. Algoritmo di Sincronizzazione (`src/lib/sync.ts`)
+## 5. Formato del Backup JSON
 
-La sincronizzazione opera in due fasi:
-
-### Fase 1: Push (Locale → Cloud)
-1. Legge le schede e i workout presenti in IndexedDB.
-2. Formatta i record associando il `user_id` della sessione attiva.
-3. Esegue un `upsert` in massa su Supabase con clausola `ON CONFLICT (id) DO UPDATE`.
-
-### Fase 2: Pull (Cloud → Locale)
-1. Recupera da Supabase tutte le schede e i workout dell'utente.
-2. Inserisce o aggiorna i record in IndexedDB tramite `bulkPut`, preservando i record già salvati e integrando eventuali nuovi workout eseguiti da altri dispositivi.
-
-### Gestione degli Errori e Connettività
-- Se la rete non è disponibile o la chiamata HTTP fallisce con timeout, lo stato di sync viene impostato su errore senza bloccare l'interfaccia.
-- I listener reattivi registrati con `subscribeSyncStatus()` aggiornano la card "Account e cloud" nelle Impostazioni indicando la data dell'ultimo sync riuscito.
-
----
-
-## 6. Formato del File di Backup JSON
-
-Gli utenti possono esportare e ripristinare i propri dati tramite un file JSON conforme allo schema:
+Definito in [`src/shared/lib/backup.ts`](../src/shared/lib/backup.ts):
 
 ```json
 {
   "schemaVersion": 1,
-  "exportedAt": "2026-11-03T10:54:22.000Z",
+  "exportedAt": "2026-11-13T10:00:00.000Z",
   "app": "workout-app",
   "data": {
-    "programs": [...],
-    "workouts": [...],
-    "settings": [...],
-    "appState": [...]
+    "programs": [],
+    "workouts": [],
+    "settings": [],
+    "appState": []
   }
 }
 ```
-Un file di riferimento contenente i 9 workout storici è disponibile in `data/workout-backup-progressi.json` e `public/workout-backup-progressi.json`.
+
+- **Export (`downloadBackupFile`)**: esporta tutte le 4 tabelle Dexie in `workout-backup-YYYY-MM-DD.json`.
+- **Import (`importBackupData`)**: valida che il JSON contenga almeno `programs` o `workouts` non vuoti, sostituisce in transazione tutte le tabelle locali, reimposta gli store in memoria (`useTimerStore`, `useWorkoutStore`) e notifica le altre schede tramite `notifyTabSync()`.
+- **Backup di riferimento**: il dataset storico precompilato è disponibile in [`data/workout-backup-progressi.json`](../data/workout-backup-progressi.json).

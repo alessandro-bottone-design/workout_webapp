@@ -6,10 +6,10 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Delete } from 'lucide-react';
-import { Button } from '@/components/ui';
-import { useDialogA11y } from '@/lib/useDialogA11y';
-import { parseWeight, formatWeightValue } from '@/lib/formatters';
-import { strings } from '@/lib/strings';
+import { Button } from '@shared/components/ui';
+import { useDialogA11y } from '@shared/lib/useDialogA11y';
+import { parseWeight, formatWeightValue } from '@shared/lib/formatters';
+import { strings } from '@shared/lib/strings';
 
 interface WeightEditorSheetProps {
   currentWeight: number;

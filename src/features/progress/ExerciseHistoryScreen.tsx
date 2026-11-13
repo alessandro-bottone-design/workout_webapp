@@ -16,13 +16,13 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from 'recharts';
-import { AppShell, ScreenHeader } from '@/components/layout';
-import { EmptyState, SectionHeader, GlassCard } from '@/components/ui';
-import { workoutRepo, programRepo } from '@/db/repositories';
-import { getExercisePerformances, detectExerciseStall } from '@/lib/selectors';
-import { formatDateShort, formatWeight } from '@/lib/formatters';
-import { strings } from '@/lib/strings';
-import type { Workout } from '@/types';
+import { AppShell, ScreenHeader } from '@shared/components/layout';
+import { EmptyState, SectionHeader, GlassCard } from '@shared/components/ui';
+import { workoutRepo, programRepo } from '@shared/db/repositories';
+import { getExercisePerformances, detectExerciseStall } from '@shared/lib/selectors';
+import { formatDateShort, formatWeight } from '@shared/lib/formatters';
+import { strings } from '@shared/lib/strings';
+import type { Workout } from '@shared/types';
 
 export const ExerciseHistoryScreen: React.FC = () => {
   const { exerciseId } = useParams<{ exerciseId: string }>();
@@ -80,7 +80,7 @@ export const ExerciseHistoryScreen: React.FC = () => {
         showBack
       />
 
-      <div className="flex-1 overflow-y-auto pb-24">
+      <div className="flex-1 overflow-y-auto pb-nav">
         <div className="px-4 pt-4 space-y-4">
           {/* Latest performance */}
           {latestPerf && (
